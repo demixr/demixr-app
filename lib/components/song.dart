@@ -5,6 +5,42 @@ import 'package:flutter_svg/flutter_svg.dart';
 
 import 'extended_widgets.dart';
 
+class SongInfos extends StatelessWidget {
+  final String name;
+  final String artist;
+  final double size;
+  final bool alignCenter;
+
+  const SongInfos(this.name, this.artist,
+      {Key? key, this.size = 16, this.alignCenter = false})
+      : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return SpacedColumn(
+      spacing: 5,
+      crossAxisAlignment:
+          alignCenter ? CrossAxisAlignment.center : CrossAxisAlignment.start,
+      children: [
+        Text(
+          name,
+          style: TextStyle(
+              fontSize: size,
+              color: ColorPalette.onSurface,
+              fontWeight: FontWeight.w600),
+        ),
+        Text(
+          artist,
+          style: TextStyle(
+              fontSize: size - 2,
+              color: ColorPalette.onSurface,
+              fontWeight: FontWeight.w400),
+        ),
+      ],
+    );
+  }
+}
+
 class Song extends StatelessWidget {
   const Song({Key? key}) : super(key: key);
 
@@ -17,31 +53,12 @@ class Song extends StatelessWidget {
           spacing: 15,
           children: [
             Image.asset(
-              getAssetPath('artist', AssetType.image),
+              getAssetPath('album_cover', AssetType.image),
               fit: BoxFit.contain,
               width: 65,
               height: 65,
             ),
-            SpacedColumn(
-              spacing: 5,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: const [
-                Text(
-                  'Electric Feel',
-                  style: TextStyle(
-                      fontSize: 16,
-                      color: ColorPalette.onSurface,
-                      fontWeight: FontWeight.w600),
-                ),
-                Text(
-                  'MGMT',
-                  style: TextStyle(
-                      fontSize: 14,
-                      color: ColorPalette.onSurface,
-                      fontWeight: FontWeight.w400),
-                ),
-              ],
-            ),
+            const SongInfos('Electric Feel', 'MGMT')
           ],
         ),
         IconButton(

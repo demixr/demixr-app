@@ -2,13 +2,15 @@ import 'package:demixr_app/constants.dart';
 import 'package:flutter/material.dart';
 
 class NavBar extends StatelessWidget {
-  const NavBar({Key? key}) : super(key: key);
+  final List<Widget> extra;
+
+  const NavBar({Key? key, this.extra = const []}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return SafeArea(
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: <Widget>[
           IconButton(
             iconSize: 24,
@@ -18,6 +20,7 @@ class NavBar extends StatelessWidget {
               Navigator.pop(context);
             },
           ),
+          ...extra
         ],
       ),
     );
