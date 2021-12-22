@@ -20,7 +20,7 @@ class Library extends StatelessWidget {
         ),
         SizedBox(
           width: double.maxFinite,
-          child: EmptyLibrary(),
+          child: LibrarySongs(),
         ),
       ],
     );
@@ -34,8 +34,12 @@ class LibrarySongs extends StatelessWidget {
   Widget build(BuildContext context) {
     return SpacedColumn(
       spacing: 25,
-      children: const [
-        Song(),
+      children: [
+        TextButton(
+          onPressed: () => Navigator.pushNamed(context, 'player'),
+          child: const Song(),
+          style: TextButton.styleFrom(padding: EdgeInsets.zero),
+        ),
       ],
     );
   }
