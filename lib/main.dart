@@ -1,3 +1,4 @@
+import 'package:demixr_app/routes.dart';
 import 'package:demixr_app/screens/home/home_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:demixr_app/constants.dart' show ColorPalette;
@@ -24,7 +25,7 @@ class MyApp extends StatelessWidget {
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
       home: buildHome(),
-      // onGenerateRoute: (settings) => generateRoute(settings),
+      onGenerateRoute: (settings) => generateRoute(settings),
     );
   }
 
