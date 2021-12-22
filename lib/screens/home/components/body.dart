@@ -1,4 +1,5 @@
 import 'package:demixr_app/constants.dart';
+import 'package:demixr_app/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:demixr_app/components/buttons.dart';
 
@@ -51,7 +52,8 @@ class Body extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
                           SizedBox(
-                            child: Image.asset('assets/images/astronaut.png'),
+                            child: Image.asset(
+                                getAssetPath('astronaut', AssetType.image)),
                           ),
                           const SizedBox(
                             width: 200,
@@ -73,13 +75,16 @@ class Body extends StatelessWidget {
                   width: double.maxFinite,
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
-                    children: const [
+                    children: [
                       Button(
                         'Unmix a new song',
-                        icon: Icon(
+                        icon: const Icon(
                           Icons.add,
                           color: ColorPalette.onPrimary,
                         ),
+                        textSize: 18,
+                        onPressed: () =>
+                            Navigator.pushNamed(context, 'demixing'),
                       )
                     ],
                   ),
