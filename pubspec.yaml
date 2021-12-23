@@ -39,6 +39,7 @@ dependencies:
   flutter_bloc: ^8.0.0
   meta: ^1.7.0
   flutter_svg: ^1.0.0
+  intersperse: ^2.0.0
 
 dev_dependencies:
   flutter_test:

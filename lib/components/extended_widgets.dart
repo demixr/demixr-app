@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intersperse/intersperse.dart';
 
 class SpacedColumn extends Column {
   SpacedColumn({
@@ -13,9 +14,7 @@ class SpacedColumn extends Column {
     double spacing = 0,
   }) : super(
           // children: addSpacers(children, SizedBox(height: spacing)),
-          children: [
-            for (var e in children) ...[e, SizedBox(height: spacing)]
-          ],
+          children: children.intersperse(SizedBox(height: spacing)).toList(),
           key: key,
           mainAxisAlignment: mainAxisAlignment,
           mainAxisSize: mainAxisSize,
@@ -38,9 +37,7 @@ class SpacedRow extends Row {
     List<Widget> children = const <Widget>[],
     double spacing = 0,
   }) : super(
-          children: [
-            for (var e in children) ...[e, SizedBox(width: spacing)]
-          ],
+          children: children.intersperse(SizedBox(width: spacing)).toList(),
           key: key,
           mainAxisAlignment: mainAxisAlignment,
           mainAxisSize: mainAxisSize,
