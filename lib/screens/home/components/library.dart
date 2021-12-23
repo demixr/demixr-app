@@ -20,6 +20,7 @@ class Library extends StatelessWidget {
         ),
         SizedBox(
           width: double.maxFinite,
+          height: 425,
           child: LibrarySongs(),
         ),
       ],
@@ -30,19 +31,19 @@ class Library extends StatelessWidget {
 class LibrarySongs extends StatelessWidget {
   const LibrarySongs({Key? key}) : super(key: key);
 
+  Widget buildSongButton(Song song, BuildContext context) => TextButton(
+        onPressed: () => Navigator.pushNamed(context, 'player'),
+        child: song,
+        style: TextButton.styleFrom(
+            padding:
+                const EdgeInsets.only(left: 2, top: 15, right: 2, bottom: 15)),
+      );
+
   @override
   Widget build(BuildContext context) {
-    return SpacedColumn(
-      spacing: 25,
-      children: [
-        TextButton(
-          onPressed: () => Navigator.pushNamed(context, 'player'),
-          child: const Song(),
-          style: TextButton.styleFrom(
-              padding: const EdgeInsets.only(
-                  left: 2, top: 10, right: 2, bottom: 10)),
-        ),
-      ],
+    return ListView(
+      padding: const EdgeInsets.all(0),
+      children: [buildSongButton(const Song(), context)],
     );
   }
 }
