@@ -38,7 +38,9 @@ class LibrarySongs extends StatelessWidget {
         TextButton(
           onPressed: () => Navigator.pushNamed(context, 'player'),
           child: const Song(),
-          style: TextButton.styleFrom(padding: EdgeInsets.zero),
+          style: TextButton.styleFrom(
+              padding: const EdgeInsets.only(
+                  left: 2, top: 10, right: 2, bottom: 10)),
         ),
       ],
     );

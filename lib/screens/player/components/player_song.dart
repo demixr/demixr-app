@@ -8,14 +8,15 @@ class PlayerSong extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    const double imageSize = 250;
     return SpacedColumn(
       spacing: 25,
       children: [
         Image.asset(
           getAssetPath('album_cover', AssetType.image),
           fit: BoxFit.contain,
-          width: 200,
-          height: 200,
+          width: imageSize,
+          height: imageSize,
         ),
         const SongInfos(
           'Electric Feel',

@@ -1,4 +1,3 @@
-import 'package:demixr_app/components/extended_widgets.dart';
 import 'package:demixr_app/components/navbar.dart';
 import 'package:demixr_app/screens/player/components/controller.dart';
 import 'package:demixr_app/screens/player/components/player_song.dart';

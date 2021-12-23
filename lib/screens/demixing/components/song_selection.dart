@@ -18,12 +18,12 @@ class SongSelection extends StatelessWidget {
           clipBehavior: Clip.antiAlias,
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          child: SpacedColumn(
-            spacing: 30,
-            children: [
-              const Padding(
-                padding: EdgeInsets.only(top: 20),
-                child: ListTile(
+          child: Padding(
+            padding: const EdgeInsets.only(top: 20, bottom: 20),
+            child: SpacedColumn(
+              spacing: 30,
+              children: [
+                const ListTile(
                   title: Text(
                     'Song selection',
                     style: TextStyle(
@@ -33,33 +33,33 @@ class SongSelection extends StatelessWidget {
                     textAlign: TextAlign.center,
                   ),
                 ),
-              ),
-              const Text(
-                'You can select a song from your device or directly from Youtube.',
-                style: TextStyle(color: ColorPalette.onSurfaceVariant),
-                textAlign: TextAlign.center,
-              ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Button(
-                    'Youtube link',
-                    icon: Icon(
-                      Icons.file_upload,
-                      color: ColorPalette.onPrimary,
-                      size: 18,
+                const Text(
+                  'You can select a song from your device or directly from Youtube.',
+                  style: TextStyle(color: ColorPalette.onSurfaceVariant),
+                  textAlign: TextAlign.center,
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Button(
+                      'Youtube link',
+                      icon: Icon(
+                        Icons.file_upload,
+                        color: ColorPalette.onPrimary,
+                        size: 18,
+                      ),
                     ),
-                  ),
-                  const SizedBox(width: 10),
-                  Button(
-                    'Browse files',
-                    icon: SvgPicture.asset(
-                      getAssetPath('youtube', AssetType.icon),
+                    const SizedBox(width: 10),
+                    Button(
+                      'Browse files',
+                      icon: SvgPicture.asset(
+                        getAssetPath('youtube', AssetType.icon),
+                      ),
                     ),
-                  ),
-                ],
-              ),
-            ],
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
         Card(

@@ -1,5 +1,6 @@
 import 'package:demixr_app/constants.dart';
 import 'package:demixr_app/screens/player/components/controller_button.dart';
+import 'package:demixr_app/screens/player/components/stem_selection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 
@@ -10,9 +11,23 @@ class Controller extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    return Column(
+      children: const [
+        StemSelection(),
+        SongController(),
+      ],
+    );
+  }
+}
+
+class SongController extends StatelessWidget {
+  const SongController({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
     const radius = Radius.circular(35);
     return SizedBox(
-      height: 125,
+      height: 130,
       child: DecoratedBox(
         decoration: const BoxDecoration(
           color: ColorPalette.surfaceVariant,

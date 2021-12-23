@@ -11,6 +11,8 @@ class ColorPalette {
   static const Color onTertiary = Color.fromRGBO(58, 47, 4, 1);
   static const Color errorContainer = Color.fromRGBO(147, 0, 6, 1);
   static const Color onError = Color.fromRGBO(255, 218, 212, 1);
+  static const Color inverseSurface = Color.fromRGBO(237, 224, 221, 1);
+  static const Color inversePrimary = Color.fromRGBO(155, 68, 41, 1);
   static const List<Color> primaryGradient = [
     Color.fromRGBO(250, 184, 196, 1),
     Color.fromRGBO(89, 86, 233, 1),
