@@ -18,7 +18,6 @@ class PlayerScreen extends StatelessWidget {
         margin: const EdgeInsets.only(left: 10, top: 10, right: 10),
         child: Expanded(
           child: Column(
-            // spacing: 30,
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               NavBar(

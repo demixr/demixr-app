@@ -27,7 +27,7 @@ class SongController extends StatelessWidget {
   Widget build(BuildContext context) {
     const radius = Radius.circular(35);
     return SizedBox(
-      height: 130,
+      height: 125,
       child: DecoratedBox(
         decoration: const BoxDecoration(
           color: ColorPalette.surfaceVariant,

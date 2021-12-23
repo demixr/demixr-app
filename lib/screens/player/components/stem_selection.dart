@@ -8,7 +8,6 @@ class StemSelection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const borderSide = BorderSide(width: 2, color: ColorPalette.surfaceVariant);
     const radius = Radius.circular(35);
     return DecoratedBox(
       decoration: BoxDecoration(
@@ -16,7 +15,8 @@ class StemSelection extends StatelessWidget {
         border: Border.all(width: 2, color: ColorPalette.surfaceVariant),
       ),
       child: Padding(
-        padding: const EdgeInsets.all(20),
+        padding:
+            const EdgeInsets.only(left: 20, top: 10, right: 20, bottom: 10),
         child: Column(
           children: const [
             StemButton('Vocals', isActivated: false),
@@ -42,19 +42,21 @@ class StemButton extends StatelessWidget {
     final icon = isActivated ? Icons.headset : Icons.headset_off;
 
     return SpacedRow(
-      spacing: 20,
+      spacing: 10,
       mainAxisAlignment: MainAxisAlignment.center,
       mainAxisSize: MainAxisSize.min,
       children: [
         Icon(icon, color: ColorPalette.onSurface),
         SizedBox(
-          width: 150,
+          width: 125,
           child: Button(
             stemName,
             color: ColorPalette.inverseSurface,
             textColor: ColorPalette.inversePrimary,
             textSize: 16,
             radius: 12,
+            padding:
+                const EdgeInsets.only(left: 15, top: 5, right: 15, bottom: 5),
           ),
         ),
       ],

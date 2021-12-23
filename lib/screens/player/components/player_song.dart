@@ -8,7 +8,7 @@ class PlayerSong extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const double imageSize = 250;
+    const double imageSize = 200;
     return SpacedColumn(
       spacing: 25,
       children: [

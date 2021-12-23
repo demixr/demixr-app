@@ -10,7 +10,7 @@ class Library extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SpacedColumn(
-      spacing: 40,
+      spacing: 10,
       mainAxisAlignment: MainAxisAlignment.start,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: const [
@@ -18,9 +18,7 @@ class Library extends StatelessWidget {
           'Library',
           style: TextStyle(color: ColorPalette.onSurface, fontSize: 36),
         ),
-        SizedBox(
-          width: double.maxFinite,
-          height: 425,
+        Expanded(
           child: LibrarySongs(),
         ),
       ],
