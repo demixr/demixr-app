@@ -7,6 +7,7 @@ import 'package:demixr_app/models/song.dart';
 import 'package:demixr_app/services/song_loader.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter_media_metadata/flutter_media_metadata.dart';
+import 'package:path/path.dart';
 
 class SongHelper {
   final _service = SongLoader();
@@ -17,15 +18,39 @@ class SongHelper {
     return file.fold((failure) => Left(failure), (file) async {
       if (file.path == null) return Left(SongNotAvailable());
 
-      var metadata = await MetadataRetriever.fromFile(File(file.path!));
+      File path = File(file.path!);
+      var metadata = await MetadataRetriever.fromFile(path);
+
+      Tuple2<String, List<String>> songInfos = _getSongInfos(
+        metadata.trackName,
+        metadata.trackArtistNames,
+        basenameWithoutExtension(path.path),
+      );
 
       return Right(
         Song(
-          title: metadata.trackName ?? file.name,
-          artists: metadata.trackArtistNames ?? [file.name],
+          title: songInfos.value1,
+          artists: songInfos.value2,
           cover: metadata.albumArt,
         ),
       );
     });
+  }
+
+  Tuple2<String, List<String>> _getSongInfos(
+    String? title,
+    List<String>? artists,
+    String filename,
+  ) {
+    const separator = '-';
+    var splitedFilename = filename.split(separator);
+    var titleFromFilename = splitedFilename.length == 1
+        ? splitedFilename[0].trim()
+        : splitedFilename.sublist(1).join(separator).trim();
+
+    title ??= titleFromFilename;
+    artists ??= [splitedFilename[0].trim()];
+
+    return Tuple2(title, artists);
   }
 }
