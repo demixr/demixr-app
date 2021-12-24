@@ -19,32 +19,32 @@ class Library extends StatelessWidget {
           style: TextStyle(color: ColorPalette.onSurface, fontSize: 36),
         ),
         Expanded(
-          child: LibrarySongs(),
+          child: EmptyLibrary(),
         ),
       ],
     );
   }
 }
 
-class LibrarySongs extends StatelessWidget {
-  const LibrarySongs({Key? key}) : super(key: key);
+// class LibrarySongs extends StatelessWidget {
+//   const LibrarySongs({Key? key}) : super(key: key);
 
-  Widget buildSongButton(SongWidget song, BuildContext context) => TextButton(
-        onPressed: () => Navigator.pushNamed(context, 'player'),
-        child: song,
-        style: TextButton.styleFrom(
-            padding:
-                const EdgeInsets.only(left: 2, top: 15, right: 2, bottom: 15)),
-      );
+//   Widget buildSongButton(SongWidget song, BuildContext context) => TextButton(
+//         onPressed: () => Navigator.pushNamed(context, 'player'),
+//         child: song,
+//         style: TextButton.styleFrom(
+//             padding:
+//                 const EdgeInsets.only(left: 2, top: 15, right: 2, bottom: 15)),
+//       );
 
-  @override
-  Widget build(BuildContext context) {
-    return ListView(
-      padding: const EdgeInsets.all(0),
-      children: [buildSongButton(const SongWidget(), context)],
-    );
-  }
-}
+//   @override
+//   Widget build(BuildContext context) {
+//     return ListView(
+//       padding: const EdgeInsets.all(0),
+//       children: [buildSongButton(const SongWidget(), context)],
+//     );
+//   }
+// }
 
 class EmptyLibrary extends StatelessWidget {
   const EmptyLibrary({Key? key}) : super(key: key);

@@ -1,15 +1,20 @@
+import 'package:dartz/dartz.dart';
 import 'package:demixr_app/components/buttons.dart';
 import 'package:demixr_app/components/extended_widgets.dart';
 import 'package:demixr_app/components/song_widget.dart';
 import 'package:demixr_app/constants.dart';
+import 'package:demixr_app/models/failure/failure.dart';
+import 'package:demixr_app/models/song.dart';
+import 'package:demixr_app/providers/song_provider.dart';
 import 'package:demixr_app/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:provider/provider.dart';
 
 class SongSelection extends StatelessWidget {
   const SongSelection({Key? key}) : super(key: key);
 
-  Widget buildButtons() => Row(
+  Widget buildButtons(SongProvider provider) => Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           const Button(
@@ -28,11 +33,12 @@ class SongSelection extends StatelessWidget {
               getAssetPath('youtube', AssetType.icon),
             ),
             textSize: 16,
+            onPressed: provider.loadFromDevice,
           ),
         ],
       );
 
-  Widget buildSelectionCard() => Card(
+  Widget buildSelectionCard(SongProvider provider) => Card(
         color: ColorPalette.surfaceVariant,
         clipBehavior: Clip.antiAlias,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -57,29 +63,43 @@ class SongSelection extends StatelessWidget {
                     color: ColorPalette.onSurfaceVariant, fontSize: 16),
                 textAlign: TextAlign.center,
               ),
-              buildButtons(),
+              buildButtons(provider),
             ],
           ),
         ),
       );
 
-  Widget buildSelectedSongCard() => Card(
+  Widget buildSelectedSongCard(Song song) => Card(
         color: ColorPalette.surfaceVariant,
         clipBehavior: Clip.antiAlias,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        child: const Padding(
-          padding: EdgeInsets.all(10),
-          child: SongWidget(),
+        child: Padding(
+          padding: const EdgeInsets.all(10),
+          child: SongWidget(
+            title: song.title,
+            artists: song.artists,
+            cover: song.cover,
+          ),
         ),
       );
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        buildSelectionCard(),
-        buildSelectedSongCard(),
-      ],
+    return Consumer<SongProvider>(
+      builder: (context, songProvider, child) {
+        Either<Failure, Song> song = songProvider.song;
+        List<Widget> children = [buildSelectionCard(songProvider)];
+
+        // Add the song card if a song is selected
+        song.fold(
+          (failure) => null,
+          (song) => children.add(buildSelectedSongCard(song)),
+        );
+
+        return Column(
+          children: children,
+        );
+      },
     );
   }
 }

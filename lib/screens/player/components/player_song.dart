@@ -19,8 +19,8 @@ class PlayerSong extends StatelessWidget {
           height: imageSize,
         ),
         const SongInfos(
-          'Electric Feel',
-          'MGMT',
+          title: 'Electric Feel',
+          artists: ['MGMT'],
           alignCenter: true,
           size: 18,
         ),
