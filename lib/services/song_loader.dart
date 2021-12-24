@@ -2,7 +2,7 @@ import 'dart:io';
 
 import 'package:dartz/dartz.dart';
 import 'package:demixr_app/models/failure/failure.dart';
-import 'package:demixr_app/models/failure/no_song_picked.dart';
+import 'package:demixr_app/models/failure/no_song_selected.dart';
 import 'package:demixr_app/models/song.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter_media_metadata/flutter_media_metadata.dart';
@@ -12,7 +12,7 @@ class SongLoader {
     FilePickerResult? result =
         await FilePicker.platform.pickFiles(type: FileType.audio);
 
-    if (result == null) return Left(NoSongPickedFailure());
+    if (result == null) return Left(NoSongSelected());
 
     PlatformFile file = result.files.single;
     File path = File(file.path!);
