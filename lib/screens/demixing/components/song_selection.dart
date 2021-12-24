@@ -1,6 +1,8 @@
+import 'dart:io';
+
 import 'package:demixr_app/components/buttons.dart';
 import 'package:demixr_app/components/extended_widgets.dart';
-import 'package:demixr_app/components/song.dart';
+import 'package:demixr_app/components/song_widget.dart';
 import 'package:demixr_app/constants.dart';
 import 'package:demixr_app/utils.dart';
 import 'package:flutter/material.dart';
@@ -69,7 +71,7 @@ class SongSelection extends StatelessWidget {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         child: const Padding(
           padding: EdgeInsets.all(10),
-          child: Song(),
+          child: SongWidget(),
         ),
       );
 

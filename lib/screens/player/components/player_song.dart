@@ -1,5 +1,5 @@
 import 'package:demixr_app/components/extended_widgets.dart';
-import 'package:demixr_app/components/song.dart';
+import 'package:demixr_app/components/song_widget.dart';
 import 'package:demixr_app/utils.dart';
 import 'package:flutter/material.dart';
 

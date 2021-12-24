@@ -1,5 +1,5 @@
 import 'package:demixr_app/components/extended_widgets.dart';
-import 'package:demixr_app/components/song.dart';
+import 'package:demixr_app/components/song_widget.dart';
 import 'package:demixr_app/constants.dart';
 import 'package:demixr_app/utils.dart';
 import 'package:flutter/material.dart';
@@ -29,7 +29,7 @@ class Library extends StatelessWidget {
 class LibrarySongs extends StatelessWidget {
   const LibrarySongs({Key? key}) : super(key: key);
 
-  Widget buildSongButton(Song song, BuildContext context) => TextButton(
+  Widget buildSongButton(SongWidget song, BuildContext context) => TextButton(
         onPressed: () => Navigator.pushNamed(context, 'player'),
         child: song,
         style: TextButton.styleFrom(
@@ -41,7 +41,7 @@ class LibrarySongs extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListView(
       padding: const EdgeInsets.all(0),
-      children: [buildSongButton(const Song(), context)],
+      children: [buildSongButton(const SongWidget(), context)],
     );
   }
 }

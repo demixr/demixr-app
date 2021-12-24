@@ -41,8 +41,8 @@ class SongInfos extends StatelessWidget {
   }
 }
 
-class Song extends StatelessWidget {
-  const Song({Key? key}) : super(key: key);
+class SongWidget extends StatelessWidget {
+  const SongWidget({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
