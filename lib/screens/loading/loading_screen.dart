@@ -1,3 +1,8 @@
+import 'package:demixr_app/components/buttons.dart';
+import 'package:demixr_app/components/extended_widgets.dart';
+import 'package:demixr_app/constants.dart';
+import 'package:demixr_app/screens/loading/components/cancel_button.dart';
+import 'package:demixr_app/utils.dart';
 import 'package:flutter/material.dart';
 
 class LoadingScreen extends StatelessWidget {
@@ -8,8 +13,27 @@ class LoadingScreen extends StatelessWidget {
     return Container(
       width: double.maxFinite,
       height: double.maxFinite,
+      margin: const EdgeInsets.only(left: 20, top: 125, right: 20, bottom: 20),
       alignment: Alignment.center,
-      child: const Text('Loading'),
+      child: SpacedColumn(
+        spacing: 50,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Expanded(
+            child: Image.asset(
+              getAssetPath('demixing', AssetType.animation),
+            ),
+          ),
+          const Text(
+            'Demixing in progress',
+            style: TextStyle(
+              color: ColorPalette.onSurfaceVariant,
+              fontSize: 20,
+            ),
+          ),
+          const CancelButton(),
+        ],
+      ),
     );
   }
 }
