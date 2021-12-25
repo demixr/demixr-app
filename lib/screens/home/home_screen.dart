@@ -16,31 +16,32 @@ class HomeScreen extends StatelessWidget {
             const EdgeInsets.only(top: 125, left: 20, right: 20, bottom: 20),
         height: double.maxFinite,
         width: double.maxFinite,
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.start,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
-            const HomeTitle(),
-            const SizedBox(height: 60),
-            Expanded(
-              child: Column(
-                children: [
-                  const Expanded(
-                    child: Library(),
-                  ),
-                  Button(
-                    'Unmix a new song',
-                    icon: const Icon(
-                      Icons.add,
-                      color: ColorPalette.onPrimary,
-                    ),
-                    textSize: 18,
-                    onPressed: () => Navigator.pushNamed(context, 'demixing'),
-                  )
-                ],
+        child: Expanded(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              const HomeTitle(),
+              const SizedBox(height: 60),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    const Library(),
+                    Button(
+                      'Unmix a new song',
+                      icon: const Icon(
+                        Icons.add,
+                        color: ColorPalette.onPrimary,
+                      ),
+                      textSize: 18,
+                      onPressed: () => Navigator.pushNamed(context, 'demixing'),
+                    )
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
