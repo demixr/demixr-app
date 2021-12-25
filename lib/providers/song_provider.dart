@@ -15,4 +15,6 @@ class SongProvider extends ChangeNotifier {
     _song = await _helper.loadFromDevice();
     notifyListeners();
   }
+
+  void unmixSong() {}
 }

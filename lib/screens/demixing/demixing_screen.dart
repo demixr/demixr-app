@@ -2,6 +2,7 @@ import 'package:demixr_app/components/buttons.dart';
 import 'package:demixr_app/components/navbar.dart';
 import 'package:demixr_app/components/page_title.dart';
 import 'package:demixr_app/providers/song_provider.dart';
+import 'package:demixr_app/screens/demixing/components/unmix_button.dart';
 import 'package:demixr_app/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
@@ -31,20 +32,10 @@ class DemixingScreen extends StatelessWidget {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    const PageTitle('Demixing'),
-                    const SongSelection(),
-                    Button(
-                      'Unmix',
-                      icon: SvgPicture.asset(
-                          getAssetPath('rocket', AssetType.icon)),
-                      color: ColorPalette.tertiary,
-                      textColor: ColorPalette.onTertiary,
-                      padding: const EdgeInsets.only(
-                          left: 100, top: 25, right: 100, bottom: 25),
-                      radius: 25,
-                      textSize: 18,
-                    ),
+                  children: const [
+                    PageTitle('Demixing'),
+                    SongSelection(),
+                    UnmixButton(),
                   ],
                 ),
               ),
