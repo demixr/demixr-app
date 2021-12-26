@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:dartz/dartz.dart';
 import 'package:demixr_app/constants.dart';
@@ -32,10 +33,15 @@ class SongHelper {
         Song(
           title: songInfos.value1,
           artists: songInfos.value2,
-          cover: metadata.albumArt,
+          path: file.path!,
         ),
       );
     });
+  }
+
+  Future<Uint8List?> getSongCover(Song song) async {
+    var metadata = await MetadataRetriever.fromFile(File(song.path));
+    return metadata.albumArt;
   }
 
   Tuple2<String, List<String>> _getSongInfos(
