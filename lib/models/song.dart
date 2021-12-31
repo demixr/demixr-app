@@ -14,4 +14,9 @@ class Song {
   String path;
 
   Song({required this.title, required this.artists, required this.path});
+
+  @override
+  String toString() {
+    return "${artists.join('_')}_$title";
+  }
 }

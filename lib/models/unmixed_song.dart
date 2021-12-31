@@ -11,22 +11,22 @@ class UnmixedSong {
   Song mixture;
 
   @HiveField(1)
-  Song vocals;
+  Song? vocals;
 
   @HiveField(2)
-  Song bass;
+  Song? bass;
 
   @HiveField(3)
-  Song drums;
+  Song? drums;
 
   @HiveField(4)
-  Song other;
+  Song? other;
 
   UnmixedSong({
     required this.mixture,
-    required this.vocals,
-    required this.bass,
-    required this.drums,
-    required this.other,
+    this.vocals,
+    this.bass,
+    this.drums,
+    this.other,
   });
 }
