@@ -1,23 +1,33 @@
+import 'package:demixr_app/helpers/demixing_helper.dart';
+import 'package:demixr_app/helpers/library_helper.dart';
 import 'package:demixr_app/models/song.dart';
+import 'package:demixr_app/models/unmixed_song.dart';
 import 'package:flutter/material.dart';
 
 class DemixingProvider extends ChangeNotifier {
+  final _helper = DemixingHelper();
+  final _library = LibraryHelper();
   bool _isDemixing = false;
 
   bool get isDemixing => _isDemixing;
 
-  void unmixSong(Song song) {
-    _isDemixing = true;
+  _setStatus({required bool isDemixing}) {
+    if (_isDemixing != isDemixing) {
+      _isDemixing = isDemixing;
+      notifyListeners();
+    }
+  }
 
-    // TODO: service call for the demixing implementation
+  void unmix(Song song) {
+    _setStatus(isDemixing: true);
 
-    notifyListeners();
+    _helper.separate(song).then((UnmixedSong song) {
+      _library.saveSong(song);
+      _setStatus(isDemixing: false);
+    });
   }
 
   void cancelDemixing() {
-    if (isDemixing) {
-      _isDemixing = false;
-      notifyListeners();
-    }
+    _setStatus(isDemixing: false);
   }
 }

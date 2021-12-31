@@ -33,7 +33,7 @@ class UnmixButton extends StatelessWidget {
             (failure) => null,
             (song) => () {
               var demixingProvider = context.read<DemixingProvider>();
-              demixingProvider.unmixSong(song);
+              demixingProvider.unmix(song);
             },
           ),
         );
