@@ -30,3 +30,7 @@ class Paths {
 }
 
 const songArtistTitleSeparator = '-';
+
+class BoxesNames {
+  static const library = 'library';
+}

@@ -1,10 +1,17 @@
+import 'package:demixr_app/models/song.dart';
+import 'package:demixr_app/models/unmixed_song.dart';
 import 'package:demixr_app/routes.dart';
 import 'package:demixr_app/screens/home/home_screen.dart';
 import 'package:flutter/material.dart';
-import 'package:demixr_app/constants.dart' show ColorPalette;
+import 'package:demixr_app/constants.dart' show BoxesNames, ColorPalette;
 import 'package:flutter/services.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 
-void main() {
+Future<void> main() async {
+  await Hive.initFlutter();
+  Hive.registerAdapter<UnmixedSong>(UnmixedSongAdapter());
+  Hive.registerAdapter<Song>(SongAdapter());
+  await Hive.openBox<UnmixedSong>(BoxesNames.library);
   runApp(const MyApp());
 }
 
