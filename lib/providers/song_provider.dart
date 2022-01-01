@@ -21,7 +21,7 @@ class SongProvider extends ChangeNotifier {
 
     await _song.fold(
       (failure) => _cover = null,
-      (song) async => _cover = await _helper.getSongCover(song),
+      (song) async => _cover = await song.albumCover,
     );
 
     notifyListeners();

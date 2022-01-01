@@ -39,11 +39,6 @@ class SongHelper {
     });
   }
 
-  Future<Uint8List?> getSongCover(Song song) async {
-    var metadata = await MetadataRetriever.fromFile(File(song.path));
-    return metadata.albumArt;
-  }
-
   Tuple2<String, List<String>> _getSongInfos(
     String? title,
     List<String>? artists,
@@ -59,5 +54,12 @@ class SongHelper {
     artists ??= [splitedFilename[0].trim()];
 
     return Tuple2(title, artists);
+  }
+}
+
+extension Cover on Song {
+  Future<Uint8List?> get albumCover async {
+    var metadata = await MetadataRetriever.fromFile(File(path));
+    return metadata.albumArt;
   }
 }
