@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'package:dartz/dartz.dart';
 import 'package:demixr_app/constants.dart';
 import 'package:demixr_app/models/failure/failure.dart';
+import 'package:demixr_app/models/failure/no_album_cover.dart';
 import 'package:demixr_app/models/failure/song_load_failure.dart';
 import 'package:demixr_app/models/song.dart';
 import 'package:demixr_app/services/song_loader.dart';
@@ -58,8 +59,12 @@ class SongHelper {
 }
 
 extension Cover on Song {
-  Future<Uint8List?> get albumCover async {
+  Future<Either<Failure, Uint8List>> get albumCover async {
     var metadata = await MetadataRetriever.fromFile(File(path));
-    return metadata.albumArt;
+    final albumCover = metadata.albumArt;
+
+    if (albumCover == null) return Left(NoAlbumCover());
+
+    return Right(albumCover);
   }
 }

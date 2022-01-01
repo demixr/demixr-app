@@ -71,7 +71,8 @@ class SongSelection extends StatelessWidget {
         ),
       );
 
-  Widget buildSelectedSongCard(Song song, Uint8List? cover) => Card(
+  Widget buildSelectedSongCard(Song song, Either<Failure, Uint8List> cover) =>
+      Card(
         color: ColorPalette.surfaceVariant,
         clipBehavior: Clip.antiAlias,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),

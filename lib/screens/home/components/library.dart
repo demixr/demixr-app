@@ -1,7 +1,9 @@
 import 'dart:typed_data';
 
+import 'package:dartz/dartz.dart';
 import 'package:demixr_app/components/song_widget.dart';
 import 'package:demixr_app/constants.dart';
+import 'package:demixr_app/models/failure/failure.dart';
 import 'package:demixr_app/providers/library_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -58,8 +60,11 @@ class LibrarySongs extends StatelessWidget {
           padding: const EdgeInsets.all(0),
           itemCount: library.numberOfSongs,
           itemBuilder: (context, index) {
+            // sort from newest to oldest
+            index = library.numberOfSongs - index - 1;
             final currentSong = library.getAt(index);
-            return FutureBuilder<Uint8List?>(
+
+            return FutureBuilder<Either<Failure, Uint8List>>(
                 future: currentSong.mixture.albumCover,
                 builder: (context, snapshot) {
                   if (snapshot.hasData) {
@@ -67,7 +72,18 @@ class LibrarySongs extends StatelessWidget {
                       SongWidget(
                         title: currentSong.mixture.title,
                         artists: currentSong.mixture.artists,
-                        cover: snapshot.data,
+                        cover: snapshot.data!,
+                        onRemovePressed: () {
+                          library.removeSong(index);
+                          Get.snackbar(
+                            'Demixr',
+                            '${currentSong.mixture.title} was removed from library',
+                            backgroundColor: ColorPalette.primary,
+                            colorText: ColorPalette.onPrimary,
+                            animationDuration:
+                                const Duration(milliseconds: 500),
+                          );
+                        },
                       ),
                       context,
                     );

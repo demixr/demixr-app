@@ -1,11 +1,9 @@
-import 'package:demixr_app/helpers/library_helper.dart';
 import 'package:demixr_app/models/unmixed_song.dart';
 import 'package:demixr_app/repositories/library_repository.dart';
 import 'package:flutter/material.dart';
 
 class LibraryProvider extends ChangeNotifier {
   final _repository = LibraryRepository();
-  final _helper = LibraryHelper();
   List<UnmixedSong> _songs = [];
 
   LibraryProvider() {
@@ -19,11 +17,19 @@ class LibraryProvider extends ChangeNotifier {
   bool get isEmpty => _songs.isEmpty;
 
   UnmixedSong getAt(int index) {
-    return _songs.elementAt(numberOfSongs - index - 1);
+    return _songs.elementAt(index);
   }
 
   Future<void> saveSong(UnmixedSong song) async {
-    final savedSong = await _helper.saveSong(song);
-    _songs.add(savedSong);
+    song.mixture = await _repository.saveFile(song.mixture);
+    _repository.box.add(song);
+    _songs.add(song);
+    notifyListeners();
+  }
+
+  void removeSong(int index) {
+    _songs.removeAt(index);
+    _repository.box.deleteAt(index);
+    notifyListeners();
   }
 }
