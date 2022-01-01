@@ -44,4 +44,10 @@ class LibraryRepository {
 
     return song;
   }
+
+  void removeSongFiles(UnmixedSong song) {
+    File file = File(song.mixture.path);
+    Directory directory = file.parent;
+    directory.deleteSync(recursive: true);
+  }
 }

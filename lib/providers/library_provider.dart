@@ -28,6 +28,7 @@ class LibraryProvider extends ChangeNotifier {
   }
 
   void removeSong(int index) {
+    _repository.removeSongFiles(_songs.elementAt(index));
     _songs.removeAt(index);
     _repository.box.deleteAt(index);
     notifyListeners();
