@@ -1,12 +1,10 @@
 import 'package:demixr_app/helpers/demixing_helper.dart';
-import 'package:demixr_app/helpers/library_helper.dart';
 import 'package:demixr_app/models/song.dart';
 import 'package:demixr_app/models/unmixed_song.dart';
 import 'package:flutter/material.dart';
 
 class DemixingProvider extends ChangeNotifier {
   final _helper = DemixingHelper();
-  final _library = LibraryHelper();
   bool _isDemixing = false;
 
   bool get isDemixing => _isDemixing;
@@ -18,13 +16,9 @@ class DemixingProvider extends ChangeNotifier {
     }
   }
 
-  void unmix(Song song) {
+  Future<UnmixedSong> unmix(Song song) async {
     _setStatus(isDemixing: true);
-
-    _helper.separate(song).then((UnmixedSong song) {
-      _library.saveSong(song);
-      _setStatus(isDemixing: false);
-    });
+    return await _helper.separate(song);
   }
 
   void cancelDemixing() {

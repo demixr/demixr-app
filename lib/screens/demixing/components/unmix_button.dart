@@ -3,9 +3,11 @@ import 'package:demixr_app/components/buttons.dart';
 import 'package:demixr_app/models/failure/failure.dart';
 import 'package:demixr_app/models/song.dart';
 import 'package:demixr_app/providers/demixing_provider.dart';
+import 'package:demixr_app/providers/library_provider.dart';
 import 'package:demixr_app/providers/song_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:get/get.dart';
 import 'package:provider/provider.dart';
 
 import '../../../constants.dart';
@@ -33,7 +35,12 @@ class UnmixButton extends StatelessWidget {
             (failure) => null,
             (song) => () {
               var demixingProvider = context.read<DemixingProvider>();
-              demixingProvider.unmix(song);
+              var library = context.read<LibraryProvider>();
+
+              demixingProvider
+                  .unmix(song)
+                  .then((unmixed) => library.saveSong(unmixed))
+                  .then((_) => Get.toNamed('/'));
             },
           ),
         );
