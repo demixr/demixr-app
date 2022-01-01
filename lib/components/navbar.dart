@@ -1,5 +1,6 @@
 import 'package:demixr_app/constants.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
 class NavBar extends StatelessWidget {
   final List<Widget> extra;
@@ -16,9 +17,7 @@ class NavBar extends StatelessWidget {
             iconSize: 24,
             icon: const Icon(Icons.arrow_back),
             color: ColorPalette.onSurface,
-            onPressed: () {
-              Navigator.pop(context);
-            },
+            onPressed: () => Get.back(),
           ),
           ...extra
         ],

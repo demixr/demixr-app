@@ -1,11 +1,16 @@
 import 'package:demixr_app/models/song.dart';
 import 'package:demixr_app/models/unmixed_song.dart';
-import 'package:demixr_app/routes.dart';
+import 'package:demixr_app/providers/library_provider.dart';
+import 'package:demixr_app/screens/demixing/demixing_screen.dart';
+import 'package:demixr_app/screens/error/error_screen.dart';
 import 'package:demixr_app/screens/home/home_screen.dart';
+import 'package:demixr_app/screens/player/player_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:demixr_app/constants.dart' show BoxesNames, ColorPalette;
 import 'package:flutter/services.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:provider/provider.dart';
+import 'package:get/get.dart';
 
 Future<void> main() async {
   await Hive.initFlutter();
@@ -20,19 +25,42 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: 'Demixr',
-      theme: ThemeData(
-        scaffoldBackgroundColor: ColorPalette.surface,
-        primaryColor: ColorPalette.primary,
-        textTheme: Theme.of(context).textTheme.apply(
-            bodyColor: ColorPalette.onSurface,
-            displayColor: ColorPalette.onSurface),
-        visualDensity: VisualDensity.adaptivePlatformDensity,
+    return ChangeNotifierProvider(
+      create: (context) => LibraryProvider(),
+      child: GetMaterialApp(
+        debugShowCheckedModeBanner: false,
+        title: 'Demixr',
+        theme: ThemeData(
+          scaffoldBackgroundColor: ColorPalette.surface,
+          primaryColor: ColorPalette.primary,
+          textTheme: Theme.of(context).textTheme.apply(
+              bodyColor: ColorPalette.onSurface,
+              displayColor: ColorPalette.onSurface),
+          visualDensity: VisualDensity.adaptivePlatformDensity,
+        ),
+        home: buildHome(),
+        // onGenerateRoute: (settings) => generateRoute(settings),
+        initialRoute: '/',
+        unknownRoute:
+            GetPage(name: '/notfound', page: () => const ErrorScreen()),
+        getPages: [
+          GetPage(
+            name: '/',
+            page: () => const HomeScreen(),
+            transition: Transition.downToUp,
+          ),
+          GetPage(
+            name: '/demixing',
+            page: () => const DemixingScreen(),
+            transition: Transition.downToUp,
+          ),
+          GetPage(
+            name: '/player',
+            page: () => const PlayerScreen(),
+            transition: Transition.downToUp,
+          ),
+        ],
       ),
-      home: buildHome(),
-      onGenerateRoute: (settings) => generateRoute(settings),
     );
   }
 
