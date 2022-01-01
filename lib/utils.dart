@@ -37,3 +37,22 @@ Future<File> moveFile(File sourceFile, String newPath) async {
     return newFile;
   }
 }
+
+extension Create on Directory {
+  Future<Directory> createIfNotPresent() async {
+    if (await exists()) {
+      return this;
+    } else {
+      return await create(recursive: true);
+    }
+  }
+
+  Future<Directory> createUnique() async {
+    var directory = this;
+    if (await exists()) {
+      directory = Directory("${path}_${DateTime.now().millisecondsSinceEpoch}");
+    }
+
+    return await directory.create(recursive: true);
+  }
+}
