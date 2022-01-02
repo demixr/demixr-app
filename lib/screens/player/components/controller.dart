@@ -1,8 +1,10 @@
 import 'package:demixr_app/constants.dart';
+import 'package:demixr_app/providers/player_provider.dart';
 import 'package:demixr_app/screens/player/components/controller_button.dart';
 import 'package:demixr_app/screens/player/components/stem_selection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:provider/provider.dart';
 
 import '../../../utils.dart';
 
@@ -41,8 +43,19 @@ class SongController extends StatelessWidget {
               gradient: ColorPalette.primaryFadedGradient,
               size: 55,
             ),
-            ControllerButton(
-              SvgPicture.asset(getAssetPath('play', AssetType.icon)),
+            Consumer<PlayerProvider>(
+              builder: (context, player, child) {
+                final icon = player.isPlaying
+                    ? const Icon(
+                        Icons.pause,
+                        color: Colors.white,
+                        size: 35,
+                      )
+                    : SvgPicture.asset(getAssetPath('play', AssetType.icon));
+
+                return ControllerButton(icon,
+                    onPressed: () => player.playpause());
+              },
             ),
             ControllerButton(
               SvgPicture.asset(getAssetPath('next', AssetType.icon)),
