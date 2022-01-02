@@ -7,10 +7,10 @@ class Failure {
   String toString() => 'Failure(message: $message)';
 
   @override
-  bool operator ==(Object o) {
-    if (identical(this, o)) return true;
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
 
-    return o is Failure && o.message == message;
+    return other is Failure && other.message == message;
   }
 
   @override

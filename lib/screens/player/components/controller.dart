@@ -1,6 +1,7 @@
 import 'package:demixr_app/constants.dart';
 import 'package:demixr_app/providers/player_provider.dart';
 import 'package:demixr_app/screens/player/components/controller_button.dart';
+import 'package:demixr_app/screens/player/components/song_progress_bar.dart';
 import 'package:demixr_app/screens/player/components/stem_selection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
@@ -35,34 +36,46 @@ class SongController extends StatelessWidget {
           color: ColorPalette.surfaceVariant,
           borderRadius: BorderRadius.only(topLeft: radius, topRight: radius),
         ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            ControllerButton(
-              SvgPicture.asset(getAssetPath('previous', AssetType.icon)),
-              gradient: ColorPalette.primaryFadedGradient,
-              size: 55,
-              onPressed: () => context.read<PlayerProvider>().previous(),
+            const Padding(
+              padding: EdgeInsets.only(left: 20, right: 20),
+              child: SongProgressBar(),
             ),
-            Consumer<PlayerProvider>(
-              builder: (context, player, child) {
-                final icon = player.isPlaying
-                    ? const Icon(
-                        Icons.pause,
-                        color: Colors.white,
-                        size: 35,
-                      )
-                    : SvgPicture.asset(getAssetPath('play', AssetType.icon));
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                ControllerButton(
+                  SvgPicture.asset(getAssetPath('previous', AssetType.icon)),
+                  gradient: ColorPalette.primaryFadedGradient,
+                  size: 55,
+                  onPressed: () => context.read<PlayerProvider>().previous(),
+                ),
+                Consumer<PlayerProvider>(
+                  builder: (context, player, child) {
+                    final icon = player.isPlaying
+                        ? const Icon(
+                            Icons.pause,
+                            color: Colors.white,
+                            size: 35,
+                          )
+                        : SvgPicture.asset(
+                            getAssetPath('play', AssetType.icon));
 
-                return ControllerButton(icon,
-                    onPressed: () => player.playpause());
-              },
-            ),
-            ControllerButton(
-              SvgPicture.asset(getAssetPath('next', AssetType.icon)),
-              gradient: ColorPalette.primaryFadedGradient,
-              size: 55,
-              onPressed: () => context.read<PlayerProvider>().next(),
+                    return ControllerButton(
+                      icon,
+                      onPressed: () => player.playpause(),
+                    );
+                  },
+                ),
+                ControllerButton(
+                  SvgPicture.asset(getAssetPath('next', AssetType.icon)),
+                  gradient: ColorPalette.primaryFadedGradient,
+                  size: 55,
+                  onPressed: () => context.read<PlayerProvider>().next(),
+                ),
+              ],
             ),
           ],
         ),

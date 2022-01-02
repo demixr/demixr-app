@@ -21,17 +21,37 @@ class PlayerProvider extends ChangeNotifier {
 
   bool get isPlaying => state == PlayerState.play;
 
+  Stream<Duration> get positionStream => _player.onAudioPositionChanged;
+
+  Future<int> get songDuration async => _player.getDuration();
+
   void update(LibraryProvider library) {
     _library = library;
 
     final selectedSong = library.currentSong;
+
+    // when a new song is selected
     if (_song != selectedSong) {
-      _song = _library.currentSong;
-      bool wasPlaying = state == PlayerState.play;
+      // stop current song
+      bool wasPlaying = isPlaying;
       stop();
+
+      _song = _library.currentSong;
+
+      // prepare the player
+      _song.fold(
+        (failure) => null,
+        (song) {
+          _player.setUrl(song.mixture.path, isLocal: true);
+          state = PlayerState.pause;
+        },
+      );
+
       if (wasPlaying) playpause();
     }
   }
+
+  void resetPosition() => position = Duration.zero;
 
   void playpause() {
     switch (state) {
@@ -44,13 +64,6 @@ class PlayerProvider extends ChangeNotifier {
         state = PlayerState.play;
         break;
       case PlayerState.off:
-        _song.fold(
-          (failure) => null,
-          (song) {
-            _player.play(song.mixture.path);
-            state = PlayerState.play;
-          },
-        );
         break;
     }
     notifyListeners();
@@ -58,8 +71,14 @@ class PlayerProvider extends ChangeNotifier {
 
   void stop() {
     _player.stop();
+    resetPosition();
     state = PlayerState.off;
     notifyListeners();
+  }
+
+  void seek(Duration position) {
+    this.position = position;
+    _player.seek(position);
   }
 
   void next() {

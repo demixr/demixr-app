@@ -1,11 +1,8 @@
 import 'package:demixr_app/components/navbar.dart';
-import 'package:demixr_app/providers/library_provider.dart';
-import 'package:demixr_app/providers/player_provider.dart';
 import 'package:demixr_app/screens/player/components/controller.dart';
 import 'package:demixr_app/screens/player/components/player_song.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:provider/provider.dart';
 
 import '../../utils.dart';
 

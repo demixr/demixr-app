@@ -4,7 +4,6 @@ import 'package:demixr_app/providers/library_provider.dart';
 import 'package:demixr_app/providers/player_provider.dart';
 import 'package:demixr_app/screens/demixing/demixing_screen.dart';
 import 'package:demixr_app/screens/error/error_screen.dart';
-import 'package:demixr_app/screens/home/components/library.dart';
 import 'package:demixr_app/screens/home/home_screen.dart';
 import 'package:demixr_app/screens/player/player_screen.dart';
 import 'package:flutter/material.dart';
