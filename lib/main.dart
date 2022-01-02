@@ -1,8 +1,10 @@
 import 'package:demixr_app/models/song.dart';
 import 'package:demixr_app/models/unmixed_song.dart';
 import 'package:demixr_app/providers/library_provider.dart';
+import 'package:demixr_app/providers/player_provider.dart';
 import 'package:demixr_app/screens/demixing/demixing_screen.dart';
 import 'package:demixr_app/screens/error/error_screen.dart';
+import 'package:demixr_app/screens/home/components/library.dart';
 import 'package:demixr_app/screens/home/home_screen.dart';
 import 'package:demixr_app/screens/player/player_screen.dart';
 import 'package:flutter/material.dart';
@@ -25,8 +27,16 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (context) => LibraryProvider(),
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider<LibraryProvider>(
+            create: (_) => LibraryProvider()),
+        ChangeNotifierProxyProvider<LibraryProvider, PlayerProvider>(
+          create: (context) => PlayerProvider(),
+          update: (context, library, player) =>
+              (player ?? PlayerProvider())..update(library),
+        ),
+      ],
       child: GetMaterialApp(
         debugShowCheckedModeBanner: false,
         title: 'Demixr',
@@ -39,7 +49,6 @@ class MyApp extends StatelessWidget {
           visualDensity: VisualDensity.adaptivePlatformDensity,
         ),
         home: buildHome(),
-        // onGenerateRoute: (settings) => generateRoute(settings),
         initialRoute: '/',
         unknownRoute:
             GetPage(name: '/notfound', page: () => const ErrorScreen()),
