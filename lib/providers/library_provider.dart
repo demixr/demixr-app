@@ -14,29 +14,33 @@ class LibraryProvider extends ChangeNotifier {
     _loadSongs();
   }
 
-  void _loadSongs() => _songs = _repository.box.values.toList();
-
   int get numberOfSongs => _songs.length;
 
   bool get isEmpty => _songs.isEmpty;
 
+  List<UnmixedSong> get songList => _songs;
+
   Either<Failure, UnmixedSong> get currentSong => _currentSongIndex.fold(
         (noSongSelected) => Left(noSongSelected),
-        (index) => Right(_songs.elementAt(index)),
+        (index) => Right(getAt(index)),
       );
 
-  set currentSongIndex(int index) {
+  bool setCurrentSongIndex(int index) {
+    if (index >= numberOfSongs || index < 0) return false;
+
     _currentSongIndex = Right(index);
     notifyListeners();
+
+    return true;
   }
 
-  int getIndexByOrder(int index) {
-    return numberOfSongs - index - 1;
-  }
+  int getIndexByOrder(int index) => numberOfSongs - index - 1;
 
   UnmixedSong getAt(int index) {
     return _songs.elementAt(index);
   }
+
+  void _loadSongs() => _songs = _repository.box.values.toList();
 
   Future<void> saveSong(UnmixedSong song) async {
     song.mixture = await _repository.saveFile(song.mixture);
@@ -46,9 +50,23 @@ class LibraryProvider extends ChangeNotifier {
   }
 
   void removeSong(int index) {
-    _repository.removeSongFiles(_songs.elementAt(index));
+    _repository.removeSongFiles(getAt(index));
     _songs.removeAt(index);
     _repository.box.deleteAt(index);
     notifyListeners();
+  }
+
+  bool nextSong() {
+    return _currentSongIndex.fold(
+      (noSongSelected) => false,
+      (index) => setCurrentSongIndex(index - 1),
+    );
+  }
+
+  bool previousSong() {
+    return _currentSongIndex.fold(
+      (noSongSelected) => false,
+      (index) => setCurrentSongIndex(index + 1),
+    );
   }
 }

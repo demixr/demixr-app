@@ -87,7 +87,7 @@ class LibrarySongs extends StatelessWidget {
                         },
                       ),
                       onPressed: () {
-                        library.currentSongIndex = index;
+                        library.setCurrentSongIndex(index);
                         Get.toNamed('player');
                       },
                     );

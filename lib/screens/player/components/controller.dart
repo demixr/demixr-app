@@ -42,6 +42,7 @@ class SongController extends StatelessWidget {
               SvgPicture.asset(getAssetPath('previous', AssetType.icon)),
               gradient: ColorPalette.primaryFadedGradient,
               size: 55,
+              onPressed: () => context.read<PlayerProvider>().previous(),
             ),
             Consumer<PlayerProvider>(
               builder: (context, player, child) {
@@ -61,6 +62,7 @@ class SongController extends StatelessWidget {
               SvgPicture.asset(getAssetPath('next', AssetType.icon)),
               gradient: ColorPalette.primaryFadedGradient,
               size: 55,
+              onPressed: () => context.read<PlayerProvider>().next(),
             ),
           ],
         ),

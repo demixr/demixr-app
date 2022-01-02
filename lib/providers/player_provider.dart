@@ -26,7 +26,9 @@ class PlayerProvider extends ChangeNotifier {
     final selectedSong = library.currentSong;
     if (_song != selectedSong) {
       _song = _library.currentSong;
+      bool wasPlaying = state == PlayerState.play;
       stop();
+      if (wasPlaying) playpause();
     }
   }
 
@@ -55,5 +57,15 @@ class PlayerProvider extends ChangeNotifier {
     _player.stop();
     state = PlayerState.off;
     notifyListeners();
+  }
+
+  void next() {
+    final success = _library.nextSong();
+    if (!success) stop();
+  }
+
+  void previous() {
+    final success = _library.previousSong();
+    if (!success) stop();
   }
 }
