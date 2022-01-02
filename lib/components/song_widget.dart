@@ -49,6 +49,32 @@ class SongInfos extends StatelessWidget {
   }
 }
 
+class AlbumCover extends StatelessWidget {
+  final Either<Failure, Uint8List> image;
+  final double size;
+
+  const AlbumCover({Key? key, required this.image, this.size = 65})
+      : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return image.fold(
+      (failure) => Image.asset(
+        getAssetPath('default_cover', AssetType.image),
+        fit: BoxFit.contain,
+        width: size,
+        height: size,
+      ),
+      (cover) => Image.memory(
+        cover,
+        fit: BoxFit.cover,
+        width: size,
+        height: size,
+      ),
+    );
+  }
+}
+
 class SongWidget extends StatelessWidget {
   final String title;
   final List<String> artists;
@@ -65,28 +91,13 @@ class SongWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final coverImage = cover.fold(
-      (failure) => Image.asset(
-        getAssetPath('default_cover', AssetType.image),
-        fit: BoxFit.contain,
-        width: 65,
-        height: 65,
-      ),
-      (cover) => Image.memory(
-        cover,
-        fit: BoxFit.cover,
-        width: 65,
-        height: 65,
-      ),
-    );
-
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         SpacedRow(
           spacing: 15,
           children: [
-            coverImage,
+            AlbumCover(image: cover),
             SongInfos(title: title, artists: artists),
           ],
         ),

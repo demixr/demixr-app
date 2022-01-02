@@ -27,7 +27,6 @@ class LibraryProvider extends ChangeNotifier {
 
   set currentSongIndex(int index) {
     _currentSongIndex = Right(index);
-    print('Current song index was set to: $index');
     notifyListeners();
   }
 
