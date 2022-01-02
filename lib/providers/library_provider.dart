@@ -25,7 +25,11 @@ class LibraryProvider extends ChangeNotifier {
         (index) => Right(_songs.elementAt(index)),
       );
 
-  set currentSongIndex(int index) => _currentSongIndex = Right(index);
+  set currentSongIndex(int index) {
+    _currentSongIndex = Right(index);
+    print('Current song index was set to: $index');
+    notifyListeners();
+  }
 
   int getIndexByOrder(int index) {
     return numberOfSongs - index - 1;

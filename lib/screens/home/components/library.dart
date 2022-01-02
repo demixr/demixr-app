@@ -46,9 +46,7 @@ class LibrarySongs extends StatelessWidget {
 
   Widget buildSongButton(SongWidget song, {VoidCallback? onPressed}) =>
       TextButton(
-        onPressed: () {
-          Get.toNamed('player');
-        },
+        onPressed: onPressed,
         child: song,
         style: TextButton.styleFrom(
             padding:
