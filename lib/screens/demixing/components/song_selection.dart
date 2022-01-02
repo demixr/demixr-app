@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:dartz/dartz.dart';
 import 'package:demixr_app/components/buttons.dart';
 import 'package:demixr_app/components/extended_widgets.dart';
@@ -69,7 +71,9 @@ class SongSelection extends StatelessWidget {
         ),
       );
 
-  Widget buildSelectedSongCard(Song song) => Card(
+  Widget buildSelectedSongCard(Song song, Either<Failure, Uint8List> cover,
+          {VoidCallback? onRemovePressed}) =>
+      Card(
         color: ColorPalette.surfaceVariant,
         clipBehavior: Clip.antiAlias,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -78,7 +82,8 @@ class SongSelection extends StatelessWidget {
           child: SongWidget(
             title: song.title,
             artists: song.artists,
-            cover: song.cover,
+            cover: cover,
+            onRemovePressed: onRemovePressed,
           ),
         ),
       );
@@ -93,7 +98,13 @@ class SongSelection extends StatelessWidget {
         // Add the song card if a song is selected
         song.fold(
           (failure) => null,
-          (song) => children.add(buildSelectedSongCard(song)),
+          (song) => children.add(
+            buildSelectedSongCard(
+              song,
+              songProvider.cover,
+              onRemovePressed: () => songProvider.removeSelectedSong(),
+            ),
+          ),
         );
 
         return Column(

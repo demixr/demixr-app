@@ -1,8 +1,10 @@
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:dartz/dartz.dart';
 import 'package:demixr_app/constants.dart';
 import 'package:demixr_app/models/failure/failure.dart';
+import 'package:demixr_app/models/failure/no_album_cover.dart';
 import 'package:demixr_app/models/failure/song_load_failure.dart';
 import 'package:demixr_app/models/song.dart';
 import 'package:demixr_app/services/song_loader.dart';
@@ -32,7 +34,7 @@ class SongHelper {
         Song(
           title: songInfos.value1,
           artists: songInfos.value2,
-          cover: metadata.albumArt,
+          path: file.path!,
         ),
       );
     });
@@ -53,5 +55,16 @@ class SongHelper {
     artists ??= [splitedFilename[0].trim()];
 
     return Tuple2(title, artists);
+  }
+}
+
+extension Cover on Song {
+  Future<Either<Failure, Uint8List>> get albumCover async {
+    var metadata = await MetadataRetriever.fromFile(File(path));
+    final albumCover = metadata.albumArt;
+
+    if (albumCover == null) return Left(NoAlbumCover());
+
+    return Right(albumCover);
   }
 }

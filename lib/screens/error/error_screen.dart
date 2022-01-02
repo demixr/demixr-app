@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
 class ErrorScreen extends StatelessWidget {
   const ErrorScreen({Key? key}) : super(key: key);
@@ -24,7 +25,7 @@ class ErrorScreen extends StatelessWidget {
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(20)),
               ),
-              onPressed: () => Navigator.pop(context),
+              onPressed: () => Get.back(),
               child: const Text(
                 'Go back',
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),

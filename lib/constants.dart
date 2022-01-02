@@ -26,6 +26,11 @@ class ColorPalette {
 class Paths {
   static const String images = 'assets/images/';
   static const String icons = 'assets/icons/';
+  static const String animations = 'assets/animations/';
 }
 
 const songArtistTitleSeparator = '-';
+
+class BoxesNames {
+  static const library = 'library';
+}

@@ -1,5 +1,6 @@
 import 'package:demixr_app/components/buttons.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
 import '../../constants.dart';
 import 'components/home_title.dart';
@@ -35,7 +36,7 @@ class HomeScreen extends StatelessWidget {
                         color: ColorPalette.onPrimary,
                       ),
                       textSize: 18,
-                      onPressed: () => Navigator.pushNamed(context, 'demixing'),
+                      onPressed: () => Get.toNamed('/demixing'),
                     )
                   ],
                 ),

@@ -1,11 +1,22 @@
-import 'dart:io';
+import 'package:hive/hive.dart';
 
-import 'dart:typed_data';
+part 'song.g.dart';
 
+@HiveType(typeId: 1)
 class Song {
-  final String title;
-  final List<String> artists;
-  final Uint8List? cover;
+  @HiveField(0)
+  String title;
 
-  Song({required this.title, required this.artists, this.cover});
+  @HiveField(1)
+  List<String> artists;
+
+  @HiveField(2)
+  String path;
+
+  Song({required this.title, required this.artists, required this.path});
+
+  @override
+  String toString() {
+    return "${artists.join('_')}_$title";
+  }
 }

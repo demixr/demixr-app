@@ -41,6 +41,11 @@ dependencies:
   dartz: ^0.10.1
   provider: ^6.0.1
   path: ^1.8.0
+  hive: ^2.0.5
+  hive_flutter: ^1.1.0
+  path_provider: ^2.0.8
+  get: ^4.6.1
+  async: ^2.8.2
 
 dev_dependencies:
   flutter_test:
@@ -52,6 +57,9 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^1.0.0
+  hive_generator: ^1.1.1
+  build_runner: ^2.1.7
+
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -67,6 +75,7 @@ flutter:
   assets:
     - assets/images/
     - assets/icons/
+    - assets/animations/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware.
