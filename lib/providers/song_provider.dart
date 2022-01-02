@@ -20,8 +20,8 @@ class SongProvider extends ChangeNotifier {
   Future<void> loadFromDevice() async {
     _song = await _helper.loadFromDevice();
 
-    _song.fold(
-      (failure) => _cover = Left(NoAlbumCover()),
+    await _song.fold(
+      (failure) async => _cover = Left(NoAlbumCover()),
       (song) async => _cover = await song.albumCover,
     );
 
