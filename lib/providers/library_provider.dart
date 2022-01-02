@@ -50,9 +50,19 @@ class LibraryProvider extends ChangeNotifier {
   }
 
   void removeSong(int index) {
+    // if the song to remove is the selected song, unselect it
+    _currentSongIndex.fold(
+      (noSongSelected) => null,
+      (currIndex) {
+        if (index == currIndex) _currentSongIndex = Left(NoSongSelected());
+      },
+    );
+
     _repository.removeSongFiles(getAt(index));
+
     _songs.removeAt(index);
     _repository.box.deleteAt(index);
+
     notifyListeners();
   }
 

@@ -17,6 +17,7 @@ class PlayerProvider extends ChangeNotifier {
   Either<Failure, UnmixedSong> _song = Left(NoSongSelected());
   final AudioPlayer _player = AudioPlayer();
   PlayerState state = PlayerState.off;
+  Duration position = Duration.zero;
 
   bool get isPlaying => state == PlayerState.play;
 
@@ -45,9 +46,11 @@ class PlayerProvider extends ChangeNotifier {
       case PlayerState.off:
         _song.fold(
           (failure) => null,
-          (song) => _player.play(song.mixture.path),
+          (song) {
+            _player.play(song.mixture.path);
+            state = PlayerState.play;
+          },
         );
-        state = PlayerState.play;
         break;
     }
     notifyListeners();
