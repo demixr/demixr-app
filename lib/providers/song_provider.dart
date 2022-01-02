@@ -27,4 +27,10 @@ class SongProvider extends ChangeNotifier {
 
     notifyListeners();
   }
+
+  void removeSelectedSong() {
+    _song = Left(NoSongSelected());
+    _cover = Left(NoAlbumCover());
+    notifyListeners();
+  }
 }

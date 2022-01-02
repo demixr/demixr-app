@@ -71,7 +71,8 @@ class SongSelection extends StatelessWidget {
         ),
       );
 
-  Widget buildSelectedSongCard(Song song, Either<Failure, Uint8List> cover) =>
+  Widget buildSelectedSongCard(Song song, Either<Failure, Uint8List> cover,
+          {VoidCallback? onRemovePressed}) =>
       Card(
         color: ColorPalette.surfaceVariant,
         clipBehavior: Clip.antiAlias,
@@ -82,6 +83,7 @@ class SongSelection extends StatelessWidget {
             title: song.title,
             artists: song.artists,
             cover: cover,
+            onRemovePressed: onRemovePressed,
           ),
         ),
       );
@@ -96,8 +98,13 @@ class SongSelection extends StatelessWidget {
         // Add the song card if a song is selected
         song.fold(
           (failure) => null,
-          (song) =>
-              children.add(buildSelectedSongCard(song, songProvider.cover)),
+          (song) => children.add(
+            buildSelectedSongCard(
+              song,
+              songProvider.cover,
+              onRemovePressed: () => songProvider.removeSelectedSong(),
+            ),
+          ),
         );
 
         return Column(
