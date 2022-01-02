@@ -44,8 +44,11 @@ class Library extends StatelessWidget {
 class LibrarySongs extends StatelessWidget {
   const LibrarySongs({Key? key}) : super(key: key);
 
-  Widget buildSongButton(SongWidget song, BuildContext context) => TextButton(
-        onPressed: () => Get.toNamed('player'),
+  Widget buildSongButton(SongWidget song, {VoidCallback? onPressed}) =>
+      TextButton(
+        onPressed: () {
+          Get.toNamed('player');
+        },
         child: song,
         style: TextButton.styleFrom(
             padding:
@@ -61,7 +64,7 @@ class LibrarySongs extends StatelessWidget {
           itemCount: library.numberOfSongs,
           itemBuilder: (context, index) {
             // sort from newest to oldest
-            index = library.numberOfSongs - index - 1;
+            index = library.getIndexByOrder(index);
             final currentSong = library.getAt(index);
 
             return FutureBuilder<Either<Failure, Uint8List>>(
@@ -85,7 +88,10 @@ class LibrarySongs extends StatelessWidget {
                           );
                         },
                       ),
-                      context,
+                      onPressed: () {
+                        library.currentSongIndex = index;
+                        Get.toNamed('player');
+                      },
                     );
                   } else {
                     return const Text('Loading');
