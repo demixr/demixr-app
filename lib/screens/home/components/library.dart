@@ -4,6 +4,7 @@ import 'package:dartz/dartz.dart';
 import 'package:demixr_app/components/song_widget.dart';
 import 'package:demixr_app/constants.dart';
 import 'package:demixr_app/models/failure/failure.dart';
+import 'package:demixr_app/models/unmixed_song.dart';
 import 'package:demixr_app/providers/library_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -53,6 +54,13 @@ class LibrarySongs extends StatelessWidget {
                 const EdgeInsets.only(left: 2, top: 5, right: 2, bottom: 5)),
       );
 
+  bool isSongSelected(UnmixedSong song, Either<Failure, UnmixedSong> selected) {
+    return selected.fold(
+      (failure) => false,
+      (selectedSong) => song == selectedSong,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Consumer<LibraryProvider>(
@@ -69,11 +77,16 @@ class LibrarySongs extends StatelessWidget {
                 future: currentSong.mixture.albumCover,
                 builder: (context, snapshot) {
                   if (snapshot.hasData) {
+                    final infosColor = library.matchSelectedSong(index)
+                        ? ColorPalette.primary
+                        : ColorPalette.onSurface;
+
                     return buildSongButton(
                       SongWidget(
                         title: currentSong.mixture.title,
                         artists: currentSong.mixture.artists,
                         cover: snapshot.data!,
+                        textColor: infosColor,
                         onRemovePressed: () {
                           library.removeSong(index);
                           Get.snackbar(

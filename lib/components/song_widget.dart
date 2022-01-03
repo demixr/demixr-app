@@ -14,14 +14,16 @@ class SongInfos extends StatelessWidget {
   final List<String> artists;
   final double size;
   final bool alignCenter;
+  final Color textColor;
 
-  const SongInfos(
-      {Key? key,
-      required this.title,
-      required this.artists,
-      this.size = 16,
-      this.alignCenter = false})
-      : super(key: key);
+  const SongInfos({
+    Key? key,
+    required this.title,
+    required this.artists,
+    this.size = 16,
+    this.alignCenter = false,
+    this.textColor = ColorPalette.onSurface,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -33,15 +35,13 @@ class SongInfos extends StatelessWidget {
         Text(
           title,
           style: TextStyle(
-              fontSize: size,
-              color: ColorPalette.onSurface,
-              fontWeight: FontWeight.w600),
+              fontSize: size, color: textColor, fontWeight: FontWeight.w600),
         ),
         Text(
           artists.join(', '),
           style: TextStyle(
               fontSize: size - 2,
-              color: ColorPalette.onSurface,
+              color: textColor,
               fontWeight: FontWeight.w400),
         ),
       ],
@@ -80,6 +80,7 @@ class SongWidget extends StatelessWidget {
   final List<String> artists;
   final Either<Failure, Uint8List> cover;
   final VoidCallback? onRemovePressed;
+  final Color textColor;
 
   const SongWidget({
     Key? key,
@@ -87,6 +88,7 @@ class SongWidget extends StatelessWidget {
     required this.artists,
     required this.cover,
     this.onRemovePressed,
+    this.textColor = ColorPalette.onSurface,
   }) : super(key: key);
 
   @override
@@ -98,7 +100,11 @@ class SongWidget extends StatelessWidget {
           spacing: 15,
           children: [
             AlbumCover(image: cover),
-            SongInfos(title: title, artists: artists),
+            SongInfos(
+              title: title,
+              artists: artists,
+              textColor: textColor,
+            ),
           ],
         ),
         PopupMenuButton(

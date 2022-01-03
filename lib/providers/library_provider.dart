@@ -36,6 +36,9 @@ class LibraryProvider extends ChangeNotifier {
 
   int getIndexByOrder(int index) => numberOfSongs - index - 1;
 
+  bool matchSelectedSong(int index) => _currentSongIndex.fold(
+      (noSongSelected) => false, (songIndex) => index == songIndex);
+
   UnmixedSong getAt(int index) {
     return _songs.elementAt(index);
   }
