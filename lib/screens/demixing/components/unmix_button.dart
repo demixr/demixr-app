@@ -40,7 +40,12 @@ class UnmixButton extends StatelessWidget {
               demixingProvider
                   .unmix(song)
                   ?.then((unmixed) => library.saveSong(unmixed))
-                  .then((_) => Get.toNamed('/'));
+                  .then(
+                (index) {
+                  library.setCurrentSongIndex(index);
+                  Get.offNamed('/player');
+                },
+              );
             },
           ),
         );

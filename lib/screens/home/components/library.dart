@@ -4,6 +4,7 @@ import 'package:dartz/dartz.dart';
 import 'package:demixr_app/components/song_widget.dart';
 import 'package:demixr_app/constants.dart';
 import 'package:demixr_app/models/failure/failure.dart';
+import 'package:demixr_app/models/unmixed_song.dart';
 import 'package:demixr_app/providers/library_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -44,13 +45,21 @@ class Library extends StatelessWidget {
 class LibrarySongs extends StatelessWidget {
   const LibrarySongs({Key? key}) : super(key: key);
 
-  Widget buildSongButton(SongWidget song, BuildContext context) => TextButton(
-        onPressed: () => Get.toNamed('player'),
+  Widget buildSongButton(SongWidget song, {VoidCallback? onPressed}) =>
+      TextButton(
+        onPressed: onPressed,
         child: song,
         style: TextButton.styleFrom(
             padding:
                 const EdgeInsets.only(left: 2, top: 5, right: 2, bottom: 5)),
       );
+
+  bool isSongSelected(UnmixedSong song, Either<Failure, UnmixedSong> selected) {
+    return selected.fold(
+      (failure) => false,
+      (selectedSong) => song == selectedSong,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -61,18 +70,23 @@ class LibrarySongs extends StatelessWidget {
           itemCount: library.numberOfSongs,
           itemBuilder: (context, index) {
             // sort from newest to oldest
-            index = library.numberOfSongs - index - 1;
+            index = library.getIndexByOrder(index);
             final currentSong = library.getAt(index);
 
             return FutureBuilder<Either<Failure, Uint8List>>(
                 future: currentSong.mixture.albumCover,
                 builder: (context, snapshot) {
                   if (snapshot.hasData) {
+                    final infosColor = library.matchSelectedSong(index)
+                        ? ColorPalette.primary
+                        : ColorPalette.onSurface;
+
                     return buildSongButton(
                       SongWidget(
                         title: currentSong.mixture.title,
                         artists: currentSong.mixture.artists,
                         cover: snapshot.data!,
+                        textColor: infosColor,
                         onRemovePressed: () {
                           library.removeSong(index);
                           Get.snackbar(
@@ -85,7 +99,10 @@ class LibrarySongs extends StatelessWidget {
                           );
                         },
                       ),
-                      context,
+                      onPressed: () {
+                        library.setCurrentSongIndex(index);
+                        Get.toNamed('player');
+                      },
                     );
                   } else {
                     return const Text('Loading');

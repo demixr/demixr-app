@@ -46,6 +46,9 @@ dependencies:
   path_provider: ^2.0.8
   get: ^4.6.1
   async: ^2.8.2
+  audioplayers: ^0.20.1
+  audio_video_progress_bar: ^0.10.0
+  audio_service: ^0.18.3
 
 dev_dependencies:
   flutter_test:
