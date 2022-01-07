@@ -43,88 +43,133 @@ public class MainActivity extends FlutterActivity {
     return 0;
   }
 
-  void separate(String audioPath, String modelPath, String outputDir) throws IOException, WavFileException {
+  private void loadModel(String modelPath) {
     if (module == null) {
       module = LiteModuleLoader.load(modelPath);
     }
+  }
 
+  private WavFile openWavFile(String audioPath) throws IOException, WavFileException {
     File toSeparate = new File(audioPath);
+    return WavFile.openWavFile(toSeparate);
+  }
 
-    // Open the wav file specified as the first argument
-    WavFile wavFile = WavFile.openWavFile(toSeparate);
-
-    // Get the number of audio channels in the wav file
-    int numChannels = wavFile.getNumChannels();
-    int numFrames = (int) wavFile.getNumFrames();
-    int numStems = 4;
-
-    // Create a buffer of 1 000 000 frames
-    int nbBufferFrame = 1000000;
-    double[] buffer = new double[nbBufferFrame * numChannels];
-
-    // Read frames into buffer
-    int framesRead = wavFile.readFrames(buffer, nbBufferFrame);
-
-    double[][][] outputStems = new double[numStems][numChannels][nbBufferFrame];
-
-    String[] stemNames = new String[]{"vocals", "drums", "bass", "other"};
+  private Map<String, WavFile> createFiles(String[] stemNames, String outputDir, int numChannels, int numFrames, int numBits, int sampleRate) throws IOException, WavFileException {
     Map<String, WavFile> stemFiles = new HashMap<String, WavFile>();
 
     for (String stemName : stemNames) {
-      File stemFile = new File(directory, stemName + ".wav");
+      File stemFile = new File(outputDir, stemName + ".wav");
       stemFile.createNewFile();
-      stemFiles.put(stemName, WavFile.newWavFile(stemFile, 2, numFrames, 16, sampleRate));
+      stemFiles.put(stemName, WavFile.newWavFile(stemFile, numChannels, numFrames, numBits, sampleRate));
     }
+    return stemFiles;
+  }
 
-    while (framesRead != 0) {
-      FloatBuffer flatAudio = Tensor.allocateFloatBuffer(framesRead * 2);
-
-      // first channel
-      for (int i = 0; i < framesRead; i++) {
-        flatAudio.put((float) buffer[i * 2]);
-      }
-
-      // second channel
-      for (int i = 0; i < framesRead; i++) {
-        flatAudio.put((float) buffer[i * 2 + 1]);
-      }
-
-      // Create Tensor from flattened array
-      Tensor inTensor = Tensor.fromBlob(flatAudio, new long[]{1, 2, framesRead});
-      System.out.println("yo wassup " + framesRead);
-
-      // Model inference
-      IValue result = module.forward(IValue.from(inTensor));
-      Tensor resultTensor = result.toTensor();
-      float[] prediction = resultTensor.getDataAsFloatArray();
-
-      for (int i = 0; i < numStems; i++) {
-        for (int j = 0; j < numChannels; j++) {
-          for (int k = 0; k < framesRead; k++) {
-            outputStems[i][j][k] = prediction[i * framesRead * numChannels + j * framesRead + k];
-          }
-        }
-      }
-
-      try {
-        for (int i = 0; i < numStems; i++) {
-          stemFiles.get(stemNames[i]).writeFrames(outputStems[i], nbBufferFrame);
-        }
-      }
-      catch (Exception e) {
-          System.err.println(e);
-      }
-
-      // Get next frames
-      framesRead = wavFile.readFrames(buffer, nbBufferFrame);
-    }
-
-    // Close the wav files (input and outputs)
-    wavFile.close();
+  // Close the wav files (input and outputs)
+  private void closeWavFiles(WavFile inputWav, Map<String, WavFile> stemFiles, String[] stemNames) throws IOException {
+    inputWav.close();
     for (String stemName : stemNames) {
       stemFiles.get(stemName).close();
     }
+  }
 
+  private Tensor preprocessWavChunk(double[] buffer, int framesRead) {
+    FloatBuffer flatAudio = Tensor.allocateFloatBuffer(framesRead * 2);
+
+    // First channel
+    for (int i = 0; i < framesRead; i++) {
+      flatAudio.put((float) buffer[i * 2]);
+    }
+
+    // Second channel
+    for (int i = 0; i < framesRead; i++) {
+      flatAudio.put((float) buffer[i * 2 + 1]);
+    }
+
+    // Create Tensor from flattened array
+    return Tensor.fromBlob(flatAudio, new long[]{1, 2, framesRead});
+  }
+
+  private double[][][] reshapeOutput(float[] prediction, int numBufferFrame, int numStems, int numChannels, int framesRead) {
+    double[][][] outputStems = new double[numStems][numChannels][numBufferFrame];
+
+    for (int i = 0; i < numStems; i++) {
+      for (int j = 0; j < numChannels; j++) {
+        for (int k = 0; k < framesRead; k++) {
+          outputStems[i][j][k] = prediction[i * framesRead * numChannels + j * framesRead + k];
+        }
+      }
+    }
+
+    return outputStems;
+  }
+
+  private Map<String, WavFile> writeToWavFile(Map<String, WavFile> stemFiles, String[] stemNames, double[][][] outputStems, int numStems, int numBufferFrame) {
+    try
+    {
+      for (int i = 0; i < numStems; i++) {
+        stemFiles.get(stemNames[i]).writeFrames(outputStems[i], numBufferFrame);
+      }
+    }
+    catch (Exception e)
+    {
+      System.err.println(e);
+    }
+    return stemFiles;
+  }
+
+  // Model inference
+  private float[] predict(Tensor inTensor) {
+    IValue result = module.forward(IValue.from(inTensor));
+    Tensor resultTensor = result.toTensor();
+    return resultTensor.getDataAsFloatArray();
+  }
+
+  private Map<String, WavFile> predictByChunk(WavFile wavFile, Map<String, WavFile> stemFiles, String[] stemNames, int numBufferFrame, int numStems) throws IOException, WavFileException {
+    int numChannels = wavFile.getNumChannels();
+
+    double[] buffer = new double[numBufferFrame * numChannels];
+    int framesRead = wavFile.readFrames(buffer, numBufferFrame);
+
+
+    while (framesRead != 0) {
+      Tensor inTensor = preprocessWavChunk(buffer, framesRead);
+      float[] prediction = predict(inTensor);
+      double[][][] outputStems = reshapeOutput(prediction, numBufferFrame, numStems, numChannels, framesRead);
+
+      stemFiles = writeToWavFile(stemFiles, stemNames, outputStems, numStems, numBufferFrame);
+
+      // Get next frames
+      framesRead = wavFile.readFrames(buffer, numBufferFrame);
+    }
+    return stemFiles;
+  }
+
+  private Map<String, String> separate(String audioPath, String modelPath, String outputDir) throws IOException, WavFileException {
+    loadModel(modelPath);
+
+    WavFile wavFile = openWavFile(audioPath);
+
+    int numChannels = wavFile.getNumChannels();
+    int numFrames = (int) wavFile.getNumFrames();
+    int numStems = 4;
+    int numBufferFrame = 1000000;
+    int numBits = 16;
+    int sampleRate = 44100;
+
+    String[] stemNames = new String[]{"vocals", "drums", "bass", "other"};
+    Map<String, WavFile> stemFiles = createFiles(stemNames,
+                                                  outputDir,
+                                                  numChannels,
+                                                  numFrames,
+                                                  numBits,
+                                                  sampleRate);
+
+    predictByChunk(wavFile, stemFiles, stemNames, numBufferFrame, numStems);
+
+    closeWavFiles(wavFile, stemFiles, stemNames);
+
+    // Create new dictionary with stem paths as values
     return stemFiles.entrySet().stream()
       .collect(Collectors.toMap(el -> el.getKey(), el -> el.getValue().getFile().getAbsolutePath()));
   }
