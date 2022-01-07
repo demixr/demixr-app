@@ -2,7 +2,6 @@ import 'dart:io';
 import 'package:demixr_app/models/song.dart';
 import 'package:demixr_app/models/unmixed_song.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
 
 import '../utils.dart';
@@ -14,13 +13,8 @@ class LibraryRepository {
 
   Box<UnmixedSong> get box => _box;
 
-  Future<String> get _localPath async {
-    final directory = await getApplicationDocumentsDirectory();
-    return directory.path;
-  }
-
   Future<String> get _directoryPath async {
-    final path = await _localPath;
+    final path = await getAppStorage();
     var directory = Directory(p.join(path, _directoryName));
     directory = await directory.createIfNotPresent();
     return directory.path;

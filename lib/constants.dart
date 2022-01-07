@@ -26,9 +26,10 @@ class ColorPalette {
 }
 
 class Paths {
-  static const String images = 'assets/images/';
-  static const String icons = 'assets/icons/';
-  static const String animations = 'assets/animations/';
+  static const images = 'assets/images/';
+  static const icons = 'assets/icons/';
+  static const animations = 'assets/animations/';
+  static const models = 'assets/models/';
 }
 
 const songArtistTitleSeparator = '-';
@@ -69,4 +70,8 @@ class Models {
 
 class Preferences {
   static const model = 'model';
+}
+
+class Models {
+  static const umxl = "${Paths.models}/umxl.plt";
 }
