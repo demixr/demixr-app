@@ -58,68 +58,74 @@ public class MainActivity extends FlutterActivity {
     int numFrames = (int) wavFile.getNumFrames();
     int numStems = 4;
 
-    // Create a buffer of 500 000 frames
-    int nbBufferFrame = 500000;
+    // Create a buffer of 1 000 000 frames
+    int nbBufferFrame = 1000000;
     double[] buffer = new double[nbBufferFrame * numChannels];
 
     // Read frames into buffer
     int framesRead = wavFile.readFrames(buffer, nbBufferFrame);
 
-    int chunkCount = 0;
-    double[][][] finalStems = new double[numStems][numChannels][nbBufferFrame];
+    double[][][] outputStems = new double[numStems][numChannels][nbBufferFrame];
 
-    int sampleRate = 44100;
+    String[] stemNames = new String[]{"vocals", "drums", "bass", "other"};
+    Map<String, WavFile> stemFiles = new HashMap<String, WavFile>();
 
-    // create files for separated output
-    File[] stems = new File[numStems];
-    WavFile[] wavStems = new WavFile[numStems];
-    for (int i = 0; i < numStems; i++) {
-      stems[i] = new File(outputDir, "stem_" + i + ".wav");
-      stems[i].createNewFile();
-      wavStems[i] = WavFile.newWavFile(stems[i], 2, numFrames, 16, sampleRate);
+    for (String stemName : stemNames) {
+      File stemFile = new File(directory, stemName + ".wav");
+      stemFile.createNewFile();
+      stemFiles.put(stemName, WavFile.newWavFile(stemFile, 2, numFrames, 16, sampleRate));
     }
 
     while (framesRead != 0) {
-      float[] flatAudio = new float[2 * framesRead];
+      FloatBuffer flatAudio = Tensor.allocateFloatBuffer(framesRead * 2);
 
+      // first channel
       for (int i = 0; i < framesRead; i++) {
-        flatAudio[i] = (float) buffer[i * 2];
-        flatAudio[i + framesRead] = (float) buffer[i * 2 + 1];
+        flatAudio.put((float) buffer[i * 2]);
+      }
+
+      // second channel
+      for (int i = 0; i < framesRead; i++) {
+        flatAudio.put((float) buffer[i * 2 + 1]);
       }
 
       // Create Tensor from flattened array
-      Tensor inTensor = Tensor.fromBlob(flatAudio, new long[] { 1, 2, framesRead });
+      Tensor inTensor = Tensor.fromBlob(flatAudio, new long[]{1, 2, framesRead});
+      System.out.println("yo wassup " + framesRead);
 
       // Model inference
       IValue result = module.forward(IValue.from(inTensor));
       Tensor resultTensor = result.toTensor();
-      float[] resultStems = resultTensor.getDataAsFloatArray();
+      float[] prediction = resultTensor.getDataAsFloatArray();
 
       for (int i = 0; i < numStems; i++) {
         for (int j = 0; j < numChannels; j++) {
           for (int k = 0; k < framesRead; k++) {
-            finalStems[i][j][k] = resultStems[i * framesRead * numChannels + j * framesRead + k];
+            outputStems[i][j][k] = prediction[i * framesRead * numChannels + j * framesRead + k];
           }
         }
       }
 
       try {
         for (int i = 0; i < numStems; i++) {
-          wavStems[i].writeFrames(finalStems[i], nbBufferFrame);
+          stemFiles.get(stemNames[i]).writeFrames(outputStems[i], nbBufferFrame);
         }
-      } catch (Exception e) {
-        System.err.println(e);
+      }
+      catch (Exception e) {
+          System.err.println(e);
       }
 
       // Get next frames
       framesRead = wavFile.readFrames(buffer, nbBufferFrame);
-      chunkCount++;
     }
 
     // Close the wav files (input and outputs)
     wavFile.close();
-    for (int i = 0; i < numStems; i++) {
-      wavStems[i].close();
+    for (String stemName : stemNames) {
+      stemFiles.get(stemName).close();
     }
+
+    return stemFiles.entrySet().stream()
+      .collect(Collectors.toMap(el -> el.getKey(), el -> el.getValue().getFile().getAbsolutePath()));
   }
 }
