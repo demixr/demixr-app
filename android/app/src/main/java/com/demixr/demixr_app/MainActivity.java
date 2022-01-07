@@ -38,8 +38,19 @@ public class MainActivity extends FlutterActivity {
         // Read frames into buffer
         int framesRead = wavFile.readFrames(buffer, nbBufferFrame);
 
-        double[][][] finalStems = new double[numStems][numChannels][numFrames];
         int chunkCount = 0;
+        double[][][] finalStems = new double[numStems][numChannels][nbBufferFrame];
+
+        int sampleRate = 44100;
+
+        // create files for separated output
+        File[] stems = new File[numStems];
+        WavFile[] wavStems = new WavFile[numStems];
+        for (int i = 0; i < numStems; i++) {
+            stems[i] = new File(outputDir, "stem_" + i + ".wav");
+            stems[i].createNewFile();
+            wavStems[i] = WavFile.newWavFile(stems[i], 2, numFrames, 16, sampleRate);
+        }
 
         while (framesRead != 0) {
             double[][] audio = new double[2][framesRead];
@@ -71,36 +82,31 @@ public class MainActivity extends FlutterActivity {
             for (int i = 0; i < numStems; i++) {
                 for (int j = 0; j < numChannels; j++) {
                     for (int k = 0; k < framesRead; k++) {
-                        finalStems[i][j][k + chunkCount * nbBufferFrame] = resultStems[i * framesRead * numChannels + j * framesRead + k];
+                        finalStems[i][j][k] = resultStems[i * framesRead * numChannels + j * framesRead + k];
                     }
                 }
             }
+
+            try
+            {
+                for (int i = 0; i < numStems; i++) {
+                    wavStems[i].writeFrames(finalStems[i], nbBufferFrame);
+                }
+            }
+            catch (Exception e)
+            {
+                System.err.println(e);
+            }
+
+            // Get next frames
             framesRead = wavFile.readFrames(buffer, nbBufferFrame);
             chunkCount++;
         }
 
-        // Close the wavFile
+        // Close the wav files (input and outputs)
         wavFile.close();
-
-        // create files for separated output
-        try
-        {
-            int sampleRate = 44100;    // Samples per second
-
-            for (int i = 0; i < numStems; i++) {
-                File out = new File(outputDir, "stem_" + i + ".wav");
-                out.createNewFile();
-                WavFile sepFile = WavFile.newWavFile(out, 2, numFrames, 16, sampleRate);
-
-                sepFile.writeFrames(finalStems[i], numFrames);
-
-                // Close the wavFile
-                sepFile.close();
-            }
-        }
-        catch (Exception e)
-        {
-            System.err.println(e);
+        for (int i = 0; i < numStems; i++) {
+            wavStems[i].close();
         }
     }
 }
