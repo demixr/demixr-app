@@ -1,4 +1,4 @@
-package org.pytorch.demo.speechrecognition;
+package com.demixr.demixr_app;
 
 public class WavFileException extends Exception
 {
