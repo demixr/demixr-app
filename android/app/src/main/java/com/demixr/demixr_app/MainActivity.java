@@ -53,26 +53,15 @@ public class MainActivity extends FlutterActivity {
         }
 
         while (framesRead != 0) {
-            double[][] audio = new double[2][framesRead];
+            float[] flatAudio = new float[2 * framesRead];
 
             for (int i = 0; i < framesRead; i++) {
-                audio[0][i] = buffer[i * 2];
-                audio[1][i] = buffer[i * 2 + 1];
-            }
-
-            // Flatten array
-            double[] doubleFlatArray = Arrays.stream(audio)
-                    .flatMapToDouble(Arrays::stream)
-                    .toArray();
-
-            // Convert double array to float array
-            float[] floatFlatArray = new float[doubleFlatArray.length];
-            for (int i = 0 ; i < doubleFlatArray.length; i++) {
-                floatFlatArray[i] = (float) doubleFlatArray[i];
+                flatAudio[i] = (float) buffer[i * 2];
+                flatAudio[i + framesRead] = (float) buffer[i * 2 + 1];
             }
 
             // Create Tensor from flattened array
-            Tensor inTensor = Tensor.fromBlob(floatFlatArray, new long[]{1, 2, framesRead});
+            Tensor inTensor = Tensor.fromBlob(flatAudio, new long[]{1, 2, framesRead});
 
             // Model inference
             IValue result = module.forward(IValue.from(inTensor));
