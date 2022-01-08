@@ -6,20 +6,20 @@ import 'package:demixr_app/constants.dart';
 import 'package:demixr_app/models/exceptions/conversion_exception.dart';
 import 'package:demixr_app/models/failure/failure.dart';
 import 'package:demixr_app/models/failure/no_album_cover.dart';
+import 'package:demixr_app/models/failure/no_song_selected.dart';
 import 'package:demixr_app/models/failure/song_load_failure.dart';
 import 'package:demixr_app/models/song.dart';
-import 'package:demixr_app/services/song_downloader.dart';
 import 'package:demixr_app/services/song_loader.dart';
 import 'package:demixr_app/utils.dart';
 import 'package:ffmpeg_kit_flutter/ffmpeg_kit.dart';
 import 'package:ffmpeg_kit_flutter/ffprobe_kit.dart';
 import 'package:ffmpeg_kit_flutter/return_code.dart';
 import 'package:file_picker/file_picker.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_media_metadata/flutter_media_metadata.dart';
 import 'package:get/route_manager.dart';
 import 'package:flutter_youtube_downloader/flutter_youtube_downloader.dart';
 import 'package:path/path.dart';
+import 'package:path_provider/path_provider.dart';
 
 class SongHelper {
   final _service = SongLoader();
@@ -57,48 +57,60 @@ class SongHelper {
     });
   }
 
-  final _ytService = Download(path: 'https://www.youtube.com/watch?v=unfzfe8f9NI');
+  Future<String> getAppTemp() async {
+    final directory = await getTemporaryDirectory();
+    return directory.path;
+  }
 
-  Future<Either<Failure, Song>> extractYoutubeLink(String ytLink,
-      String title) async {
-    Either<Failure, String> file = await _ytService.downloadSong(ytLink, title);
+  Future<Either<Failure, Song>> downloadFromYoutube(String url) async {
+    var yt = YoutubeExplode();
+    final video = await yt.videos.get(url);
 
-    return file.fold((failure) => Left(failure), (file) async {
-      if (file == null) return Left(SongLoadFailure());
-      File path = File(file);
-      var metadata = await MetadataRetriever.fromFile(path);
+    if (video == null) return Left(NoSongSelected());
 
-      Tuple2<String, List<String>> songInfos = _getSongInfos(
-        metadata.trackName,
-        metadata.trackArtistNames,
-        basenameWithoutExtension(path.path),
-      );
+    final manifest = await yt.videos.streamsClient.getManifest(url);
+    final streamInfo = manifest.audioOnly.withHighestBitrate();
 
-      return Right(
+    // Get the actual stream
+    var stream = yt.videos.streamsClient.get(streamInfo);
+
+    // Open a file for writing.
+    var file = File(p.join(await getAppTemp(), video.title));
+    var fileStream = file.openWrite();
+
+    // Pipe all the content of the stream into the file.
+    await stream.pipe(fileStream);
+
+    // Close the file.
+    await fileStream.flush();
+    await fileStream.close();
+
+    yt.close();
+
+    return Right(
         Song(
-          title: songInfos.value1,
-          artists: songInfos.value2,
-          path: file,
-        ),
-      );
-    });
+          title: video.title,
+          artists: [video.author],
+          path: file.path,
+        )
+    );
   }
 
-    Tuple2<String, List<String>> _getSongInfos(String? title,
-        List<String>? artists,
-        String filename,) {
-      const separator = songArtistTitleSeparator;
-      var splitedFilename = filename.split(separator);
-      var titleFromFilename = splitedFilename.length == 1
-          ? splitedFilename[0].trim()
-          : splitedFilename.sublist(1).join(separator).trim();
+  Tuple2<String, List<String>> _getSongInfos(String? title,
+      List<String>? artists,
+      String filename,) {
+    const separator = songArtistTitleSeparator;
+    var splitedFilename = filename.split(separator);
+    var titleFromFilename = splitedFilename.length == 1
+        ? splitedFilename[0].trim()
+        : splitedFilename.sublist(1).join(separator).trim();
 
-      title ??= titleFromFilename;
-      artists ??= [splitedFilename[0].trim()];
+    title ??= titleFromFilename;
+    artists ??= [splitedFilename[0].trim()];
 
-      return Tuple2(title, artists);
-    }
+    return Tuple2(title, artists);
   }
+}
 
   Future<String> convertToWav(String path) async {
     final session = await FFprobeKit.getMediaInformation(path);
