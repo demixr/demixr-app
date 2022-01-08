@@ -18,10 +18,10 @@ class UnmixedSongAdapter extends TypeAdapter<UnmixedSong> {
     };
     return UnmixedSong(
       mixture: fields[0] as Song,
-      vocals: fields[1] as Song?,
-      bass: fields[2] as Song?,
-      drums: fields[3] as Song?,
-      other: fields[4] as Song?,
+      vocals: fields[1] as Song,
+      bass: fields[2] as Song,
+      drums: fields[3] as Song,
+      other: fields[4] as Song,
     );
   }
 
