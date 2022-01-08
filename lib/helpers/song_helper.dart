@@ -16,9 +16,9 @@ import 'package:ffmpeg_kit_flutter/return_code.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter_media_metadata/flutter_media_metadata.dart';
 import 'package:get/route_manager.dart';
-import 'package:flutter_youtube_downloader/flutter_youtube_downloader.dart';
-import 'package:path/path.dart';
-import 'package:path_provider/path_provider.dart';
+import 'package:youtube_explode_dart/youtube_explode_dart.dart';
+import 'package:path/path.dart' as p;
+import 'package:http/http.dart' show get;
 
 class SongHelper {
   final _service = SongLoader();
@@ -35,7 +35,7 @@ class SongHelper {
       Tuple2<String, List<String>> songInfos = _getSongInfos(
         metadata.trackName,
         metadata.trackArtistNames,
-        basename(path.path).removeExtension(),
+        p.basename(path.path).removeExtension(),
       );
 
       String newPath;
@@ -56,14 +56,12 @@ class SongHelper {
     });
   }
 
-  Future<String> getAppTemp() async {
-    final directory = await getTemporaryDirectory();
-    return directory.path;
-  }
-
   Future<Either<Failure, Song>> downloadFromYoutube(String url) async {
     final yt = YoutubeExplode();
     final video = await yt.videos.get(url);
+
+    final coverPath =
+        _downloadThumbnail(video.thumbnails.mediumResUrl, video.title);
 
     // if (video == null) return Left(NoSongSelected());
 
@@ -93,6 +91,17 @@ class SongHelper {
     ));
   }
 
+  Future<String> _downloadThumbnail(String url, String title) async {
+    final response = await get(Uri.parse(url));
+    final tempDir = await getAppTemp();
+    final filePath = p.join(tempDir, '${title}_thumbnail.jpg');
+
+    File file = File(filePath);
+    file.writeAsBytesSync(response.bodyBytes);
+
+    return file.path;
+  }
+
   Tuple2<String, List<String>> _getSongInfos(
     String? title,
     List<String>? artists,
@@ -111,32 +120,31 @@ class SongHelper {
   }
 }
 
-  Future<String> convertToWav(String path) async {
-    final session = await FFprobeKit.getMediaInformation(path);
-    final information = session.getMediaInformation();
+Future<String> convertToWav(String path) async {
+  final session = await FFprobeKit.getMediaInformation(path);
+  final information = session.getMediaInformation();
 
-    String? format = information?.getProperties('format_name');
+  String? format = information?.getProperties('format_name');
 
-    if (format == null) {
-      throw ConversionException('SongLoader: Failed to get the file format');
-    } else if (format == 'mp3') {
-      final outputPath = '${withoutExtension(path)}.wav';
-      File(outputPath).deleteIfExists();
+  if (format == null) {
+    throw ConversionException('SongLoader: Failed to get the file format');
+  } else if (format == 'mp3') {
+    final outputPath = '${p.withoutExtension(path)}.wav';
+    File(outputPath).deleteIfExists();
 
-      final convertSession =
-          await FFmpegKit.execute('-i "$path" -acodec pcm_u8 "$outputPath"');
-      final convertRc = await convertSession.getReturnCode();
+    final convertSession =
+        await FFmpegKit.execute('-i "$path" -acodec pcm_u8 "$outputPath"');
+    final convertRc = await convertSession.getReturnCode();
 
-      if (ReturnCode.isSuccess(convertRc)) {
-        path = outputPath;
-      } else {
-        throw ConversionException(
-            'SongLoader: Failed to convert audio file to wav');
-      }
+    if (ReturnCode.isSuccess(convertRc)) {
+      path = outputPath;
+    } else {
+      throw ConversionException(
+          'SongLoader: Failed to convert audio file to wav');
     }
-
-    return path;
   }
+
+  return path;
 }
 
 extension Cover on Song {
