@@ -11,22 +11,52 @@ import 'package:demixr_app/providers/song_provider.dart';
 import 'package:demixr_app/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:form_builder_validators/form_builder_validators.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_form_builder/flutter_form_builder.dart';
 
 class SongSelection extends StatelessWidget {
   const SongSelection({Key? key}) : super(key: key);
 
-  Widget buildButtons(SongProvider provider) => Row(
+  Widget buildButtons(SongProvider provider, BuildContext context) => Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Button(
+          Button(
             'Youtube link',
-            icon: Icon(
+            icon: const Icon(
               Icons.file_upload,
               color: ColorPalette.onPrimary,
               size: 18,
             ),
             textSize: 16,
+            onPressed: () {
+              showDialog(
+                  context: context,
+                  builder: (context) {
+                    return AlertDialog(
+                      backgroundColor: ColorPalette.surfaceVariant,
+                      content: FormBuilder(
+                        key: provider.urlFormKey,
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            FormBuilderTextField(
+                              name: 'url',
+                              validator: FormBuilderValidators.compose([
+                                FormBuilderValidators.required(context),
+                                FormBuilderValidators.url(context),
+                              ]),
+                            ),
+                            Button(
+                              'Ok',
+                              onPressed: () => provider.downloadFromYoutube(),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  });
+            },
           ),
           const SizedBox(width: 10),
           Button(
@@ -40,7 +70,8 @@ class SongSelection extends StatelessWidget {
         ],
       );
 
-  Widget buildSelectionCard(SongProvider provider) => Card(
+  Widget buildSelectionCard(SongProvider provider, BuildContext context) =>
+      Card(
         color: ColorPalette.surfaceVariant,
         clipBehavior: Clip.antiAlias,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -65,7 +96,7 @@ class SongSelection extends StatelessWidget {
                     color: ColorPalette.onSurfaceVariant, fontSize: 16),
                 textAlign: TextAlign.center,
               ),
-              buildButtons(provider),
+              buildButtons(provider, context),
             ],
           ),
         ),
@@ -93,7 +124,7 @@ class SongSelection extends StatelessWidget {
     return Consumer<SongProvider>(
       builder: (context, songProvider, child) {
         Either<Failure, Song> song = songProvider.song;
-        List<Widget> children = [buildSelectionCard(songProvider)];
+        List<Widget> children = [buildSelectionCard(songProvider, context)];
 
         // Add the song card if a song is selected
         song.fold(

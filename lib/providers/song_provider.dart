@@ -7,18 +7,20 @@ import 'package:demixr_app/models/failure/no_album_cover.dart';
 import 'package:demixr_app/models/failure/no_song_selected.dart';
 import 'package:demixr_app/models/song.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-
+import 'package:flutter_form_builder/flutter_form_builder.dart';
 
 class SongProvider extends ChangeNotifier {
   final _helper = SongHelper();
   final _ytHelper = SongHelper();
+  final _urlFormKey = GlobalKey<FormBuilderState>();
   Either<Failure, Song> _song = Left(NoSongSelected());
   Either<Failure, Uint8List> _cover = Left(NoAlbumCover());
 
   Either<Failure, Song> get song => _song;
 
   Either<Failure, Uint8List> get cover => _cover;
+
+  GlobalKey<FormBuilderState> get urlFormKey => _urlFormKey;
 
   Future<void> loadFromDevice() async {
     _song = await _helper.loadFromDevice();
@@ -31,21 +33,24 @@ class SongProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> downloadSong() async {
-    _song = await _ytHelper.downloadFromYoutube();
+  Future<void> downloadFromYoutube() async {
+    if (_urlFormKey.currentState!.saveAndValidate()) {
+      String url = _urlFormKey.currentState!.value['url'];
 
-    await _song.fold(
-            (failure) async => _cover = Left(NoAlbumCover()),
-            (song) async => _cover = await song.albumCover,
-    );
+      _song = await _ytHelper.downloadFromYoutube(url);
 
-    notifyListeners();
-  }
+      await _song.fold(
+        (failure) async => _cover = Left(NoAlbumCover()),
+        (song) async => _cover = await song.albumCover,
+      );
 
-
-    void removeSelectedSong() {
-      _song = Left(NoSongSelected());
-      _cover = Left(NoAlbumCover());
       notifyListeners();
     }
+  }
+
+  void removeSelectedSong() {
+    _song = Left(NoSongSelected());
+    _cover = Left(NoAlbumCover());
+    notifyListeners();
+  }
 }

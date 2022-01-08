@@ -6,7 +6,6 @@ import 'package:demixr_app/constants.dart';
 import 'package:demixr_app/models/exceptions/conversion_exception.dart';
 import 'package:demixr_app/models/failure/failure.dart';
 import 'package:demixr_app/models/failure/no_album_cover.dart';
-import 'package:demixr_app/models/failure/no_song_selected.dart';
 import 'package:demixr_app/models/failure/song_load_failure.dart';
 import 'package:demixr_app/models/song.dart';
 import 'package:demixr_app/services/song_loader.dart';
@@ -63,20 +62,20 @@ class SongHelper {
   }
 
   Future<Either<Failure, Song>> downloadFromYoutube(String url) async {
-    var yt = YoutubeExplode();
+    final yt = YoutubeExplode();
     final video = await yt.videos.get(url);
 
-    if (video == null) return Left(NoSongSelected());
+    // if (video == null) return Left(NoSongSelected());
 
     final manifest = await yt.videos.streamsClient.getManifest(url);
     final streamInfo = manifest.audioOnly.withHighestBitrate();
 
     // Get the actual stream
-    var stream = yt.videos.streamsClient.get(streamInfo);
+    final stream = yt.videos.streamsClient.get(streamInfo);
 
     // Open a file for writing.
-    var file = File(p.join(await getAppTemp(), video.title));
-    var fileStream = file.openWrite();
+    final file = File(p.join(await getAppTemp(), video.title));
+    final fileStream = file.openWrite();
 
     // Pipe all the content of the stream into the file.
     await stream.pipe(fileStream);
@@ -87,18 +86,18 @@ class SongHelper {
 
     yt.close();
 
-    return Right(
-        Song(
-          title: video.title,
-          artists: [video.author],
-          path: file.path,
-        )
-    );
+    return Right(Song(
+      title: video.title,
+      artists: [video.author],
+      path: file.path,
+    ));
   }
 
-  Tuple2<String, List<String>> _getSongInfos(String? title,
-      List<String>? artists,
-      String filename,) {
+  Tuple2<String, List<String>> _getSongInfos(
+    String? title,
+    List<String>? artists,
+    String filename,
+  ) {
     const separator = songArtistTitleSeparator;
     var splitedFilename = filename.split(separator);
     var titleFromFilename = splitedFilename.length == 1
