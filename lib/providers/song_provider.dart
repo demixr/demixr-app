@@ -7,9 +7,12 @@ import 'package:demixr_app/models/failure/no_album_cover.dart';
 import 'package:demixr_app/models/failure/no_song_selected.dart';
 import 'package:demixr_app/models/song.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
 
 class SongProvider extends ChangeNotifier {
   final _helper = SongHelper();
+  final _ytHelper = SongHelper();
   Either<Failure, Song> _song = Left(NoSongSelected());
   Either<Failure, Uint8List> _cover = Left(NoAlbumCover());
 
@@ -28,9 +31,21 @@ class SongProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  void removeSelectedSong() {
-    _song = Left(NoSongSelected());
-    _cover = Left(NoAlbumCover());
+  Future<void> downloadSong() async {
+    _song = await _ytHelper.downloadFromYoutube();
+
+    await _song.fold(
+            (failure) async => _cover = Left(NoAlbumCover()),
+            (song) async => _cover = await song.albumCover,
+    );
+
     notifyListeners();
   }
+
+
+    void removeSelectedSong() {
+      _song = Left(NoSongSelected());
+      _cover = Left(NoAlbumCover());
+      notifyListeners();
+    }
 }
