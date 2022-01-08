@@ -1,20 +1,29 @@
 package com.demixr.demixr_app;
 
 import androidx.annotation.NonNull;
+import android.content.Context;
 import io.flutter.embedding.android.FlutterActivity;
 import io.flutter.embedding.engine.FlutterEngine;
 import io.flutter.plugin.common.MethodChannel;
+import io.flutter.FlutterInjector;
+import io.flutter.embedding.engine.loader.FlutterLoader;
 
 import org.pytorch.IValue;
-import org.pytorch.LiteModuleLoader;
 import org.pytorch.Module;
 import org.pytorch.Tensor;
-import com.demixr.demixr_app.WavFile;
-import com.demixr.demixr_app.WavFileException;
+import org.pytorch.LiteModuleLoader;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.Arrays;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.FloatBuffer;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+import static io.flutter.view.FlutterMain.getLookupKeyForAsset;
 
 public class MainActivity extends FlutterActivity {
   private static Module module;
@@ -28,19 +37,21 @@ public class MainActivity extends FlutterActivity {
             (call, result) -> {
               switch (call.method) {
                 case "separate":
-                  final String audioPath = call.argument("songPath");
-                  final String modelPath = call.argument("modelPath");
+                  try {
+                    final String audioPath = call.argument("songPath");
+                    final String modelPath = assetFilePath(this, call.argument("modelAssetName"));
+                    final String outputPath = call.argument("outputPath");
 
-                  result.success(fakeSeparate(audioPath, modelPath, ""));
+                    result.success(separate(audioPath, modelPath, outputPath));
+                  } catch (Exception e) {
+                    e.printStackTrace();
+                    result.error("DEMIXING_ERROR", e.getMessage(), null);
+                  }
                   break;
                 default:
                   result.notImplemented();
               }
             });
-  }
-
-  int fakeSeparate(String audioPath, String modelPath, String outputDir) {
-    return 0;
   }
 
   private void loadModel(String modelPath) {
@@ -54,7 +65,8 @@ public class MainActivity extends FlutterActivity {
     return WavFile.openWavFile(toSeparate);
   }
 
-  private Map<String, WavFile> createFiles(String[] stemNames, String outputDir, int numChannels, int numFrames, int numBits, int sampleRate) throws IOException, WavFileException {
+  private Map<String, WavFile> createFiles(String[] stemNames, String outputDir, int numChannels, int numFrames,
+      int numBits, int sampleRate) throws IOException, WavFileException {
     Map<String, WavFile> stemFiles = new HashMap<String, WavFile>();
 
     for (String stemName : stemNames) {
@@ -87,10 +99,11 @@ public class MainActivity extends FlutterActivity {
     }
 
     // Create Tensor from flattened array
-    return Tensor.fromBlob(flatAudio, new long[]{1, 2, framesRead});
+    return Tensor.fromBlob(flatAudio, new long[] { 1, 2, framesRead });
   }
 
-  private double[][][] reshapeOutput(float[] prediction, int numBufferFrame, int numStems, int numChannels, int framesRead) {
+  private double[][][] reshapeOutput(float[] prediction, int numBufferFrame, int numStems, int numChannels,
+      int framesRead) {
     double[][][] outputStems = new double[numStems][numChannels][numBufferFrame];
 
     for (int i = 0; i < numStems; i++) {
@@ -104,15 +117,13 @@ public class MainActivity extends FlutterActivity {
     return outputStems;
   }
 
-  private Map<String, WavFile> writeToWavFile(Map<String, WavFile> stemFiles, String[] stemNames, double[][][] outputStems, int numStems, int numBufferFrame) {
-    try
-    {
+  private Map<String, WavFile> writeToWavFile(Map<String, WavFile> stemFiles, String[] stemNames,
+      double[][][] outputStems, int numStems, int numBufferFrame) {
+    try {
       for (int i = 0; i < numStems; i++) {
         stemFiles.get(stemNames[i]).writeFrames(outputStems[i], numBufferFrame);
       }
-    }
-    catch (Exception e)
-    {
+    } catch (Exception e) {
       System.err.println(e);
     }
     return stemFiles;
@@ -125,12 +136,12 @@ public class MainActivity extends FlutterActivity {
     return resultTensor.getDataAsFloatArray();
   }
 
-  private Map<String, WavFile> predictByChunk(WavFile wavFile, Map<String, WavFile> stemFiles, String[] stemNames, int numBufferFrame, int numStems) throws IOException, WavFileException {
+  private Map<String, WavFile> predictByChunk(WavFile wavFile, Map<String, WavFile> stemFiles, String[] stemNames,
+      int numBufferFrame, int numStems) throws IOException, WavFileException {
     int numChannels = wavFile.getNumChannels();
 
     double[] buffer = new double[numBufferFrame * numChannels];
     int framesRead = wavFile.readFrames(buffer, numBufferFrame);
-
 
     while (framesRead != 0) {
       Tensor inTensor = preprocessWavChunk(buffer, framesRead);
@@ -145,7 +156,8 @@ public class MainActivity extends FlutterActivity {
     return stemFiles;
   }
 
-  private Map<String, String> separate(String audioPath, String modelPath, String outputDir) throws IOException, WavFileException {
+  private Map<String, String> separate(String audioPath, String modelPath, String outputDir)
+      throws IOException, WavFileException {
     loadModel(modelPath);
 
     WavFile wavFile = openWavFile(audioPath);
@@ -157,13 +169,13 @@ public class MainActivity extends FlutterActivity {
     int numBits = 16;
     int sampleRate = 44100;
 
-    String[] stemNames = new String[]{"vocals", "drums", "bass", "other"};
+    String[] stemNames = new String[] { "vocals", "drums", "bass", "other" };
     Map<String, WavFile> stemFiles = createFiles(stemNames,
-                                                  outputDir,
-                                                  numChannels,
-                                                  numFrames,
-                                                  numBits,
-                                                  sampleRate);
+        outputDir,
+        numChannels,
+        numFrames,
+        numBits,
+        sampleRate);
 
     predictByChunk(wavFile, stemFiles, stemNames, numBufferFrame, numStems);
 
@@ -171,6 +183,34 @@ public class MainActivity extends FlutterActivity {
 
     // Create new dictionary with stem paths as values
     return stemFiles.entrySet().stream()
-      .collect(Collectors.toMap(el -> el.getKey(), el -> el.getValue().getFile().getAbsolutePath()));
+        .collect(Collectors.toMap(el -> el.getKey(), el -> el.getValue().getFile().getAbsolutePath()));
+  }
+
+  /**
+   * Copies specified asset to the file in /files app directory and returns this
+   * file absolute path.
+   *
+   * @return absolute file path
+   */
+  public static String assetFilePath(Context context, String assetName) throws IOException {
+    File file = new File(context.getFilesDir(), assetName);
+    if (file.exists() && file.length() > 0) {
+      return file.getAbsolutePath();
+    }
+
+    // FlutterLoader loader = FlutterInjector.instance().flutterLoader();
+    String assetKey = getLookupKeyForAsset(assetName);
+
+    try (InputStream is = context.getAssets().open(assetKey)) {
+      try (OutputStream os = new FileOutputStream(file)) {
+        byte[] buffer = new byte[4 * 1024];
+        int read;
+        while ((read = is.read(buffer)) != -1) {
+          os.write(buffer, 0, read);
+        }
+        os.flush();
+      }
+      return file.getAbsolutePath();
+    }
   }
 }

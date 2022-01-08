@@ -8,21 +8,21 @@ class DemixingHelper {
   static const platform = MethodChannel('demixing');
 
   Future<UnmixedSong> separate(Song song) async {
-    final int result = await platform.invokeMethod(
+    final Map<String, String> result = await platform.invokeMethod(
       'separate',
-      <String, dynamic>{
+      <String, String>{
         'songPath': song.path,
-        'modelPath': Models.umxl,
+        'modelAssetName': Models.umxl,
         'outputPath': await getAppTemp()
       },
     );
 
-    // TODO: Real source separation implementation
-
-    await Future.delayed(const Duration(seconds: 5));
-
     return UnmixedSong(
       mixture: song,
+      vocals: Song.stem(song, result['vocals']),
+      drums: Song.stem(song, result['drums']),
+      bass: Song.stem(song, result['bass']),
+      other: Song.stem(song, result['other']),
     );
   }
 }

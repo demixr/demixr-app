@@ -19,4 +19,7 @@ class Song {
   String toString() {
     return "${artists.join('_')}_$title";
   }
+
+  Song.stem(Song song, String? path)
+      : this(title: song.title, artists: song.artists, path: path ?? song.path);
 }
