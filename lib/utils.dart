@@ -1,5 +1,7 @@
 import 'dart:io';
 
+import 'package:path_provider/path_provider.dart';
+
 import 'constants.dart';
 
 enum AssetType {
@@ -55,4 +57,26 @@ extension Create on Directory {
 
     return await directory.create(recursive: true);
   }
+}
+
+Future<String> getAppInternalStorage() async {
+  final directory = await getApplicationDocumentsDirectory();
+  return directory.path;
+}
+
+Future<String> getAppExternalStorage() async {
+  Directory? directory;
+
+  try {
+    directory = await getExternalStorageDirectory();
+  } on UnimplementedError {
+    directory = await getApplicationDocumentsDirectory();
+  }
+
+  return directory?.path ?? await getAppInternalStorage();
+}
+
+Future<String> getAppTemp() async {
+  final directory = await getTemporaryDirectory();
+  return directory.path;
 }
