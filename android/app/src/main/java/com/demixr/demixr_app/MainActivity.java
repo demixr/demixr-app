@@ -23,8 +23,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import static io.flutter.view.FlutterMain.getLookupKeyForAsset;
-
 public class MainActivity extends FlutterActivity {
   private static Module module;
   private static final String CHANNEL = "demixing";
@@ -198,8 +196,8 @@ public class MainActivity extends FlutterActivity {
       return file.getAbsolutePath();
     }
 
-    // FlutterLoader loader = FlutterInjector.instance().flutterLoader();
-    String assetKey = getLookupKeyForAsset(assetName);
+    FlutterLoader loader = FlutterInjector.instance().flutterLoader();
+    String assetKey = loader.getLookupKeyForAsset(assetName);
 
     try (InputStream is = context.getAssets().open(assetKey)) {
       try (OutputStream os = new FileOutputStream(file)) {
