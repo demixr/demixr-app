@@ -8,6 +8,7 @@ class DemixingHelper {
   static const platform = MethodChannel('demixing');
 
   Future<UnmixedSong> separate(Song song) async {
+    print('MODEL_PATH: ${Models.umxl}');
     final Map<String, String> result = await platform.invokeMethod(
       'separate',
       <String, String>{

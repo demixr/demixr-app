@@ -74,5 +74,5 @@ class Preferences {
 }
 
 class Models {
-  static final umxl = p.join(Paths.models, 'umxl.ptl');
+  static final umxl = p.join(Paths.models, 'umx.ptl');
 }
