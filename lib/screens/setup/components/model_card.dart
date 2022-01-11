@@ -26,7 +26,7 @@ class ModelCard extends StatelessWidget {
           spacing: 10,
           children: [
             CircleAvatar(
-              backgroundColor: ColorPalette.onSurfaceVariant,
+              backgroundColor: ColorPalette.surface,
               radius: 30,
               backgroundImage: Image.asset(
                 imagePath,

@@ -8,7 +8,7 @@ class Instructions extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SpacedColumn(
-      spacing: 15,
+      spacing: 10,
       mainAxisAlignment: MainAxisAlignment.start,
       children: const [
         Text(
@@ -21,11 +21,11 @@ class Instructions extends StatelessWidget {
           ),
         ),
         Text(
-          '(You can always change this later in the settings)',
+          'You can always change this later in the settings',
           textAlign: TextAlign.center,
           style: TextStyle(
             fontSize: 16,
-            color: ColorPalette.onSurface,
+            color: ColorPalette.onSurfaceVariant,
           ),
         )
       ],
