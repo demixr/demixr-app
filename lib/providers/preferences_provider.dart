@@ -22,4 +22,11 @@ class PreferencesProvider extends ChangeNotifier {
         ? Left(NoModelSelected())
         : Right(Models.fromName(modelName));
   }
+
+  void setModel(Model model) {
+    _repository.setModel(model.name);
+    _model = Right(model);
+
+    notifyListeners();
+  }
 }
