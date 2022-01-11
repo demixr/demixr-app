@@ -55,6 +55,13 @@ class Models {
     url:
         'https://github.com/demixr/openunmix-torchscript/releases/latest/download/umxl.ptl',
   );
+
+  static Model fromName(String name) {
+    if (name == umxhq.name) return umxhq;
+    if (name == umxl.name) return umxl;
+
+    throw ArgumentError('Models: The given model name does not exist');
+  }
 }
 
 class Preferences {
