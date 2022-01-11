@@ -1,7 +1,7 @@
 import 'package:demixr_app/components/extended_widgets.dart';
 import 'package:demixr_app/constants.dart';
 import 'package:demixr_app/models/model.dart';
-import 'package:demixr_app/providers/preferences_provider.dart';
+import 'package:demixr_app/providers/model_provider.dart';
 import 'package:demixr_app/screens/setup/components/model_card.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -24,7 +24,7 @@ class ModelGroup extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final preferences = context.read<PreferencesProvider>();
+    final modelProvider = context.read<ModelProvider>();
 
     List<Widget> modelCards = [
       for (var model in models)
@@ -34,7 +34,7 @@ class ModelGroup extends StatelessWidget {
             imagePath: imagePath,
           ),
           style: TextButton.styleFrom(padding: const EdgeInsets.all(0)),
-          onPressed: () => preferences.downloadModel(model),
+          onPressed: () => modelProvider.downloadModel(model),
         )
     ];
 

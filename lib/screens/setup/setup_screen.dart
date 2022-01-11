@@ -1,3 +1,4 @@
+import 'package:demixr_app/providers/model_provider.dart';
 import 'package:demixr_app/providers/preferences_provider.dart';
 import 'package:demixr_app/screens/setup/components/download_progress.dart';
 import 'package:demixr_app/screens/setup/components/instructions.dart';
@@ -11,28 +12,34 @@ class SetupScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Container(
-        margin: const EdgeInsets.only(left: 20, top: 70, right: 20, bottom: 30),
-        height: double.maxFinite,
-        width: double.maxFinite,
-        child: Expanded(
-          child: Consumer<PreferencesProvider>(
-              builder: (context, preferences, child) {
-            final children = preferences.downloadInProgress
-                ? const [DownloadProgress()]
-                : const [
-                    SetupTitle(),
-                    Instructions(),
-                    ModelSelection(),
-                  ];
+    final preferences = context.read<PreferencesProvider>();
+    return ChangeNotifierProvider<ModelProvider>(
+      create: (context) => ModelProvider(
+          repository: preferences.repository, preferences: preferences),
+      child: Scaffold(
+        body: Container(
+          margin:
+              const EdgeInsets.only(left: 20, top: 70, right: 20, bottom: 30),
+          height: double.maxFinite,
+          width: double.maxFinite,
+          child: Expanded(
+            child: Consumer<ModelProvider>(
+                builder: (context, modelProvider, child) {
+              final children = modelProvider.downloadInProgress
+                  ? const [DownloadProgress()]
+                  : const [
+                      SetupTitle(),
+                      Instructions(),
+                      ModelSelection(),
+                    ];
 
-            return Column(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: children,
-            );
-          }),
+              return Column(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: children,
+              );
+            }),
+          ),
         ),
       ),
     );
