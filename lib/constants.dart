@@ -1,3 +1,4 @@
+import 'package:demixr_app/models/model.dart';
 import 'package:flutter/material.dart';
 
 class ColorPalette {
@@ -13,6 +14,7 @@ class ColorPalette {
   static const Color onError = Color.fromRGBO(255, 218, 212, 1);
   static const Color inverseSurface = Color.fromRGBO(237, 224, 221, 1);
   static const Color inversePrimary = Color.fromRGBO(155, 68, 41, 1);
+  static final Color link = Colors.blue.shade300;
   static const List<Color> primaryGradient = [
     Color.fromRGBO(250, 184, 196, 1),
     Color.fromRGBO(89, 86, 233, 1),
@@ -33,4 +35,38 @@ const songArtistTitleSeparator = '-';
 
 class BoxesNames {
   static const library = 'library';
+  static const preferences = 'preferences';
+}
+
+class Models {
+  static const openUnmixInfosUrl = 'https://sigsep.github.io/open-unmix/';
+
+  static const fileExtension = '.plt';
+
+  static const umxhq = Model(
+    name: 'umxhq',
+    description:
+        'Model trained on the MUSDB18-HQ dataset.\nFaster separation (~ length of the song).\n(200 MB)',
+    url:
+        'https://github.com/demixr/openunmix-torchscript/releases/latest/download/umxhq.ptl',
+    isDefault: true,
+  );
+  static const umxl = Model(
+    name: 'umxl',
+    description:
+        'Model trained on extra data. Longer separation, but improved performance.\n(500 MB)',
+    url:
+        'https://github.com/demixr/openunmix-torchscript/releases/latest/download/umxl.ptl',
+  );
+
+  static Model fromName(String name) {
+    if (name == umxhq.name) return umxhq;
+    if (name == umxl.name) return umxl;
+
+    throw ArgumentError('Models: The given model name does not exist');
+  }
+}
+
+class Preferences {
+  static const model = 'model';
 }
