@@ -17,10 +17,13 @@ import 'providers/preferences_provider.dart';
 
 Future<void> main() async {
   await Hive.initFlutter();
+
   Hive.registerAdapter<UnmixedSong>(UnmixedSongAdapter());
   Hive.registerAdapter<Song>(SongAdapter());
+
   await Hive.openBox<dynamic>(BoxesNames.preferences);
   await Hive.openBox<UnmixedSong>(BoxesNames.library);
+
   runApp(const MyApp());
 }
 

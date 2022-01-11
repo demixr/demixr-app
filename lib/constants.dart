@@ -14,6 +14,7 @@ class ColorPalette {
   static const Color onError = Color.fromRGBO(255, 218, 212, 1);
   static const Color inverseSurface = Color.fromRGBO(237, 224, 221, 1);
   static const Color inversePrimary = Color.fromRGBO(155, 68, 41, 1);
+  static final Color link = Colors.blue.shade300;
   static const List<Color> primaryGradient = [
     Color.fromRGBO(250, 184, 196, 1),
     Color.fromRGBO(89, 86, 233, 1),
@@ -39,6 +40,8 @@ class BoxesNames {
 
 class Models {
   static const openUnmixInfosUrl = 'https://sigsep.github.io/open-unmix/';
+
+  static const fileExtension = '.plt';
 
   static const umxhq = Model(
     name: 'umxhq',
