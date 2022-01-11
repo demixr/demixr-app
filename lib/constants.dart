@@ -1,3 +1,4 @@
+import 'package:demixr_app/models/model.dart';
 import 'package:flutter/material.dart';
 
 class ColorPalette {
@@ -33,4 +34,29 @@ const songArtistTitleSeparator = '-';
 
 class BoxesNames {
   static const library = 'library';
+  static const preferences = 'preferences';
+}
+
+class Models {
+  static const openUnmixInfosUrl = 'https://sigsep.github.io/open-unmix/';
+
+  static const umxhq = Model(
+    name: 'umxhq',
+    description:
+        'Model trained on the MUSDB18-HQ dataset.\nFaster separation (~ length of the song).\n(200 MB)',
+    url:
+        'https://github.com/demixr/openunmix-torchscript/releases/latest/download/umxhq.ptl',
+    isDefault: true,
+  );
+  static const umxl = Model(
+    name: 'umxl',
+    description:
+        'Model trained on extra data. Longer separation, but improved performance.\n(500 MB)',
+    url:
+        'https://github.com/demixr/openunmix-torchscript/releases/latest/download/umxl.ptl',
+  );
+}
+
+class Preferences {
+  static const model = 'model';
 }

@@ -1,3 +1,4 @@
+import 'package:demixr_app/constants.dart';
 import 'package:demixr_app/screens/setup/components/model_group.dart';
 import 'package:demixr_app/utils.dart';
 import 'package:flutter/material.dart';
@@ -12,12 +13,8 @@ class ModelSelection extends StatelessWidget {
       children: [
         ModelGroup(
           title: 'Open-Unmix',
-          models: const {
-            'UMXHQ (default)':
-                'Model trained on the MUSDB18-HQ dataset (200 MB)',
-            'UMXL': 'Model trained on extra data (500 MB)',
-          },
-          infosUrl: 'https://sigsep.github.io/open-unmix/',
+          models: const [Models.umxhq, Models.umxl],
+          infosUrl: Models.openUnmixInfosUrl,
           imagePath: getAssetPath('open_unmix', AssetType.image),
         ),
       ],

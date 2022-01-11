@@ -1,4 +1,5 @@
 import 'package:demixr_app/components/extended_widgets.dart';
+import 'package:demixr_app/models/model.dart';
 import 'package:demixr_app/screens/setup/components/model_card.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -6,14 +7,14 @@ import 'package:url_launcher/url_launcher.dart';
 
 class ModelGroup extends StatelessWidget {
   final String title;
-  final Map<String, String> models;
+  final List<Model> models;
   final String imagePath;
   final String? infosUrl;
 
   const ModelGroup({
     required this.title,
     required this.imagePath,
-    this.models = const {},
+    this.models = const [],
     this.infosUrl,
     Key? key,
   }) : super(key: key);
@@ -21,10 +22,9 @@ class ModelGroup extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     List<Widget> modelCards = [
-      for (var e in models.entries)
+      for (var model in models)
         ModelCard(
-          name: e.key,
-          description: e.value,
+          model: model,
           imagePath: imagePath,
         )
     ];
