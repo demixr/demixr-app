@@ -1,4 +1,5 @@
 import 'package:demixr_app/components/extended_widgets.dart';
+import 'package:demixr_app/constants.dart';
 import 'package:demixr_app/models/model.dart';
 import 'package:demixr_app/providers/preferences_provider.dart';
 import 'package:demixr_app/screens/setup/components/model_card.dart';
@@ -33,7 +34,7 @@ class ModelGroup extends StatelessWidget {
             imagePath: imagePath,
           ),
           style: TextButton.styleFrom(padding: const EdgeInsets.all(0)),
-          onPressed: () => preferences.setModel(model),
+          onPressed: () => preferences.downloadModel(model),
         )
     ];
 
@@ -59,7 +60,7 @@ class ModelGroup extends StatelessWidget {
           text: TextSpan(
             text: 'More informations',
             style: TextStyle(
-                color: Colors.blue.shade300,
+                color: ColorPalette.link,
                 fontSize: 12,
                 decoration: TextDecoration.underline),
             recognizer: TapGestureRecognizer()..onTap = () => launch(infosUrl!),
