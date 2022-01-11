@@ -31,4 +31,19 @@ class PreferencesProvider extends ChangeNotifier {
 
     notifyListeners();
   }
+
+  String getModelPath() {
+    return _model.fold(
+      (noModelSelected) =>
+          throw ArgumentError('Preferences: No model selected'),
+      (model) {
+        final String? path = _repository.getModelPath(model.name);
+        if (path == null) {
+          throw ArgumentError('Preferences: Model path not found');
+        }
+
+        return path;
+      },
+    );
+  }
 }

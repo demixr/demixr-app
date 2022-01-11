@@ -14,7 +14,7 @@ class LibraryRepository {
   Box<UnmixedSong> get box => _box;
 
   Future<String> get _directoryPath async {
-    final path = await getAppStorage();
+    final path = await getAppExternalStorage();
     var directory = Directory(p.join(path, _directoryName));
     directory = await directory.createIfNotPresent();
     return directory.path;

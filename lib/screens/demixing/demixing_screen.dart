@@ -1,4 +1,5 @@
 import 'package:demixr_app/providers/demixing_provider.dart';
+import 'package:demixr_app/providers/preferences_provider.dart';
 import 'package:demixr_app/screens/demixing/components/selection_screen.dart';
 import 'package:demixr_app/screens/loading/loading_screen.dart';
 import 'package:flutter/material.dart';
@@ -11,7 +12,8 @@ class DemixingScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       body: ChangeNotifierProvider(
-        create: (context) => DemixingProvider(),
+        create: (context) =>
+            DemixingProvider(context.read<PreferencesProvider>()),
         child: Consumer<DemixingProvider>(
           builder: (context, demixingProvider, child) {
             return demixingProvider.isDemixing
