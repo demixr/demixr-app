@@ -10,7 +10,7 @@ class SetupScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
-        margin: const EdgeInsets.only(left: 20, top: 50, right: 20, bottom: 30),
+        margin: const EdgeInsets.only(left: 20, top: 70, right: 20, bottom: 30),
         height: double.maxFinite,
         width: double.maxFinite,
         child: Expanded(

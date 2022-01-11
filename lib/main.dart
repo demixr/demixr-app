@@ -13,10 +13,13 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:get/get.dart';
 
+import 'providers/preferences_provider.dart';
+
 Future<void> main() async {
   await Hive.initFlutter();
   Hive.registerAdapter<UnmixedSong>(UnmixedSongAdapter());
   Hive.registerAdapter<Song>(SongAdapter());
+  await Hive.openBox<dynamic>(BoxesNames.preferences);
   await Hive.openBox<UnmixedSong>(BoxesNames.library);
   runApp(const MyApp());
 }
@@ -28,6 +31,8 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
+        ChangeNotifierProvider<PreferencesProvider>(
+            create: (_) => PreferencesProvider()),
         ChangeNotifierProvider<LibraryProvider>(
             create: (_) => LibraryProvider()),
         ChangeNotifierProxyProvider<LibraryProvider, PlayerProvider>(
