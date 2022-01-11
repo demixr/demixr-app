@@ -1,6 +1,5 @@
 import 'package:demixr_app/models/model.dart';
 import 'package:flutter/material.dart';
-import 'package:path/path.dart' as p;
 
 class ColorPalette {
   static const Color primary = Color.fromRGBO(255, 181, 157, 1);
@@ -30,7 +29,6 @@ class Paths {
   static const images = 'assets/images/';
   static const icons = 'assets/icons/';
   static const animations = 'assets/animations/';
-  static const models = 'assets/models/';
 }
 
 const songArtistTitleSeparator = '-';
@@ -71,8 +69,4 @@ class Models {
 
 class Preferences {
   static const model = 'model';
-}
-
-class Models {
-  static final umxl = p.join(Paths.models, 'umx.ptl');
 }
