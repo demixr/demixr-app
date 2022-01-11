@@ -49,6 +49,7 @@ dependencies:
   audioplayers: ^0.20.1
   audio_video_progress_bar: ^0.10.0
   audio_service: ^0.18.3
+  url_launcher: ^6.0.18
 
 dev_dependencies:
   flutter_test:
