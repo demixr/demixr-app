@@ -1,9 +1,9 @@
-import 'package:audioplayers/audioplayers.dart';
 import 'package:dartz/dartz.dart';
 import 'package:demixr_app/models/failure/failure.dart';
 import 'package:demixr_app/models/failure/no_song_selected.dart';
 import 'package:demixr_app/models/unmixed_song.dart';
 import 'package:demixr_app/providers/library_provider.dart';
+import 'package:demixr_app/services/stems_player.dart';
 import 'package:flutter/material.dart';
 
 enum PlayerState {
@@ -15,7 +15,7 @@ enum PlayerState {
 class PlayerProvider extends ChangeNotifier {
   late LibraryProvider _library;
   Either<Failure, UnmixedSong> _song = Left(NoSongSelected());
-  final AudioPlayer _player = AudioPlayer();
+  final _player = StemsPlayer();
   PlayerState state = PlayerState.off;
   Duration position = Duration.zero;
 
@@ -23,7 +23,7 @@ class PlayerProvider extends ChangeNotifier {
 
   Stream<Duration> get positionStream => _player.onAudioPositionChanged;
 
-  Future<int> get songDuration async => _player.getDuration();
+  Future<int> get songDuration async => await _player.getDuration();
 
   void update(LibraryProvider library) {
     _library = library;
@@ -42,7 +42,7 @@ class PlayerProvider extends ChangeNotifier {
       _song.fold(
         (failure) => null,
         (song) {
-          _player.setUrl(song.mixture.path, isLocal: true);
+          _player.setUrls(song);
           state = PlayerState.pause;
         },
       );
