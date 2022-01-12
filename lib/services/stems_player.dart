@@ -3,23 +3,46 @@ import 'package:demixr_app/models/unmixed_song.dart';
 
 import '../constants.dart';
 
+enum StemState {
+  mute,
+  unmute,
+}
+
+extension StemStateToggle on StemState {
+  StemState toggle() {
+    return this == StemState.mute ? StemState.unmute : StemState.mute;
+  }
+}
+
 class StemsPlayer {
-  Map<Stems, AudioPlayer> players = {};
+  Map<Stem, AudioPlayer> players = {};
+  Map<Stem, StemState> stemStates = {};
 
   StemsPlayer() {
     players = {
-      Stems.vocals: AudioPlayer(),
-      Stems.drums: AudioPlayer(),
-      Stems.bass: AudioPlayer(),
-      Stems.other: AudioPlayer(),
+      Stem.vocals: AudioPlayer(),
+      Stem.drums: AudioPlayer(),
+      Stem.bass: AudioPlayer(),
+      Stem.other: AudioPlayer(),
     };
+
+    stemStates = {
+      Stem.vocals: StemState.unmute,
+      Stem.drums: StemState.unmute,
+      Stem.bass: StemState.unmute,
+      Stem.other: StemState.unmute,
+    };
+
+    toggleStem(Stem.vocals);
   }
 
-  AudioPlayer get aPlayer => players[Stems.vocals]!;
+  AudioPlayer get aPlayer => players[Stem.vocals]!;
 
   Stream<Duration> get onAudioPositionChanged => aPlayer.onAudioPositionChanged;
 
   Future<int> getDuration() => aPlayer.getDuration();
+
+  StemState getStemState(Stem stem) => stemStates[stem] ?? StemState.mute;
 
   void setUrls(UnmixedSong song) {
     players.forEach((stem, player) =>
@@ -40,5 +63,11 @@ class StemsPlayer {
 
   void seek(Duration position) {
     players.forEach((stem, player) => player.seek(position));
+  }
+
+  void toggleStem(Stem stem) {
+    final state = getStemState(stem);
+    players[stem]?.setVolume(state == StemState.mute ? 1 : 0);
+    stemStates[stem] = state.toggle();
   }
 }
