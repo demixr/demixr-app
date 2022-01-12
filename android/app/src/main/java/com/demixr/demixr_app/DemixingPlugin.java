@@ -1,6 +1,8 @@
 package com.demixr.demixr_app;
 
 import android.os.Build;
+import android.os.Handler;
+import android.os.Looper;
 
 import org.pytorch.IValue;
 import org.pytorch.LiteModuleLoader;
@@ -19,10 +21,12 @@ import androidx.annotation.NonNull;
 
 import androidx.annotation.RequiresApi;
 import io.flutter.embedding.engine.plugins.FlutterPlugin;
+import io.flutter.plugin.common.BinaryMessenger;
 import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
 import io.flutter.plugin.common.MethodChannel.Result;
+import io.flutter.plugin.common.StandardMethodCodec;
 
 public class DemixingPlugin implements FlutterPlugin, MethodCallHandler {
     private static Module module;
@@ -32,28 +36,38 @@ public class DemixingPlugin implements FlutterPlugin, MethodCallHandler {
     private static final String separateMethod = "separate";
 
     @Override
-    public void onAttachedToEngine(@NonNull FlutterPluginBinding flutterPluginBinding) {
-        channel = new MethodChannel(flutterPluginBinding.getBinaryMessenger(), channelName);
+    public void onAttachedToEngine(@NonNull FlutterPluginBinding binding) {
+        BinaryMessenger messenger = binding.getBinaryMessenger();
+        BinaryMessenger.TaskQueue taskQueue =
+                messenger.makeBackgroundTaskQueue();
+        channel =
+                new MethodChannel(
+                        messenger,
+                        channelName,
+                        StandardMethodCodec.INSTANCE,
+                        taskQueue);
         channel.setMethodCallHandler(this);
     }
 
     @RequiresApi(api = Build.VERSION_CODES.N)
     @Override
     public void onMethodCall(@NonNull MethodCall call, @NonNull Result result) {
-            if (call.method.equals(separateMethod)) {
-                try {
-                    final String audioPath = call.argument("songPath");
-                    final String modelPath = call.argument("modelPath");
-                    final String outputPath = call.argument("outputPath");
+        if (call.method.equals(separateMethod)) {
+            try {
+                final String audioPath = call.argument("songPath");
+                final String modelPath = call.argument("modelPath");
+                final String outputPath = call.argument("outputPath");
 
-                    result.success(separate(audioPath, modelPath, outputPath));
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    result.error("DEMIXING_ERROR", e.getMessage(), null);
-                }
-            } else {
-                result.notImplemented();
+                Map<String, String> stems = separate(audioPath, modelPath, outputPath);
+
+                new Handler(Looper.getMainLooper()).post(() -> result.success(stems));
+            } catch (Exception e) {
+                new Handler(Looper.getMainLooper()).post(() ->
+                        result.error("DemixingError", e.getMessage(), null));
             }
+        } else {
+            new Handler(Looper.getMainLooper()).post(result::notImplemented);
+        }
     }
 
     @Override
@@ -106,7 +120,7 @@ public class DemixingPlugin implements FlutterPlugin, MethodCallHandler {
         }
 
         // Create Tensor from flattened array
-        return Tensor.fromBlob(flatAudio, new long[] { 1, 2, framesRead });
+        return Tensor.fromBlob(flatAudio, new long[]{1, 2, framesRead});
     }
 
     private double[][][] reshapeOutput(float[] prediction, int numBufferFrame, int numStems, int numChannels,
@@ -125,7 +139,7 @@ public class DemixingPlugin implements FlutterPlugin, MethodCallHandler {
     }
 
     private void writeToWavFile(Map<String, WavFile> stemFiles, String[] stemNames,
-                                                double[][][] outputStems, int numStems, int numBufferFrame) throws IOException, WavFileException {
+                                double[][][] outputStems, int numStems, int numBufferFrame) throws IOException, WavFileException {
         for (int i = 0; i < numStems; i++) {
             Objects.requireNonNull(stemFiles.get(stemNames[i])).writeFrames(outputStems[i], numBufferFrame);
         }
@@ -138,7 +152,7 @@ public class DemixingPlugin implements FlutterPlugin, MethodCallHandler {
         return resultTensor.getDataAsFloatArray();
     }
 
-    private Map<String, WavFile> predictByChunk(WavFile wavFile, Map<String, WavFile> stemFiles, String[] stemNames,
+    private void predictByChunk(WavFile wavFile, Map<String, WavFile> stemFiles, String[] stemNames,
                                                 int numBufferFrame, int numStems) throws IOException, WavFileException {
         int numChannels = wavFile.getNumChannels();
 
@@ -155,7 +169,6 @@ public class DemixingPlugin implements FlutterPlugin, MethodCallHandler {
             // Get next frames
             framesRead = wavFile.readFrames(buffer, numBufferFrame);
         }
-        return stemFiles;
     }
 
     @RequiresApi(api = Build.VERSION_CODES.N)
@@ -172,7 +185,7 @@ public class DemixingPlugin implements FlutterPlugin, MethodCallHandler {
         int numBits = 16;
         int sampleRate = 44100;
 
-        String[] stemNames = new String[] { "vocals", "drums", "bass", "other" };
+        String[] stemNames = new String[]{"vocals", "drums", "bass", "other"};
         Map<String, WavFile> stemFiles = createFiles(stemNames,
                 outputDir,
                 numChannels,
@@ -180,7 +193,7 @@ public class DemixingPlugin implements FlutterPlugin, MethodCallHandler {
                 numBits,
                 sampleRate);
 
-        stemFiles = predictByChunk(wavFile, stemFiles, stemNames, numBufferFrame, numStems);
+        predictByChunk(wavFile, stemFiles, stemNames, numBufferFrame, numStems);
 
         closeWavFiles(wavFile, stemFiles, stemNames);
 
