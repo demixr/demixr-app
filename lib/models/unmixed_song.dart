@@ -31,17 +31,17 @@ class UnmixedSong {
     required this.other,
   });
 
-  Song getStem(Stems stem) {
+  Song getStem(Stem stem) {
     switch (stem) {
-      case Stems.mixture:
+      case Stem.mixture:
         return mixture;
-      case Stems.vocals:
+      case Stem.vocals:
         return vocals;
-      case Stems.drums:
+      case Stem.drums:
         return drums;
-      case Stems.bass:
+      case Stem.bass:
         return bass;
-      case Stems.other:
+      case Stem.other:
         return other;
     }
   }
