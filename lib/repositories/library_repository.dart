@@ -28,7 +28,7 @@ class LibraryRepository {
   }
 
   Future<Song> _saveStem(Song song, String dir, String stem) async {
-    String filename = "$stem.wab}";
+    String filename = "$stem.wav";
     String songPath = p.join(dir, filename);
 
     final savedFile = await moveFile(File(song.path), songPath);
