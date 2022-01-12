@@ -6,6 +6,8 @@ import 'package:demixr_app/providers/library_provider.dart';
 import 'package:demixr_app/services/stems_player.dart';
 import 'package:flutter/material.dart';
 
+import '../constants.dart';
+
 enum PlayerState {
   play,
   pause,
@@ -24,6 +26,8 @@ class PlayerProvider extends ChangeNotifier {
   Stream<Duration> get positionStream => _player.onAudioPositionChanged;
 
   Future<int> get songDuration async => await _player.getDuration();
+
+  bool isStemMute(Stem stem) => _player.getStemState(stem) == StemState.mute;
 
   void update(LibraryProvider library) {
     _library = library;
@@ -89,5 +93,10 @@ class PlayerProvider extends ChangeNotifier {
   void previous() {
     final success = _library.previousSong();
     if (!success) stop();
+  }
+
+  void toggleStem(Stem stem) {
+    _player.toggleStem(stem);
+    notifyListeners();
   }
 }
