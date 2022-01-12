@@ -67,6 +67,14 @@ class Models {
   }
 }
 
+enum Stems {
+  mixture,
+  vocals,
+  drums,
+  bass,
+  other,
+}
+
 class Preferences {
   static const model = 'model';
 }
