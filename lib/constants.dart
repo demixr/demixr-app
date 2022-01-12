@@ -67,12 +67,29 @@ class Models {
   }
 }
 
-enum Stems {
+enum Stem {
   mixture,
   vocals,
   drums,
   bass,
   other,
+}
+
+extension StemsName on Stem {
+  String get name {
+    switch (this) {
+      case Stem.mixture:
+        return 'Mixture';
+      case Stem.vocals:
+        return 'Vocals';
+      case Stem.drums:
+        return 'Drums';
+      case Stem.bass:
+        return 'Bass';
+      case Stem.other:
+        return 'Other';
+    }
+  }
 }
 
 class Preferences {
