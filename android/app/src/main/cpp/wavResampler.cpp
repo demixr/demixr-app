@@ -8,9 +8,12 @@
 extern "C" {
 
 JNIEXPORT jfloatArray JNICALL
-Java_com_demixr_demixr_1app_DemixingPlugin_resample(JNIEnv *env, jobject jobj, jfloatArray inputBuffer, jint numInputFrames, jint inputSampleRate)
+Java_com_demixr_demixr_1app_DemixingPlugin_resample(JNIEnv *env, jobject jobj,
+                                                    jfloatArray inputBuffer,
+                                                    jint numInputFrames,
+                                                    jint inputSampleRate,
+                                                    jint channelCount)
 {
-    int channelCount = 2;
     int numOutputFrames = 0;
     int outputSampleRate = 44100;
 

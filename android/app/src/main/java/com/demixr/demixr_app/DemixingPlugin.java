@@ -39,7 +39,7 @@ public class DemixingPlugin implements FlutterPlugin, MethodCallHandler {
     static {
         System.loadLibrary("wavResampler");
     }
-    public native float[] resample(float[] inputBuffer, int numInputFrames, int inputSampleRate);
+    public native float[] resample(float[] inputBuffer, int numInputFrames, int inputSampleRate, int channelCount);
 
 
     @Override
@@ -93,6 +93,14 @@ public class DemixingPlugin implements FlutterPlugin, MethodCallHandler {
         return WavFile.openWavFile(toSeparate);
     }
 
+    // Close the wav files (input and outputs)
+    private void closeWavFiles(WavFile inputWav, Map<String, WavFile> stemFiles, String[] stemNames) throws IOException {
+        inputWav.close();
+        for (String stemName : stemNames) {
+            Objects.requireNonNull(stemFiles.get(stemName)).close();
+        }
+    }
+
     private Map<String, WavFile> createFiles(String[] stemNames, String outputDir, int numChannels, int numFrames,
                                              int numBits, int sampleRate) throws IOException, WavFileException {
         Map<String, WavFile> stemFiles = new HashMap<>();
@@ -105,25 +113,31 @@ public class DemixingPlugin implements FlutterPlugin, MethodCallHandler {
         return stemFiles;
     }
 
-    // Close the wav files (input and outputs)
-    private void closeWavFiles(WavFile inputWav, Map<String, WavFile> stemFiles, String[] stemNames) throws IOException {
-        inputWav.close();
-        for (String stemName : stemNames) {
-            Objects.requireNonNull(stemFiles.get(stemName)).close();
+    private void monoToStereo(float[] buffer, FloatBuffer flatAudio, int framesRead) {
+        for (int i = 0; i < 2; i++) {
+            for (int j = 0; j < framesRead; j++) {
+                flatAudio.put(buffer[j]);
+            }
         }
     }
 
-    private Tensor preprocessWavChunk(float[] buffer, int framesRead) {
+    private Tensor preprocessWavChunk(float[] buffer, int framesRead, int numChannels) {
         FloatBuffer flatAudio = Tensor.allocateFloatBuffer(framesRead * 2);
 
-        // First channel
-        for (int i = 0; i < framesRead; i++) {
-            flatAudio.put(buffer[i * 2]);
+        // convert to stereo
+        if (numChannels == 1) {
+            monoToStereo(buffer, flatAudio, framesRead);
         }
+        else {
+            // First channel
+            for (int i = 0; i < framesRead; i++) {
+                flatAudio.put(buffer[i * 2]);
+            }
 
-        // Second channel
-        for (int i = 0; i < framesRead; i++) {
-            flatAudio.put(buffer[i * 2 + 1]);
+            // Second channel
+            for (int i = 0; i < framesRead; i++) {
+                flatAudio.put(buffer[i * 2 + 1]);
+            }
         }
 
         // Create Tensor from flattened array
@@ -131,7 +145,7 @@ public class DemixingPlugin implements FlutterPlugin, MethodCallHandler {
     }
 
     private float[][][] reshapeOutput(float[] prediction, int numStems, int numChannels,
-                                       int framesRead) {
+                                      int framesRead) {
         float[][][] outputStems = new float[numStems][numChannels][framesRead];
 
         for (int i = 0; i < numStems; i++) {
@@ -159,15 +173,6 @@ public class DemixingPlugin implements FlutterPlugin, MethodCallHandler {
         return resultTensor.getDataAsFloatArray();
     }
 
-    private float[] monoToStereo(float[] buffer, int framesRead) {
-        float[] stereoBuffer = new float[framesRead * 2];
-        for (int i = 0; i < framesRead; i++) {
-            stereoBuffer[i * 2] = buffer[i];
-            stereoBuffer[i * 2 + 1] = buffer[i];
-        }
-        return stereoBuffer;
-    }
-
     private void predictByChunk(WavFile wavFile, Map<String, WavFile> stemFiles, String[] stemNames,
                                 int numBufferFrame, int numStems) throws IOException, WavFileException {
         int numChannels = wavFile.getNumChannels();
@@ -176,18 +181,13 @@ public class DemixingPlugin implements FlutterPlugin, MethodCallHandler {
         int framesRead = wavFile.readFrames(buffer, numBufferFrame);
 
         while (framesRead != 0) {
-            // convert to stereo
-            if (numChannels != 2) {
-                buffer = monoToStereo(buffer, framesRead);
-            }
-
             // Resample sound
             if (wavFile.getSampleRate() != 44100) {
-                buffer = resample(buffer, framesRead, (int) wavFile.getSampleRate());
-                framesRead = buffer.length / 2;
+                buffer = resample(buffer, framesRead, (int) wavFile.getSampleRate(), numChannels);
+                framesRead = buffer.length / numChannels;
             }
 
-            Tensor inTensor = preprocessWavChunk(buffer, framesRead);
+            Tensor inTensor = preprocessWavChunk(buffer, framesRead, numChannels);
             float[] prediction = predict(inTensor);
             float[][][] outputStems = reshapeOutput(prediction, numStems, 2, framesRead);
 
