@@ -5,7 +5,6 @@
 # Sets the minimum version of CMake required to build the native library.
 
 cmake_minimum_required(VERSION 3.10.2)
-
 # Declares and names the project.
 
 project("wavResampler")
@@ -22,6 +21,7 @@ add_library( # Sets the name of the library.
              SHARED
 
              # Provides a relative path to your source file(s).
+            wavResampler.cpp
             resampler/MultiChannelResampler.cpp
             resampler/IntegerRatio.cpp
             resampler/LinearResampler.cpp

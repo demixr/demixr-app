@@ -8,7 +8,7 @@
 extern "C" {
 
 JNIEXPORT jdoubleArray JNICALL
-Java_com_demixr_demixr_1app_DemixingPlugin_resample(JNIEnv *env, jobject jobj, jdoubleArray inputBuffer, jint numInputFrames, jint input_sample_rate)
+Java_com_demixr_demixr_1app_DemixingPlugin_resample(JNIEnv *env, jobject jobj, jdoubleArray inputBuffer, jint numInputFrames, jint inputSampleRate)
 {
     int channelCount = 2;
     std::vector<double> input(numInputFrames * channelCount);
@@ -20,15 +20,17 @@ Java_com_demixr_demixr_1app_DemixingPlugin_resample(JNIEnv *env, jobject jobj, j
         floatInput[i] = input[i];
     }
 
-    float *outputBuffer = new float[(numInputFrames * input_sample_rate * 44100 + 1) * channelCount];    // multi-channel buffer to be filled
-    double *doubleOutputBuffer = new double[numInputFrames * channelCount];    // multi-channel buffer to be filled
+    long outputSize = ((std::size_t) numInputFrames * 44100 / inputSampleRate + 1) * channelCount;
+
+    float *outputBuffer = new float[outputSize];    // multi-channel buffer to be filled
+    double *doubleOutputBuffer = new double[outputSize];    // multi-channel buffer to be filled
 
     float *start = outputBuffer;
     int numOutputFrames = 0;
 
     resampler::MultiChannelResampler *res = resampler::MultiChannelResampler::make(
             channelCount,
-            input_sample_rate,
+            inputSampleRate,
             44100,
             resampler::MultiChannelResampler::Quality::Best);
 

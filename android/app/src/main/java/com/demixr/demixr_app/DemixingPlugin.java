@@ -130,9 +130,9 @@ public class DemixingPlugin implements FlutterPlugin, MethodCallHandler {
         return Tensor.fromBlob(flatAudio, new long[]{1, 2, framesRead});
     }
 
-    private double[][][] reshapeOutput(float[] prediction, int numBufferFrame, int numStems, int numChannels,
+    private double[][][] reshapeOutput(float[] prediction, int numStems, int numChannels,
                                        int framesRead) {
-        double[][][] outputStems = new double[numStems][numChannels][numBufferFrame];
+        double[][][] outputStems = new double[numStems][numChannels][framesRead];
 
         for (int i = 0; i < numStems; i++) {
             for (int j = 0; j < numChannels; j++) {
@@ -183,18 +183,18 @@ public class DemixingPlugin implements FlutterPlugin, MethodCallHandler {
 
             // Resample sound
             if (wavFile.getSampleRate() != 44100) {
-                System.out.println("Resampling");
                 buffer = resample(buffer, framesRead, (int) wavFile.getSampleRate());
                 framesRead = buffer.length / 2;
             }
 
             Tensor inTensor = preprocessWavChunk(buffer, framesRead);
             float[] prediction = predict(inTensor);
-            double[][][] outputStems = reshapeOutput(prediction, numBufferFrame, numStems, 2, framesRead);
+            double[][][] outputStems = reshapeOutput(prediction, numStems, 2, framesRead);
 
-            writeToWavFile(stemFiles, stemNames, outputStems, numStems, numBufferFrame);
+            writeToWavFile(stemFiles, stemNames, outputStems, numStems, framesRead);
 
             // Get next frames
+            buffer = new double[numBufferFrame * numChannels];
             framesRead = wavFile.readFrames(buffer, numBufferFrame);
         }
     }
@@ -209,7 +209,7 @@ public class DemixingPlugin implements FlutterPlugin, MethodCallHandler {
         int numChannels = wavFile.getNumChannels();
         int numFrames = (int) wavFile.getNumFrames();
         int numStems = 4;
-        int numBufferFrame = 1000000;
+        int numBufferFrame = 2000000;
         int numBits = 16;
         int sampleRate = 44100;
 
