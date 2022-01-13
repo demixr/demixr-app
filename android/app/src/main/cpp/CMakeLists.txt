@@ -22,7 +22,7 @@ add_library( # Sets the name of the library.
              SHARED
 
              # Provides a relative path to your source file(s).
-        resampler/MultiChannelResampler.cpp
+            resampler/MultiChannelResampler.cpp
             resampler/IntegerRatio.cpp
             resampler/LinearResampler.cpp
             resampler/PolyphaseResampler.cpp

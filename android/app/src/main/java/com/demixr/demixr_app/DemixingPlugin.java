@@ -35,6 +35,13 @@ public class DemixingPlugin implements FlutterPlugin, MethodCallHandler {
     private static final String channelName = "demixing";
     private static final String separateMethod = "separate";
 
+    // cpp resample function
+    static {
+        System.loadLibrary("wavResampler");
+    }
+    public native double[] resample(double[] inputBuffer, int numInputFrames, int inputSampleRate);
+
+
     @Override
     public void onAttachedToEngine(@NonNull FlutterPluginBinding binding) {
         BinaryMessenger messenger = binding.getBinaryMessenger();
@@ -196,12 +203,6 @@ public class DemixingPlugin implements FlutterPlugin, MethodCallHandler {
     private Map<String, String> separate(String audioPath, String modelPath, String outputDir)
             throws IOException, WavFileException {
         loadModel(modelPath);
-
-        // cpp resample function
-        static {
-            System.loadLibrary("wavResampler");
-        }
-        public native double[] resample(double[] inputBuffer, int numInputFrames, int inputSampleRate);
 
         WavFile wavFile = openWavFile(audioPath);
 
