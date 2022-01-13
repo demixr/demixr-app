@@ -169,8 +169,16 @@ public class DemixingPlugin implements FlutterPlugin, MethodCallHandler {
         int framesRead = wavFile.readFrames(buffer, numBufferFrame);
 
         while (framesRead != 0) {
+            // convert to stereo
             if (numChannels != 2) {
                 buffer = monoToStereo(buffer, framesRead);
+            }
+
+            // Resample sound
+            if (wavFile.getSampleRate() != 44100) {
+                System.out.println("Resampling");
+                buffer = resample(buffer, framesRead, (int) wavFile.getSampleRate());
+                framesRead = buffer.length / 2;
             }
 
             Tensor inTensor = preprocessWavChunk(buffer, framesRead);
@@ -188,6 +196,12 @@ public class DemixingPlugin implements FlutterPlugin, MethodCallHandler {
     private Map<String, String> separate(String audioPath, String modelPath, String outputDir)
             throws IOException, WavFileException {
         loadModel(modelPath);
+
+        // cpp resample function
+        static {
+            System.loadLibrary("wavResampler");
+        }
+        public native double[] resample(double[] inputBuffer, int numInputFrames, int inputSampleRate);
 
         WavFile wavFile = openWavFile(audioPath);
 
