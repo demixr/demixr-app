@@ -16,24 +16,22 @@ class PlayerScreen extends StatelessWidget {
         height: double.maxFinite,
         width: double.maxFinite,
         margin: const EdgeInsets.only(left: 10, top: 10, right: 10),
-        child: Expanded(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              NavBar(
-                extra: [
-                  IconButton(
-                    onPressed: () {},
-                    icon: SvgPicture.asset(
-                      getAssetPath('dots', AssetType.icon),
-                    ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            NavBar(
+              extra: [
+                IconButton(
+                  onPressed: () {},
+                  icon: SvgPicture.asset(
+                    getAssetPath('dots', AssetType.icon),
                   ),
-                ],
-              ),
-              const PlayerSong(),
-              const Controller(),
-            ],
-          ),
+                ),
+              ],
+            ),
+            const PlayerSong(),
+            const Controller(),
+          ],
         ),
       ),
     );
