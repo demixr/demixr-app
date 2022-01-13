@@ -40,6 +40,8 @@ class StemsPlayer {
 
   Stream<Duration> get onAudioPositionChanged => aPlayer.onAudioPositionChanged;
 
+  Stream<void> get onPlayerCompletion => aPlayer.onPlayerCompletion;
+
   Future<int> getDuration() => aPlayer.getDuration();
 
   StemState getStemState(Stem stem) => stemStates[stem] ?? StemState.mute;

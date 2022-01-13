@@ -47,7 +47,12 @@ class PlayerProvider extends ChangeNotifier {
         (failure) => null,
         (song) {
           _player.setUrls(song);
+          _player.seek(position);
           state = PlayerState.pause;
+
+          _player.onPlayerCompletion.listen((event) {
+            toStart();
+          });
         },
       );
 
@@ -55,22 +60,39 @@ class PlayerProvider extends ChangeNotifier {
     }
   }
 
-  void resetPosition() => position = Duration.zero;
+  void resetPosition() {
+    position = Duration.zero;
+  }
 
   void playpause() {
     switch (state) {
       case PlayerState.play:
-        _player.pause();
-        state = PlayerState.pause;
+        pause();
         break;
       case PlayerState.pause:
-        _player.resume();
-        state = PlayerState.play;
+        resume();
         break;
       case PlayerState.off:
         break;
     }
     notifyListeners();
+  }
+
+  void toStart({bool setPause = true}) {
+    if (setPause) pause();
+    resetPosition();
+    seek(position);
+    notifyListeners();
+  }
+
+  void resume() {
+    _player.resume();
+    state = PlayerState.play;
+  }
+
+  void pause() {
+    _player.pause();
+    state = PlayerState.pause;
   }
 
   void stop() {
@@ -87,12 +109,12 @@ class PlayerProvider extends ChangeNotifier {
 
   void next() {
     final success = _library.nextSong();
-    if (!success) stop();
+    if (!success) toStart();
   }
 
   void previous() {
     final success = _library.previousSong();
-    if (!success) stop();
+    if (!success) toStart(setPause: false);
   }
 
   void toggleStem(Stem stem) {
