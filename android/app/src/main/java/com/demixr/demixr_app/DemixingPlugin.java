@@ -152,6 +152,15 @@ public class DemixingPlugin implements FlutterPlugin, MethodCallHandler {
         return resultTensor.getDataAsFloatArray();
     }
 
+    private double[] monoToStereo(double[] buffer, int framesRead) {
+        double[] stereoBuffer = new double[framesRead * 2];
+        for (int i = 0; i < framesRead; i++) {
+            stereoBuffer[i * 2] = buffer[i];
+            stereoBuffer[i * 2 + 1] = buffer[i];
+        }
+        return stereoBuffer;
+    }
+
     private void predictByChunk(WavFile wavFile, Map<String, WavFile> stemFiles, String[] stemNames,
                                                 int numBufferFrame, int numStems) throws IOException, WavFileException {
         int numChannels = wavFile.getNumChannels();
@@ -160,9 +169,13 @@ public class DemixingPlugin implements FlutterPlugin, MethodCallHandler {
         int framesRead = wavFile.readFrames(buffer, numBufferFrame);
 
         while (framesRead != 0) {
+            if (numChannels != 2) {
+                buffer = monoToStereo(buffer, framesRead);
+            }
+
             Tensor inTensor = preprocessWavChunk(buffer, framesRead);
             float[] prediction = predict(inTensor);
-            double[][][] outputStems = reshapeOutput(prediction, numBufferFrame, numStems, numChannels, framesRead);
+            double[][][] outputStems = reshapeOutput(prediction, numBufferFrame, numStems, 2, framesRead);
 
             writeToWavFile(stemFiles, stemNames, outputStems, numStems, numBufferFrame);
 
