@@ -8,18 +8,14 @@ enum StemState {
   unmute,
 }
 
-extension StemStateToggle on StemState {
-  StemState toggle() {
-    return this == StemState.mute ? StemState.unmute : StemState.mute;
-  }
-}
-
 class StemsPlayer {
   Map<Stem, AudioPlayer> players = {};
   Map<Stem, StemState> stemStates = {};
+  bool mixtureOn = false;
 
   StemsPlayer() {
     players = {
+      Stem.mixture: AudioPlayer()..mute(),
       Stem.vocals: AudioPlayer(),
       Stem.drums: AudioPlayer(),
       Stem.bass: AudioPlayer(),
@@ -46,6 +42,10 @@ class StemsPlayer {
 
   StemState getStemState(Stem stem) => stemStates[stem] ?? StemState.mute;
 
+  bool get allStemsUnmute {
+    return stemStates.values.every((element) => element == StemState.unmute);
+  }
+
   void setUrls(UnmixedSong song) {
     players.forEach((stem, player) =>
         player.setUrl(song.getStem(stem).path, isLocal: true));
@@ -67,9 +67,52 @@ class StemsPlayer {
     players.forEach((stem, player) => player.seek(position));
   }
 
+  void mute(AudioPlayer player) {}
+
+  void muteAll() {
+    players.forEach((stem, player) => player.mute());
+  }
+
+  void unmuteAll() {
+    players.forEach((stem, player) => player.unMute());
+  }
+
   void toggleStem(Stem stem) {
+    if (mixtureOn) {
+      mixtureOn = false;
+      unmuteAll();
+      players[Stem.mixture]?.mute();
+    }
+
     final state = getStemState(stem);
-    players[stem]?.setVolume(state == StemState.mute ? 1 : 0);
+    players[stem]?.muteToggle(state);
+
     stemStates[stem] = state.toggle();
+
+    if (allStemsUnmute) {
+      mixtureOn = true;
+      muteAll();
+      players[Stem.mixture]?.unMute();
+    }
+  }
+}
+
+extension StemStateToggle on StemState {
+  StemState toggle() {
+    return this == StemState.mute ? StemState.unmute : StemState.mute;
+  }
+}
+
+extension AudioPlayerMute on AudioPlayer {
+  void mute() {
+    setVolume(0);
+  }
+
+  void unMute() {
+    setVolume(1);
+  }
+
+  void muteToggle(StemState currentState) {
+    currentState == StemState.mute ? unMute() : mute();
   }
 }
