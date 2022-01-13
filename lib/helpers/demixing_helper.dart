@@ -7,8 +7,7 @@ class DemixingHelper {
   static const platform = MethodChannel('demixing');
 
   Future<UnmixedSong> separate(Song song, String modelPath) async {
-    // TODO: Run the platform channel code in a background task
-
+    // TODO: add error handling
     final Map<dynamic, dynamic> result = await platform.invokeMethod(
       'separate',
       <String, String>{

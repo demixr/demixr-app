@@ -54,6 +54,7 @@ dependencies:
     git:
       url: https://github.com/Harsh223/flowder.git
   percent_indicator: ^3.4.0
+  ffmpeg_kit_flutter: ^4.5.1
 
 dev_dependencies:
   flutter_test:
