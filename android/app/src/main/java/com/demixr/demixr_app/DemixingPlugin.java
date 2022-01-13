@@ -41,6 +41,8 @@ public class DemixingPlugin implements FlutterPlugin, MethodCallHandler {
     }
     public native float[] resample(float[] inputBuffer, int numInputFrames, int inputSampleRate, int channelCount);
 
+    private final int MONO = 1;
+    private final int STEREO = 2;
 
     @Override
     public void onAttachedToEngine(@NonNull FlutterPluginBinding binding) {
@@ -122,10 +124,10 @@ public class DemixingPlugin implements FlutterPlugin, MethodCallHandler {
     }
 
     private Tensor preprocessWavChunk(float[] buffer, int framesRead, int numChannels) {
-        FloatBuffer flatAudio = Tensor.allocateFloatBuffer(framesRead * 2);
+        FloatBuffer flatAudio = Tensor.allocateFloatBuffer(framesRead * STEREO);
 
         // convert to stereo
-        if (numChannels == 1) {
+        if (numChannels == MONO) {
             monoToStereo(buffer, flatAudio, framesRead);
         }
         else {
@@ -141,17 +143,16 @@ public class DemixingPlugin implements FlutterPlugin, MethodCallHandler {
         }
 
         // Create Tensor from flattened array
-        return Tensor.fromBlob(flatAudio, new long[]{1, 2, framesRead});
+        return Tensor.fromBlob(flatAudio, new long[]{1, STEREO, framesRead});
     }
 
-    private float[][][] reshapeOutput(float[] prediction, int numStems, int numChannels,
-                                      int framesRead) {
-        float[][][] outputStems = new float[numStems][numChannels][framesRead];
+    private float[][][] reshapeOutput(float[] prediction, int numStems, int framesRead) {
+        float[][][] outputStems = new float[numStems][STEREO][framesRead];
 
         for (int i = 0; i < numStems; i++) {
-            for (int j = 0; j < numChannels; j++) {
+            for (int j = 0; j < STEREO; j++) {
                 for (int k = 0; k < framesRead; k++) {
-                    outputStems[i][j][k] = prediction[i * framesRead * numChannels + j * framesRead + k];
+                    outputStems[i][j][k] = prediction[i * framesRead * STEREO + j * framesRead + k];
                 }
             }
         }
@@ -189,7 +190,7 @@ public class DemixingPlugin implements FlutterPlugin, MethodCallHandler {
 
             Tensor inTensor = preprocessWavChunk(buffer, framesRead, numChannels);
             float[] prediction = predict(inTensor);
-            float[][][] outputStems = reshapeOutput(prediction, numStems, 2, framesRead);
+            float[][][] outputStems = reshapeOutput(prediction, numStems, framesRead);
 
             writeToWavFile(stemFiles, stemNames, outputStems, numStems, framesRead);
 
