@@ -119,3 +119,6 @@ app.*.symbols
 
 # Model files
 *.ptl
+
+# cpp files
+*.cxx
