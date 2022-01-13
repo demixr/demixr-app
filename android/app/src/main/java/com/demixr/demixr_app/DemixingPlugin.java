@@ -39,7 +39,7 @@ public class DemixingPlugin implements FlutterPlugin, MethodCallHandler {
     static {
         System.loadLibrary("wavResampler");
     }
-    public native double[] resample(double[] inputBuffer, int numInputFrames, int inputSampleRate);
+    public native float[] resample(float[] inputBuffer, int numInputFrames, int inputSampleRate);
 
 
     @Override
@@ -113,26 +113,26 @@ public class DemixingPlugin implements FlutterPlugin, MethodCallHandler {
         }
     }
 
-    private Tensor preprocessWavChunk(double[] buffer, int framesRead) {
+    private Tensor preprocessWavChunk(float[] buffer, int framesRead) {
         FloatBuffer flatAudio = Tensor.allocateFloatBuffer(framesRead * 2);
 
         // First channel
         for (int i = 0; i < framesRead; i++) {
-            flatAudio.put((float) buffer[i * 2]);
+            flatAudio.put(buffer[i * 2]);
         }
 
         // Second channel
         for (int i = 0; i < framesRead; i++) {
-            flatAudio.put((float) buffer[i * 2 + 1]);
+            flatAudio.put(buffer[i * 2 + 1]);
         }
 
         // Create Tensor from flattened array
         return Tensor.fromBlob(flatAudio, new long[]{1, 2, framesRead});
     }
 
-    private double[][][] reshapeOutput(float[] prediction, int numStems, int numChannels,
+    private float[][][] reshapeOutput(float[] prediction, int numStems, int numChannels,
                                        int framesRead) {
-        double[][][] outputStems = new double[numStems][numChannels][framesRead];
+        float[][][] outputStems = new float[numStems][numChannels][framesRead];
 
         for (int i = 0; i < numStems; i++) {
             for (int j = 0; j < numChannels; j++) {
@@ -146,7 +146,7 @@ public class DemixingPlugin implements FlutterPlugin, MethodCallHandler {
     }
 
     private void writeToWavFile(Map<String, WavFile> stemFiles, String[] stemNames,
-                                double[][][] outputStems, int numStems, int numBufferFrame) throws IOException, WavFileException {
+                                float[][][] outputStems, int numStems, int numBufferFrame) throws IOException, WavFileException {
         for (int i = 0; i < numStems; i++) {
             Objects.requireNonNull(stemFiles.get(stemNames[i])).writeFrames(outputStems[i], numBufferFrame);
         }
@@ -159,8 +159,8 @@ public class DemixingPlugin implements FlutterPlugin, MethodCallHandler {
         return resultTensor.getDataAsFloatArray();
     }
 
-    private double[] monoToStereo(double[] buffer, int framesRead) {
-        double[] stereoBuffer = new double[framesRead * 2];
+    private float[] monoToStereo(float[] buffer, int framesRead) {
+        float[] stereoBuffer = new float[framesRead * 2];
         for (int i = 0; i < framesRead; i++) {
             stereoBuffer[i * 2] = buffer[i];
             stereoBuffer[i * 2 + 1] = buffer[i];
@@ -169,10 +169,10 @@ public class DemixingPlugin implements FlutterPlugin, MethodCallHandler {
     }
 
     private void predictByChunk(WavFile wavFile, Map<String, WavFile> stemFiles, String[] stemNames,
-                                                int numBufferFrame, int numStems) throws IOException, WavFileException {
+                                int numBufferFrame, int numStems) throws IOException, WavFileException {
         int numChannels = wavFile.getNumChannels();
 
-        double[] buffer = new double[numBufferFrame * numChannels];
+        float[] buffer = new float[numBufferFrame * numChannels];
         int framesRead = wavFile.readFrames(buffer, numBufferFrame);
 
         while (framesRead != 0) {
@@ -189,12 +189,12 @@ public class DemixingPlugin implements FlutterPlugin, MethodCallHandler {
 
             Tensor inTensor = preprocessWavChunk(buffer, framesRead);
             float[] prediction = predict(inTensor);
-            double[][][] outputStems = reshapeOutput(prediction, numStems, 2, framesRead);
+            float[][][] outputStems = reshapeOutput(prediction, numStems, 2, framesRead);
 
             writeToWavFile(stemFiles, stemNames, outputStems, numStems, framesRead);
 
             // Get next frames
-            buffer = new double[numBufferFrame * numChannels];
+            buffer = new float[numBufferFrame * numChannels];
             framesRead = wavFile.readFrames(buffer, numBufferFrame);
         }
     }

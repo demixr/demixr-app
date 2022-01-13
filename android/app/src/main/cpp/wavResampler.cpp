@@ -7,31 +7,23 @@
 
 extern "C" {
 
-JNIEXPORT jdoubleArray JNICALL
-Java_com_demixr_demixr_1app_DemixingPlugin_resample(JNIEnv *env, jobject jobj, jdoubleArray inputBuffer, jint numInputFrames, jint inputSampleRate)
+JNIEXPORT jfloatArray JNICALL
+Java_com_demixr_demixr_1app_DemixingPlugin_resample(JNIEnv *env, jobject jobj, jfloatArray inputBuffer, jint numInputFrames, jint inputSampleRate)
 {
     int channelCount = 2;
-    std::vector<double> input(numInputFrames * channelCount);
-    env->GetDoubleArrayRegion(inputBuffer, 0, numInputFrames * channelCount, &input[0]);
-
+    int numOutputFrames = 0;
+    int outputSampleRate = 44100;
 
     float *floatInput = new float[numInputFrames * channelCount];
-    for (int i = 0; i < numInputFrames * channelCount; i++) {
-        floatInput[i] = input[i];
-    }
+    floatInput = env->GetFloatArrayElements(inputBuffer, 0);
 
-    long outputSize = ((std::size_t) numInputFrames * 44100 / inputSampleRate + 1) * channelCount;
-
+    long outputSize = ((std::size_t) numInputFrames * outputSampleRate / inputSampleRate + 1) * channelCount;
     float *outputBuffer = new float[outputSize];    // multi-channel buffer to be filled
-    double *doubleOutputBuffer = new double[outputSize];    // multi-channel buffer to be filled
-
-    float *start = outputBuffer;
-    int numOutputFrames = 0;
 
     resampler::MultiChannelResampler *res = resampler::MultiChannelResampler::make(
             channelCount,
             inputSampleRate,
-            44100,
+            outputSampleRate,
             resampler::MultiChannelResampler::Quality::Best);
 
     int inputFramesLeft = numInputFrames;
@@ -41,18 +33,13 @@ Java_com_demixr_demixr_1app_DemixingPlugin_resample(JNIEnv *env, jobject jobj, j
             floatInput += channelCount;
             inputFramesLeft--;
         } else {
-            res->readNextFrame(outputBuffer);
-            outputBuffer += channelCount;
+            res->readNextFrame(outputBuffer + numOutputFrames * channelCount);
             numOutputFrames++;
         }
     }
 
-    for (int i = 0; i < numOutputFrames * channelCount; i++) {
-        doubleOutputBuffer[i] = start[i];
-    }
-
-    jdoubleArray out = env->NewDoubleArray(numOutputFrames * channelCount);
-    env->SetDoubleArrayRegion(out, 0, numOutputFrames * channelCount, doubleOutputBuffer);
+    jfloatArray out = env->NewFloatArray(numOutputFrames * channelCount);
+    env->SetFloatArrayRegion(out, 0, numOutputFrames * channelCount, outputBuffer);
 
     delete res;
 
