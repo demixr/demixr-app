@@ -31,7 +31,8 @@ class LibraryRepository {
     String filename = "$stem.wav";
     String songPath = p.join(dir, filename);
 
-    final savedFile = await moveFile(File(song.path), songPath);
+    File songFile = File(song.path);
+    final savedFile = await songFile.move(songPath);
     song.path = savedFile.path;
 
     return song;

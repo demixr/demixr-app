@@ -8,6 +8,7 @@ import 'package:demixr_app/models/failure/no_album_cover.dart';
 import 'package:demixr_app/models/failure/song_load_failure.dart';
 import 'package:demixr_app/models/song.dart';
 import 'package:demixr_app/services/song_loader.dart';
+import 'package:demixr_app/utils.dart';
 import 'package:ffmpeg_kit_flutter/ffmpeg_kit.dart';
 import 'package:ffmpeg_kit_flutter/ffprobe_kit.dart';
 import 'package:ffmpeg_kit_flutter/return_code.dart';
@@ -30,12 +31,10 @@ class SongHelper {
       Tuple2<String, List<String>> songInfos = _getSongInfos(
         metadata.trackName,
         metadata.trackArtistNames,
-        basenameWithoutExtension(path.path),
+        basename(path.path).removeExtension(),
       );
 
       String newPath = await convertToWav(file.path!);
-
-      print('NEW PATH: $newPath');
 
       return Right(
         Song(
@@ -74,9 +73,12 @@ class SongHelper {
       throw ArgumentError('SongLoader: Failed to get file format');
     } else if (format == 'mp3') {
       final outputPath = '${withoutExtension(path)}.wav';
+      File(outputPath).deleteIfExists();
+
       final convertSession =
-          await FFmpegKit.execute('-i \'$path\' \'$outputPath\'');
+          await FFmpegKit.execute('-i "$path" -acodec pcm_u8 "$outputPath"');
       final convertRc = await convertSession.getReturnCode();
+
       if (ReturnCode.isSuccess(convertRc)) {
         path = outputPath;
       } else {
