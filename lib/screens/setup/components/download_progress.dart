@@ -28,26 +28,24 @@ class DownloadProgress extends StatelessWidget {
                   backgroundColor: ColorPalette.surfaceVariant,
                   progressColor: ColorPalette.primary,
                   circularStrokeCap: CircularStrokeCap.round,
-                  center: Expanded(
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          '${modelProvider.currentDownloaded}',
-                          style: const TextStyle(
-                            fontSize: 64,
-                            fontWeight: FontWeight.w600,
-                            color: ColorPalette.primary,
-                          ),
+                  center: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        '${modelProvider.currentDownloaded}',
+                        style: const TextStyle(
+                          fontSize: 64,
+                          fontWeight: FontWeight.w600,
+                          color: ColorPalette.primary,
                         ),
-                        const Text(
-                          ' MB',
-                          style: TextStyle(
-                              fontSize: 24, color: ColorPalette.primary),
-                        )
-                      ],
-                    ),
+                      ),
+                      const Text(
+                        ' MB',
+                        style: TextStyle(
+                            fontSize: 24, color: ColorPalette.primary),
+                      )
+                    ],
                   ),
                 );
               },

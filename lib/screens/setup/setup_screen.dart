@@ -22,24 +22,22 @@ class SetupScreen extends StatelessWidget {
               const EdgeInsets.only(left: 20, top: 70, right: 20, bottom: 30),
           height: double.maxFinite,
           width: double.maxFinite,
-          child: Expanded(
-            child: Consumer<ModelProvider>(
-                builder: (context, modelProvider, child) {
-              final children = modelProvider.downloadInProgress
-                  ? const [DownloadProgress()]
-                  : const [
-                      SetupTitle(),
-                      Instructions(),
-                      ModelSelection(),
-                    ];
+          child:
+              Consumer<ModelProvider>(builder: (context, modelProvider, child) {
+            final children = modelProvider.downloadInProgress
+                ? const [DownloadProgress()]
+                : const [
+                    SetupTitle(),
+                    Instructions(),
+                    ModelSelection(),
+                  ];
 
-              return Column(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: children,
-              );
-            }),
-          ),
+            return Column(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: children,
+            );
+          }),
         ),
       ),
     );
