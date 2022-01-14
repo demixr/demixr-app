@@ -1,3 +1,4 @@
+import 'package:demixr_app/models/exceptions/demixing_exception.dart';
 import 'package:demixr_app/models/song.dart';
 import 'package:demixr_app/models/unmixed_song.dart';
 import 'package:demixr_app/utils.dart';
@@ -7,15 +8,20 @@ class DemixingHelper {
   static const platform = MethodChannel('demixing');
 
   Future<UnmixedSong> separate(Song song, String modelPath) async {
-    // TODO: add error handling
-    final Map<dynamic, dynamic> result = await platform.invokeMethod(
-      'separate',
-      <String, String>{
-        'songPath': song.path,
-        'modelPath': modelPath,
-        'outputPath': await getAppTemp()
-      },
-    );
+    Map<dynamic, dynamic> result;
+
+    try {
+      result = await platform.invokeMethod(
+        'separate',
+        <String, String>{
+          'songPath': song.path,
+          'modelPath': modelPath,
+          'outputPath': await getAppTemp()
+        },
+      );
+    } on PlatformException {
+      throw DemixingException('An error occured while demixing');
+    }
 
     final Map<String, String> separated = result.cast<String, String>();
 

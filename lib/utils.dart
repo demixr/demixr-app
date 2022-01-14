@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:get/route_manager.dart';
 import 'package:path_provider/path_provider.dart';
 
 import 'constants.dart';
@@ -26,6 +27,17 @@ String getAssetPath(String name, AssetType assetType, {String? extension}) {
   }
 
   return path;
+}
+
+SnackbarController errorSnackbar(String title, String message,
+    {int seconds = 2}) {
+  return Get.snackbar(
+    title,
+    message,
+    backgroundColor: ColorPalette.errorContainer,
+    colorText: ColorPalette.onError,
+    duration: Duration(seconds: seconds),
+  );
 }
 
 extension MoveFile on File {
