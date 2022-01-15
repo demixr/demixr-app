@@ -3,7 +3,7 @@ import 'dart:typed_data';
 
 import 'package:dartz/dartz.dart';
 import 'package:demixr_app/constants.dart';
-import 'package:demixr_app/models/exceptions/convertion_exception.dart';
+import 'package:demixr_app/models/exceptions/conversion_exception.dart';
 import 'package:demixr_app/models/failure/failure.dart';
 import 'package:demixr_app/models/failure/no_album_cover.dart';
 import 'package:demixr_app/models/failure/song_load_failure.dart';
@@ -37,11 +37,10 @@ class SongHelper {
       );
 
       String newPath;
-
       try {
         newPath = await convertToWav(file.path!);
-      } on ConvertionException catch (e) {
-        Get.snackbar('Song convertion error', e.message);
+      } on ConversionException catch (e) {
+        Get.snackbar('Song conversion error', e.message);
         return Left(SongLoadFailure());
       }
 
@@ -79,7 +78,7 @@ class SongHelper {
     String? format = information?.getProperties('format_name');
 
     if (format == null) {
-      throw ConvertionException('SongLoader: Failed to get file format');
+      throw ConversionException('SongLoader: Failed to get the file format');
     } else if (format == 'mp3') {
       final outputPath = '${withoutExtension(path)}.wav';
       File(outputPath).deleteIfExists();
@@ -91,7 +90,7 @@ class SongHelper {
       if (ReturnCode.isSuccess(convertRc)) {
         path = outputPath;
       } else {
-        throw ConvertionException(
+        throw ConversionException(
             'SongLoader: Failed to convert audio file to wav');
       }
     }
