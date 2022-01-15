@@ -46,7 +46,7 @@ class LibraryProvider extends ChangeNotifier {
   void _loadSongs() => _songs = _repository.box.values.toList();
 
   Future<int> saveSong(UnmixedSong song) async {
-    song.mixture = await _repository.saveFile(song.mixture);
+    song = await _repository.saveFiles(song);
     _repository.box.add(song);
     _songs.add(song);
     notifyListeners();

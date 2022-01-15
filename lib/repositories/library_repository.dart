@@ -2,7 +2,6 @@ import 'dart:io';
 import 'package:demixr_app/models/song.dart';
 import 'package:demixr_app/models/unmixed_song.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
 
 import '../utils.dart';
@@ -14,13 +13,8 @@ class LibraryRepository {
 
   Box<UnmixedSong> get box => _box;
 
-  Future<String> get _localPath async {
-    final directory = await getApplicationDocumentsDirectory();
-    return directory.path;
-  }
-
   Future<String> get _directoryPath async {
-    final path = await _localPath;
+    final path = await getAppExternalStorage();
     var directory = Directory(p.join(path, _directoryName));
     directory = await directory.createIfNotPresent();
     return directory.path;
@@ -33,14 +27,27 @@ class LibraryRepository {
     return directory.path;
   }
 
-  Future<Song> saveFile(Song song) async {
-    String libraryDirectory = await _directoryPath;
-    String songDirectory = await _createSongDirectory(libraryDirectory, song);
-    String filename = "mixture${p.extension(song.path)}";
-    String songPath = p.join(songDirectory, filename);
+  Future<Song> _saveStem(Song song, String dir, String stem) async {
+    String filename = "$stem.wav";
+    String songPath = p.join(dir, filename);
 
-    final savedFile = await moveFile(File(song.path), songPath);
+    File songFile = File(song.path);
+    final savedFile = await songFile.move(songPath);
     song.path = savedFile.path;
+
+    return song;
+  }
+
+  Future<UnmixedSong> saveFiles(UnmixedSong song) async {
+    String libraryDirectory = await _directoryPath;
+    String songDirectory =
+        await _createSongDirectory(libraryDirectory, song.mixture);
+
+    song.mixture = await _saveStem(song.mixture, songDirectory, 'mixture');
+    song.vocals = await _saveStem(song.vocals, songDirectory, 'vocals');
+    song.bass = await _saveStem(song.bass, songDirectory, 'bass');
+    song.drums = await _saveStem(song.drums, songDirectory, 'drums');
+    song.other = await _saveStem(song.other, songDirectory, 'other');
 
     return song;
   }

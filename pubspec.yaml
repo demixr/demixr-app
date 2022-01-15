@@ -48,13 +48,13 @@ dependencies:
   async: ^2.8.2
   audioplayers: ^0.20.1
   audio_video_progress_bar: ^0.10.0
-  audio_service: ^0.18.3
   url_launcher: ^6.0.18
   flutter_downloader: ^1.7.1
   flowder:
     git:
       url: https://github.com/Harsh223/flowder.git
   percent_indicator: ^3.4.0
+  ffmpeg_kit_flutter: ^4.5.1
 
 dev_dependencies:
   flutter_test:

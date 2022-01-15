@@ -27,12 +27,24 @@ class LoadingScreen extends StatelessWidget {
               getAssetPath('demixing', AssetType.animation),
             ),
           ),
-          const Text(
-            'Demixing in progress',
-            style: TextStyle(
-              color: ColorPalette.onSurfaceVariant,
-              fontSize: 20,
-            ),
+          SpacedColumn(
+            spacing: 5,
+            children: const [
+              Text(
+                'Demixing in progress',
+                style: TextStyle(
+                  color: ColorPalette.onSurfaceVariant,
+                  fontSize: 20,
+                ),
+              ),
+              Text(
+                'This may take a few minutes',
+                style: TextStyle(
+                  color: ColorPalette.onSurfaceVariant,
+                  fontSize: 20,
+                ),
+              ),
+            ],
           ),
           CancelButton(onPressed: () => demixingProvider.cancelDemixing()),
         ],

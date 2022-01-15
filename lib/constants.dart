@@ -26,9 +26,9 @@ class ColorPalette {
 }
 
 class Paths {
-  static const String images = 'assets/images/';
-  static const String icons = 'assets/icons/';
-  static const String animations = 'assets/animations/';
+  static const images = 'assets/images/';
+  static const icons = 'assets/icons/';
+  static const animations = 'assets/animations/';
 }
 
 const songArtistTitleSeparator = '-';
@@ -64,6 +64,31 @@ class Models {
     if (name == umxl.name) return umxl;
 
     throw ArgumentError('Models: The given model name does not exist');
+  }
+}
+
+enum Stem {
+  mixture,
+  vocals,
+  drums,
+  bass,
+  other,
+}
+
+extension StemsName on Stem {
+  String get name {
+    switch (this) {
+      case Stem.mixture:
+        return 'Mixture';
+      case Stem.vocals:
+        return 'Vocals';
+      case Stem.drums:
+        return 'Drums';
+      case Stem.bass:
+        return 'Bass';
+      case Stem.other:
+        return 'Other';
+    }
   }
 }
 

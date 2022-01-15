@@ -1,10 +1,12 @@
-import 'package:audioplayers/audioplayers.dart';
 import 'package:dartz/dartz.dart';
 import 'package:demixr_app/models/failure/failure.dart';
 import 'package:demixr_app/models/failure/no_song_selected.dart';
 import 'package:demixr_app/models/unmixed_song.dart';
 import 'package:demixr_app/providers/library_provider.dart';
+import 'package:demixr_app/services/stems_player.dart';
 import 'package:flutter/material.dart';
+
+import '../constants.dart';
 
 enum PlayerState {
   play,
@@ -15,7 +17,7 @@ enum PlayerState {
 class PlayerProvider extends ChangeNotifier {
   late LibraryProvider _library;
   Either<Failure, UnmixedSong> _song = Left(NoSongSelected());
-  final AudioPlayer _player = AudioPlayer();
+  final _player = StemsPlayer();
   PlayerState state = PlayerState.off;
   Duration position = Duration.zero;
 
@@ -23,7 +25,9 @@ class PlayerProvider extends ChangeNotifier {
 
   Stream<Duration> get positionStream => _player.onAudioPositionChanged;
 
-  Future<int> get songDuration async => _player.getDuration();
+  Future<int> get songDuration async => await _player.getDuration();
+
+  bool isStemMute(Stem stem) => _player.getStemState(stem) == StemState.mute;
 
   void update(LibraryProvider library) {
     _library = library;
@@ -42,8 +46,13 @@ class PlayerProvider extends ChangeNotifier {
       _song.fold(
         (failure) => null,
         (song) {
-          _player.setUrl(song.mixture.path, isLocal: true);
+          _player.setUrls(song);
+          _player.seek(position);
           state = PlayerState.pause;
+
+          _player.onPlayerCompletion.listen((event) {
+            toStart();
+          });
         },
       );
 
@@ -51,22 +60,39 @@ class PlayerProvider extends ChangeNotifier {
     }
   }
 
-  void resetPosition() => position = Duration.zero;
+  void resetPosition() {
+    position = Duration.zero;
+  }
 
   void playpause() {
     switch (state) {
       case PlayerState.play:
-        _player.pause();
-        state = PlayerState.pause;
+        pause();
         break;
       case PlayerState.pause:
-        _player.resume();
-        state = PlayerState.play;
+        resume();
         break;
       case PlayerState.off:
         break;
     }
     notifyListeners();
+  }
+
+  void toStart({bool setPause = true}) {
+    if (setPause) pause();
+    resetPosition();
+    seek(position);
+    notifyListeners();
+  }
+
+  void resume() {
+    _player.resume();
+    state = PlayerState.play;
+  }
+
+  void pause() {
+    _player.pause();
+    state = PlayerState.pause;
   }
 
   void stop() {
@@ -83,11 +109,16 @@ class PlayerProvider extends ChangeNotifier {
 
   void next() {
     final success = _library.nextSong();
-    if (!success) stop();
+    if (!success) toStart();
   }
 
   void previous() {
     final success = _library.previousSong();
-    if (!success) stop();
+    if (!success) toStart(setPause: false);
+  }
+
+  void toggleStem(Stem stem) {
+    _player.toggleStem(stem);
+    notifyListeners();
   }
 }

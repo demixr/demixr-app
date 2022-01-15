@@ -1,6 +1,7 @@
 // part 'unmixed_song.g.dart';
 import 'package:hive/hive.dart';
 
+import '../constants.dart';
 import 'song.dart';
 
 part 'unmixed_song.g.dart';
@@ -11,22 +12,37 @@ class UnmixedSong {
   Song mixture;
 
   @HiveField(1)
-  Song? vocals;
+  Song vocals;
 
   @HiveField(2)
-  Song? bass;
+  Song bass;
 
   @HiveField(3)
-  Song? drums;
+  Song drums;
 
   @HiveField(4)
-  Song? other;
+  Song other;
 
   UnmixedSong({
     required this.mixture,
-    this.vocals,
-    this.bass,
-    this.drums,
-    this.other,
+    required this.vocals,
+    required this.bass,
+    required this.drums,
+    required this.other,
   });
+
+  Song getStem(Stem stem) {
+    switch (stem) {
+      case Stem.mixture:
+        return mixture;
+      case Stem.vocals:
+        return vocals;
+      case Stem.drums:
+        return drums;
+      case Stem.bass:
+        return bass;
+      case Stem.other:
+        return other;
+    }
+  }
 }

@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:get/route_manager.dart';
 import 'package:path_provider/path_provider.dart';
 
 import 'constants.dart';
@@ -28,15 +29,39 @@ String getAssetPath(String name, AssetType assetType, {String? extension}) {
   return path;
 }
 
-Future<File> moveFile(File sourceFile, String newPath) async {
-  try {
-    // prefer using rename as it is probably faster
-    return await sourceFile.rename(newPath);
-  } on FileSystemException {
-    // if rename fails, copy the source file and then delete it
-    final newFile = await sourceFile.copy(newPath);
-    await sourceFile.delete();
-    return newFile;
+SnackbarController errorSnackbar(String title, String message,
+    {int seconds = 2}) {
+  return Get.snackbar(
+    title,
+    message,
+    backgroundColor: ColorPalette.errorContainer,
+    colorText: ColorPalette.onError,
+    duration: Duration(seconds: seconds),
+  );
+}
+
+extension MoveFile on File {
+  Future<File> move(String newPath) async {
+    try {
+      // prefer using rename as it is probably faster
+      return await rename(newPath);
+    } on FileSystemException {
+      // if rename fails, copy the source file and then delete it
+      final newFile = await copy(newPath);
+      await delete();
+      return newFile;
+    }
+  }
+
+  deleteIfExists() async {
+    if (await exists()) await delete();
+  }
+}
+
+extension RemoveExtension on String {
+  String removeExtension() {
+    replaceAll(RegExp('.wav|.mp3'), '');
+    return this;
   }
 }
 
