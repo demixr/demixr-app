@@ -7,6 +7,7 @@ import 'package:demixr_app/providers/library_provider.dart';
 import 'package:demixr_app/providers/song_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
 import 'package:provider/provider.dart';
 
@@ -32,7 +33,13 @@ class UnmixButton extends StatelessWidget {
           radius: 25,
           textSize: 18,
           onPressed: song.fold(
-            (failure) => null,
+            (failure) => () {
+              Fluttertoast.showToast(
+                msg: 'You need to select a song first',
+                backgroundColor: ColorPalette.surfaceVariant,
+                textColor: ColorPalette.onSurfaceVariant,
+              );
+            },
             (song) => () {
               var demixingProvider = context.read<DemixingProvider>();
               var library = context.read<LibraryProvider>();

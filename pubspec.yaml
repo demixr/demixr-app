@@ -57,6 +57,7 @@ dependencies:
   youtube_explode_dart: ^1.10.8
   flutter_form_builder: ^7.0.0
   form_builder_validators: ^7.2.0
+  fluttertoast: ^8.0.8
 
 dev_dependencies:
   flutter_test:
