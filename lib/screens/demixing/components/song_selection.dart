@@ -12,6 +12,7 @@ import 'package:demixr_app/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
+import 'package:get/route_manager.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 
@@ -47,10 +48,10 @@ class SongSelection extends StatelessWidget {
                                 FormBuilderValidators.url(context),
                               ]),
                             ),
-                            Button(
-                              'Ok',
-                              onPressed: () => provider.downloadFromYoutube(),
-                            ),
+                            Button('Ok', onPressed: () {
+                              provider.downloadFromYoutube();
+                              Get.back();
+                            }),
                           ],
                         ),
                       ),

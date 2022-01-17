@@ -9,6 +9,7 @@ import 'package:demixr_app/screens/player/player_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:demixr_app/constants.dart' show BoxesNames, ColorPalette;
 import 'package:flutter/services.dart';
+import 'package:form_builder_validators/form_builder_validators.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:get/get.dart';
@@ -76,6 +77,8 @@ class MyApp extends StatelessWidget {
             transition: Transition.downToUp,
           ),
         ],
+        supportedLocales: const [Locale('en')],
+        localizationsDelegates: const [FormBuilderLocalizations.delegate],
       ),
     );
   }

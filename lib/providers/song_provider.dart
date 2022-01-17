@@ -6,6 +6,7 @@ import 'package:demixr_app/models/failure/failure.dart';
 import 'package:demixr_app/models/failure/no_album_cover.dart';
 import 'package:demixr_app/models/failure/no_song_selected.dart';
 import 'package:demixr_app/models/song.dart';
+import 'package:demixr_app/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 
@@ -40,7 +41,10 @@ class SongProvider extends ChangeNotifier {
       _song = await _ytHelper.downloadFromYoutube(url);
 
       await _song.fold(
-        (failure) async => _cover = Left(NoAlbumCover()),
+        (failure) async => {
+          errorSnackbar('Song download error', failure.message, seconds: 5),
+          _cover = Left(NoAlbumCover())
+        },
         (song) async => _cover = await song.albumCover,
       );
 

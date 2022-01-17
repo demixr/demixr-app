@@ -7,6 +7,7 @@ import 'package:demixr_app/models/exceptions/conversion_exception.dart';
 import 'package:demixr_app/models/failure/failure.dart';
 import 'package:demixr_app/models/failure/no_album_cover.dart';
 import 'package:demixr_app/models/failure/song_load_failure.dart';
+import 'package:demixr_app/models/failure/song_not_found_on_youtube.dart';
 import 'package:demixr_app/models/song.dart';
 import 'package:demixr_app/services/song_loader.dart';
 import 'package:demixr_app/utils.dart';
@@ -58,7 +59,13 @@ class SongHelper {
 
   Future<Either<Failure, Song>> downloadFromYoutube(String url) async {
     final yt = YoutubeExplode();
-    final video = await yt.videos.get(url);
+
+    Video video;
+    try {
+      video = await yt.videos.get(url);
+    } on ArgumentError {
+      return Left(SongNotFoundOnYoutube());
+    }
 
     final coverPath =
         _downloadThumbnail(video.thumbnails.mediumResUrl, video.title);
