@@ -13,6 +13,8 @@ class Song {
   @HiveField(2)
   String path;
 
+  String? coverPath;
+
   Song({required this.title, required this.artists, required this.path});
 
   @override

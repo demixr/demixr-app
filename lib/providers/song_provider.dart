@@ -27,7 +27,10 @@ class SongProvider extends ChangeNotifier {
     _song = await _helper.loadFromDevice();
 
     await _song.fold(
-      (failure) async => _cover = Left(NoAlbumCover()),
+      (failure) async {
+        errorSnackbar('Could not load the song', failure.message);
+        _cover = Left(NoAlbumCover());
+      },
       (song) async => _cover = await song.albumCover,
     );
 
@@ -41,9 +44,10 @@ class SongProvider extends ChangeNotifier {
       _song = await _ytHelper.downloadFromYoutube(url);
 
       await _song.fold(
-        (failure) async => {
-          errorSnackbar('Song download error', failure.message, seconds: 5),
-          _cover = Left(NoAlbumCover())
+        (failure) async {
+          errorSnackbar('Could not download the song', failure.message,
+              seconds: 5);
+          _cover = Left(NoAlbumCover());
         },
         (song) async => _cover = await song.albumCover,
       );

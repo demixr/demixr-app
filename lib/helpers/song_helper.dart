@@ -6,6 +6,9 @@ import 'package:demixr_app/constants.dart';
 import 'package:demixr_app/models/exceptions/conversion_exception.dart';
 import 'package:demixr_app/models/failure/failure.dart';
 import 'package:demixr_app/models/failure/no_album_cover.dart';
+import 'package:demixr_app/models/failure/no_internet_connection.dart';
+import 'package:demixr_app/models/failure/song_conversion_failure.dart';
+import 'package:demixr_app/models/failure/song_download_failure.dart';
 import 'package:demixr_app/models/failure/song_load_failure.dart';
 import 'package:demixr_app/models/failure/song_not_found_on_youtube.dart';
 import 'package:demixr_app/models/song.dart';
@@ -43,8 +46,7 @@ class SongHelper {
       try {
         newPath = await convertToWav(file.path!);
       } on ConversionException catch (e) {
-        Get.snackbar('Song conversion error', e.message);
-        return Left(SongLoadFailure());
+        return Left(SongConversionFailure());
       }
 
       return Right(
@@ -65,29 +67,38 @@ class SongHelper {
       video = await yt.videos.get(url);
     } on ArgumentError {
       return Left(SongNotFoundOnYoutube());
+    } on SocketException {
+      return Left(NoInternetConnection());
     }
 
-    final coverPath =
-        _downloadThumbnail(video.thumbnails.mediumResUrl, video.title);
+    String? coverPath;
+    try {
+      coverPath =
+          await _downloadThumbnail(video.thumbnails.mediumResUrl, video.title);
+    } catch (e) {
+      coverPath = null;
+    }
 
-    // if (video == null) return Left(NoSongSelected());
+    File file;
+    try {
+      final manifest = await yt.videos.streamsClient.getManifest(url);
+      final streamInfo = manifest.audioOnly.withHighestBitrate();
 
-    final manifest = await yt.videos.streamsClient.getManifest(url);
-    final streamInfo = manifest.audioOnly.withHighestBitrate();
+      // Get the actual stream
+      final stream = yt.videos.streamsClient.get(streamInfo);
 
-    // Get the actual stream
-    final stream = yt.videos.streamsClient.get(streamInfo);
+      file = File(p.join(await getAppTemp(), video.title));
+      final fileStream = file.openWrite();
 
-    // Open a file for writing.
-    final file = File(p.join(await getAppTemp(), video.title));
-    final fileStream = file.openWrite();
+      // Pipe all the content of the stream into the file.
+      await stream.pipe(fileStream);
 
-    // Pipe all the content of the stream into the file.
-    await stream.pipe(fileStream);
-
-    // Close the file.
-    await fileStream.flush();
-    await fileStream.close();
+      // Close the file.
+      await fileStream.flush();
+      await fileStream.close();
+    } catch (_) {
+      return Left(SongDownloadFailure());
+    }
 
     yt.close();
 
