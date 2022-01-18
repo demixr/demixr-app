@@ -1,4 +1,4 @@
-import 'dart:typed_data';
+import 'dart:io';
 
 import 'package:dartz/dartz.dart';
 import 'package:demixr_app/constants.dart';
@@ -50,23 +50,23 @@ class SongInfos extends StatelessWidget {
 }
 
 class AlbumCover extends StatelessWidget {
-  final Either<Failure, Uint8List> image;
+  final Either<Failure, String> imagePath;
   final double size;
 
-  const AlbumCover({Key? key, required this.image, this.size = 65})
+  const AlbumCover({Key? key, required this.imagePath, this.size = 65})
       : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return image.fold(
+    return imagePath.fold(
       (failure) => Image.asset(
         getAssetPath('default_cover', AssetType.image),
         fit: BoxFit.contain,
         width: size,
         height: size,
       ),
-      (cover) => Image.memory(
-        cover,
+      (coverPath) => Image.file(
+        File(coverPath),
         fit: BoxFit.cover,
         width: size,
         height: size,
@@ -78,7 +78,7 @@ class AlbumCover extends StatelessWidget {
 class SongWidget extends StatelessWidget {
   final String title;
   final List<String> artists;
-  final Either<Failure, Uint8List> cover;
+  final Either<Failure, String> coverPath;
   final VoidCallback? onRemovePressed;
   final Color textColor;
 
@@ -86,7 +86,7 @@ class SongWidget extends StatelessWidget {
     Key? key,
     required this.title,
     required this.artists,
-    required this.cover,
+    required this.coverPath,
     this.onRemovePressed,
     this.textColor = ColorPalette.onSurface,
   }) : super(key: key);
@@ -99,7 +99,7 @@ class SongWidget extends StatelessWidget {
         SpacedRow(
           spacing: 15,
           children: [
-            AlbumCover(image: cover),
+            AlbumCover(imagePath: coverPath),
             SongInfos(
               title: title,
               artists: artists,

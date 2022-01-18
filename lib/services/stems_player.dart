@@ -47,8 +47,8 @@ class StemsPlayer {
   }
 
   void setUrls(UnmixedSong song) {
-    players.forEach((stem, player) =>
-        player.setUrl(song.getStem(stem).path, isLocal: true));
+    players.forEach(
+        (stem, player) => player.setUrl(song.getStem(stem), isLocal: true));
   }
 
   void pause() {

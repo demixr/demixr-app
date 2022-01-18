@@ -2,6 +2,7 @@ import 'package:demixr_app/models/exceptions/demixing_exception.dart';
 import 'package:demixr_app/models/song.dart';
 import 'package:demixr_app/models/unmixed_song.dart';
 import 'package:demixr_app/utils.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
 import '../constants.dart';
@@ -46,7 +47,7 @@ class DemixingHelper {
       Stem.other.name,
     ];
 
-    if (separated.keys != stems) {
+    if (listEquals(separated.keys.toList(), stems)) {
       throw DemixingException('Invalid demixing result');
     }
   }

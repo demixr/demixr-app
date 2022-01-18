@@ -1,5 +1,3 @@
-import 'dart:typed_data';
-
 import 'package:dartz/dartz.dart';
 import 'package:demixr_app/components/buttons.dart';
 import 'package:demixr_app/components/extended_widgets.dart';
@@ -103,7 +101,7 @@ class SongSelection extends StatelessWidget {
         ),
       );
 
-  Widget buildSelectedSongCard(Song song, Either<Failure, Uint8List> cover,
+  Widget buildSelectedSongCard(Song song, Either<Failure, String> coverPath,
           {VoidCallback? onRemovePressed}) =>
       Card(
         color: ColorPalette.surfaceVariant,
@@ -114,7 +112,7 @@ class SongSelection extends StatelessWidget {
           child: SongWidget(
             title: song.title,
             artists: song.artists,
-            cover: cover,
+            coverPath: coverPath,
             onRemovePressed: onRemovePressed,
           ),
         ),
@@ -133,7 +131,7 @@ class SongSelection extends StatelessWidget {
           (song) => children.add(
             buildSelectedSongCard(
               song,
-              songProvider.cover,
+              song.albumCover,
               onRemovePressed: () => songProvider.removeSelectedSong(),
             ),
           ),
