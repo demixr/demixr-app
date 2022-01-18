@@ -1,9 +1,6 @@
-import 'dart:typed_data';
-
 import 'package:dartz/dartz.dart';
 import 'package:demixr_app/helpers/song_helper.dart';
 import 'package:demixr_app/models/failure/failure.dart';
-import 'package:demixr_app/models/failure/no_album_cover.dart';
 import 'package:demixr_app/models/failure/no_song_selected.dart';
 import 'package:demixr_app/models/song.dart';
 import 'package:demixr_app/utils.dart';
@@ -15,11 +12,8 @@ class SongProvider extends ChangeNotifier {
   final _ytHelper = SongHelper();
   final _urlFormKey = GlobalKey<FormBuilderState>();
   Either<Failure, Song> _song = Left(NoSongSelected());
-  Either<Failure, Uint8List> _cover = Left(NoAlbumCover());
 
   Either<Failure, Song> get song => _song;
-
-  Either<Failure, Uint8List> get cover => _cover;
 
   GlobalKey<FormBuilderState> get urlFormKey => _urlFormKey;
 
@@ -28,10 +22,11 @@ class SongProvider extends ChangeNotifier {
 
     await _song.fold(
       (failure) async {
-        errorSnackbar('Could not load the song', failure.message);
-        _cover = Left(NoAlbumCover());
+        if (failure != NoSongSelected()) {
+          errorSnackbar('Could not load the song', failure.message);
+        }
       },
-      (song) async => _cover = await song.albumCover,
+      (song) => null,
     );
 
     notifyListeners();
@@ -47,9 +42,8 @@ class SongProvider extends ChangeNotifier {
         (failure) async {
           errorSnackbar('Could not download the song', failure.message,
               seconds: 5);
-          _cover = Left(NoAlbumCover());
         },
-        (song) async => _cover = await song.albumCover,
+        (song) => null,
       );
 
       notifyListeners();
@@ -58,7 +52,6 @@ class SongProvider extends ChangeNotifier {
 
   void removeSelectedSong() {
     _song = Left(NoSongSelected());
-    _cover = Left(NoAlbumCover());
     notifyListeners();
   }
 }
