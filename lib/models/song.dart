@@ -1,27 +1,29 @@
-import 'package:hive/hive.dart';
+import 'package:dartz/dartz.dart';
 
-part 'song.g.dart';
+import 'failure/failure.dart';
+import 'failure/no_album_cover.dart';
 
-@HiveType(typeId: 1)
 class Song {
-  @HiveField(0)
   String title;
 
-  @HiveField(1)
   List<String> artists;
 
-  @HiveField(2)
   String path;
 
   String? coverPath;
 
-  Song({required this.title, required this.artists, required this.path});
+  Song({
+    required this.title,
+    required this.artists,
+    required this.path,
+    this.coverPath,
+  });
+
+  Either<Failure, String> get albumCover =>
+      coverPath == null ? Left(NoAlbumCover()) : Right(coverPath!);
 
   @override
   String toString() {
     return "${artists.join('_')}_$title";
   }
-
-  Song.stem(Song song, String? path)
-      : this(title: song.title, artists: song.artists, path: path ?? song.path);
 }
