@@ -1,11 +1,10 @@
 import 'dart:io';
-import 'package:demixr_app/models/song.dart';
 import 'package:demixr_app/models/unmixed_song.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:path/path.dart' as p;
 
+import '../constants.dart';
 import '../utils.dart';
-import '../constants.dart' show BoxesNames;
 
 class LibraryRepository {
   final _box = Hive.box<UnmixedSong>(BoxesNames.library);
@@ -21,39 +20,38 @@ class LibraryRepository {
   }
 
   Future<String> _createSongDirectory(
-      String libraryDirectory, Song song) async {
+      String libraryDirectory, UnmixedSong song) async {
     var directory = Directory(p.join(libraryDirectory, song.toString()));
     directory = await directory.createUnique();
     return directory.path;
   }
 
-  Future<Song> _saveStem(Song song, String dir, String stem) async {
-    String filename = "$stem.wav";
-    String songPath = p.join(dir, filename);
+  Future<String> _saveStem(String path, String name, String dir) async {
+    String filename = "$name.wav";
+    String newPath = p.join(dir, filename);
 
-    File songFile = File(song.path);
-    final savedFile = await songFile.move(songPath);
-    song.path = savedFile.path;
+    File stemFile = File(path);
+    final savedFile = await stemFile.move(newPath);
 
-    return song;
+    return savedFile.path;
   }
 
   Future<UnmixedSong> saveFiles(UnmixedSong song) async {
     String libraryDirectory = await _directoryPath;
-    String songDirectory =
-        await _createSongDirectory(libraryDirectory, song.mixture);
+    String songDirectory = await _createSongDirectory(libraryDirectory, song);
 
-    song.mixture = await _saveStem(song.mixture, songDirectory, 'mixture');
-    song.vocals = await _saveStem(song.vocals, songDirectory, 'vocals');
-    song.bass = await _saveStem(song.bass, songDirectory, 'bass');
-    song.drums = await _saveStem(song.drums, songDirectory, 'drums');
-    song.other = await _saveStem(song.other, songDirectory, 'other');
+    song.mixture =
+        await _saveStem(song.mixture, Stem.mixture.name, songDirectory);
+    song.vocals = await _saveStem(song.vocals, Stem.vocals.name, songDirectory);
+    song.bass = await _saveStem(song.bass, Stem.bass.name, songDirectory);
+    song.drums = await _saveStem(song.drums, Stem.drums.name, songDirectory);
+    song.other = await _saveStem(song.other, Stem.other.name, songDirectory);
 
     return song;
   }
 
   void removeSongFiles(UnmixedSong song) {
-    File file = File(song.mixture.path);
+    File file = File(song.mixture);
     Directory directory = file.parent;
     directory.deleteSync(recursive: true);
   }

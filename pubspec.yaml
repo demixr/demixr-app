@@ -58,6 +58,7 @@ dependencies:
   flutter_form_builder: ^7.0.0
   form_builder_validators: ^7.2.0
   fluttertoast: ^8.0.8
+  image: ^3.1.1
 
 dev_dependencies:
   flutter_test:
