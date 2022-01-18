@@ -44,7 +44,7 @@ class SongHelper {
 
       String newPath;
       try {
-        newPath = await convertToWav(file.path!);
+        newPath = await _convertToWav(file.path!);
       } on ConversionException {
         return Left(SongConversionFailure());
       }
@@ -121,10 +121,17 @@ class SongHelper {
 
     yt.close();
 
+    String newPath;
+    try {
+      newPath = await _convertToWav(file.path);
+    } on ConversionException {
+      return Left(SongConversionFailure());
+    }
+
     return Right(Song(
       title: video.title,
       artists: [video.author],
-      path: file.path,
+      path: newPath,
       coverPath: coverPath,
     ));
   }
@@ -158,7 +165,7 @@ class SongHelper {
   }
 }
 
-Future<String> convertToWav(String path) async {
+Future<String> _convertToWav(String path) async {
   final session = await FFprobeKit.getMediaInformation(path);
   final information = session.getMediaInformation();
 
@@ -166,7 +173,7 @@ Future<String> convertToWav(String path) async {
 
   if (format == null) {
     throw ConversionException('SongLoader: Failed to get the file format');
-  } else if (format == 'mp3') {
+  } else if (format != 'wav') {
     final outputPath = '${p.withoutExtension(path)}.wav';
     File(outputPath).deleteIfExists();
 
