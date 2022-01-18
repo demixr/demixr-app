@@ -4,6 +4,8 @@ import 'package:demixr_app/models/unmixed_song.dart';
 import 'package:demixr_app/utils.dart';
 import 'package:flutter/services.dart';
 
+import '../constants.dart';
+
 class DemixingHelper {
   static const platform = MethodChannel('demixing');
 
@@ -25,12 +27,27 @@ class DemixingHelper {
 
     final Map<String, String> separated = result.cast<String, String>();
 
-    return UnmixedSong(
-      mixture: song,
-      vocals: Song.stem(song, separated['vocals']),
-      drums: Song.stem(song, separated['drums']),
-      bass: Song.stem(song, separated['bass']),
-      other: Song.stem(song, separated['other']),
+    checkResult(separated);
+
+    return UnmixedSong.fromSong(
+      song,
+      vocals: separated['vocals']!,
+      drums: separated['drums']!,
+      bass: separated['bass']!,
+      other: separated['other']!,
     );
+  }
+
+  void checkResult(Map<String, String> separated) {
+    final stems = [
+      Stem.vocals.name,
+      Stem.bass.name,
+      Stem.drums.name,
+      Stem.other.name,
+    ];
+
+    if (separated.keys != stems) {
+      throw DemixingException('Invalid demixing result');
+    }
   }
 }

@@ -1,11 +1,9 @@
 import 'dart:io';
-import 'dart:typed_data';
 
 import 'package:dartz/dartz.dart';
 import 'package:demixr_app/constants.dart';
 import 'package:demixr_app/models/exceptions/conversion_exception.dart';
 import 'package:demixr_app/models/failure/failure.dart';
-import 'package:demixr_app/models/failure/no_album_cover.dart';
 import 'package:demixr_app/models/failure/no_internet_connection.dart';
 import 'package:demixr_app/models/failure/song_conversion_failure.dart';
 import 'package:demixr_app/models/failure/song_download_failure.dart';
@@ -19,10 +17,10 @@ import 'package:ffmpeg_kit_flutter/ffprobe_kit.dart';
 import 'package:ffmpeg_kit_flutter/return_code.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter_media_metadata/flutter_media_metadata.dart';
-import 'package:get/route_manager.dart';
 import 'package:youtube_explode_dart/youtube_explode_dart.dart';
 import 'package:path/path.dart' as p;
 import 'package:http/http.dart' show get;
+import 'package:image/image.dart';
 
 class SongHelper {
   final _service = SongLoader();
@@ -42,10 +40,12 @@ class SongHelper {
         p.basename(path.path).removeExtension(),
       );
 
+      String? coverPath = await _saveCover(path.path, songInfos.value1);
+
       String newPath;
       try {
         newPath = await convertToWav(file.path!);
-      } on ConversionException catch (e) {
+      } on ConversionException {
         return Left(SongConversionFailure());
       }
 
@@ -54,9 +54,28 @@ class SongHelper {
           title: songInfos.value1,
           artists: songInfos.value2,
           path: newPath,
+          coverPath: coverPath,
         ),
       );
     });
+  }
+
+  Future<String?> _saveCover(String songPath, String title) async {
+    var metadata = await MetadataRetriever.fromFile(File(songPath));
+    final albumCover = metadata.albumArt;
+
+    if (albumCover == null) return null;
+
+    Image? image = decodeImage(albumCover);
+    if (image == null) return null;
+
+    final tempDir = await getAppTemp();
+    final filePath = p.join(tempDir, '${title}_cover.jpg');
+
+    File file = File(filePath);
+    file.writeAsBytesSync(encodeJpg(image));
+
+    return file.path;
   }
 
   Future<Either<Failure, Song>> downloadFromYoutube(String url) async {
@@ -106,13 +125,14 @@ class SongHelper {
       title: video.title,
       artists: [video.author],
       path: file.path,
+      coverPath: coverPath,
     ));
   }
 
   Future<String> _downloadThumbnail(String url, String title) async {
     final response = await get(Uri.parse(url));
     final tempDir = await getAppTemp();
-    final filePath = p.join(tempDir, '${title}_thumbnail.jpg');
+    final filePath = p.join(tempDir, '${title}_cover.jpg');
 
     File file = File(filePath);
     file.writeAsBytesSync(response.bodyBytes);
@@ -163,15 +183,4 @@ Future<String> convertToWav(String path) async {
   }
 
   return path;
-}
-
-extension Cover on Song {
-  Future<Either<Failure, Uint8List>> get albumCover async {
-    var metadata = await MetadataRetriever.fromFile(File(path));
-    final albumCover = metadata.albumArt;
-
-    if (albumCover == null) return Left(NoAlbumCover());
-
-    return Right(albumCover);
-  }
 }
