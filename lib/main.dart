@@ -12,6 +12,7 @@ import 'package:form_builder_validators/form_builder_validators.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:get/get.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 import 'providers/preferences_provider.dart';
 
@@ -22,6 +23,8 @@ Future<void> main() async {
 
   await Hive.openBox<dynamic>(BoxesNames.preferences);
   await Hive.openBox<UnmixedSong>(BoxesNames.library);
+
+  await dotenv.load(fileName: '.env');
 
   runApp(const MyApp());
 }

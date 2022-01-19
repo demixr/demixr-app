@@ -59,6 +59,8 @@ dependencies:
   form_builder_validators: ^7.2.0
   fluttertoast: ^8.0.8
   image: ^3.1.1
+  youtube_api: ^1.0.4
+  flutter_dotenv: ^5.0.2
 
 dev_dependencies:
   flutter_test:
@@ -89,6 +91,7 @@ flutter:
     - assets/images/
     - assets/icons/
     - assets/animations/
+    - .env
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware.

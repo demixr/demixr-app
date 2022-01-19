@@ -122,3 +122,6 @@ app.*.symbols
 
 # cpp files
 *.cxx
+
+# secrets
+*.env
