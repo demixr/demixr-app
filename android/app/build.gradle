@@ -68,7 +68,10 @@ android {
 }
 
 dependencies {
-    implementation 'org.pytorch:pytorch_android_lite:1.10.0'
+    implementation 'com.facebook.fbjni:fbjni-java-only:0.2.2'
+    implementation 'com.facebook.soloader:nativeloader:0.10.3'
+
+    implementation files('libs/pytorch_android-release.aar')
 }
 
 flutter {

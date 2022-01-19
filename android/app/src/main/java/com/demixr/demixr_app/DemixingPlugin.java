@@ -8,6 +8,7 @@ import org.pytorch.IValue;
 import org.pytorch.LiteModuleLoader;
 import org.pytorch.Module;
 import org.pytorch.Tensor;
+import org.pytorch.Device;
 
 import java.io.File;
 import java.io.IOException;
@@ -86,7 +87,7 @@ public class DemixingPlugin implements FlutterPlugin, MethodCallHandler {
 
     private void loadModel(String modelPath) {
         if (module == null) {
-            module = LiteModuleLoader.load(modelPath);
+            module = LiteModuleLoader.load(modelPath, null, Device.VULKAN);
         }
     }
 
