@@ -22,10 +22,8 @@ class SongSelection extends StatelessWidget {
         children: [
           Button(
             'Youtube link',
-            icon: const Icon(
-              Icons.file_upload,
-              color: ColorPalette.onPrimary,
-              size: 18,
+            icon: SvgPicture.asset(
+              getAssetPath('youtube', AssetType.icon),
             ),
             textSize: 16,
             onPressed: () {
@@ -60,8 +58,10 @@ class SongSelection extends StatelessWidget {
           const SizedBox(width: 10),
           Button(
             'Browse files',
-            icon: SvgPicture.asset(
-              getAssetPath('youtube', AssetType.icon),
+            icon: const Icon(
+              Icons.file_upload,
+              color: ColorPalette.onPrimary,
+              size: 18,
             ),
             textSize: 16,
             onPressed: provider.loadFromDevice,

@@ -19,7 +19,7 @@ class HomeTitle extends StatelessWidget {
         ),
         Text(
           'Music demixing in your pocket',
-          style: TextStyle(fontSize: 14),
+          style: TextStyle(fontSize: 16),
         )
       ],
     );
