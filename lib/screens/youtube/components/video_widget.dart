@@ -10,7 +10,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 
 class VideoInfos extends StatelessWidget {
   final String title;
-  final List<String> artists;
+  final String author;
   final double size;
   final bool alignCenter;
   final Color textColor;
@@ -18,7 +18,7 @@ class VideoInfos extends StatelessWidget {
   const VideoInfos({
     Key? key,
     required this.title,
-    required this.artists,
+    required this.author,
     this.size = 16,
     this.alignCenter = false,
     this.textColor = ColorPalette.onSurface,
@@ -29,7 +29,7 @@ class VideoInfos extends StatelessWidget {
     return SpacedColumn(
       spacing: 5,
       crossAxisAlignment:
-      alignCenter ? CrossAxisAlignment.center : CrossAxisAlignment.start,
+          alignCenter ? CrossAxisAlignment.center : CrossAxisAlignment.start,
       children: [
         Text(
           title,
@@ -37,7 +37,7 @@ class VideoInfos extends StatelessWidget {
               fontSize: size, color: textColor, fontWeight: FontWeight.w600),
         ),
         Text(
-          artists.join(', '),
+          author,
           style: TextStyle(
               fontSize: size - 2,
               color: textColor,
@@ -48,23 +48,23 @@ class VideoInfos extends StatelessWidget {
   }
 }
 
-class AlbumCover extends StatelessWidget {
+class Thumbnail extends StatelessWidget {
   final Either<Failure, String> imagePath;
   final double size;
 
-  const AlbumCover({Key? key, required this.imagePath, this.size = 65})
+  const Thumbnail({Key? key, required this.imagePath, this.size = 100})
       : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return imagePath.fold(
-          (failure) => Image.asset(
+      (failure) => Image.asset(
         getAssetPath('default_cover', AssetType.image),
         fit: BoxFit.contain,
         width: size,
         height: size,
       ),
-          (coverPath) => Image.file(
+      (coverPath) => Image.file(
         File(coverPath),
         fit: BoxFit.cover,
         width: size,
@@ -76,7 +76,7 @@ class AlbumCover extends StatelessWidget {
 
 class VideoWidget extends StatelessWidget {
   final String title;
-  final List<String> artists;
+  final String author;
   final Either<Failure, String> coverPath;
   final VoidCallback? onRemovePressed;
   final Color textColor;
@@ -85,7 +85,7 @@ class VideoWidget extends StatelessWidget {
   const VideoWidget({
     Key? key,
     required this.title,
-    required this.artists,
+    required this.author,
     required this.coverPath,
     this.onRemovePressed,
     this.textColor = ColorPalette.onSurface,
@@ -98,10 +98,10 @@ class VideoWidget extends StatelessWidget {
       SpacedRow(
         spacing: 15,
         children: [
-          AlbumCover(imagePath: coverPath),
+          Thumbnail(imagePath: coverPath),
           VideoInfos(
             title: title,
-            artists: artists,
+            author: author,
             textColor: textColor,
           ),
         ],
@@ -115,31 +115,6 @@ class VideoWidget extends StatelessWidget {
             color: ColorPalette.primary,
             strokeWidth: 5,
           )));
-    } else {
-      children.add(
-        PopupMenuButton(
-          padding: const EdgeInsets.all(0),
-          color: ColorPalette.surfaceVariant,
-          icon: SvgPicture.asset(
-            getAssetPath('dots', AssetType.icon),
-          ),
-          itemBuilder: (context) => [
-            PopupMenuItem(
-              child: SpacedRow(
-                spacing: 5,
-                children: const [
-                  Icon(
-                    Icons.delete,
-                    color: ColorPalette.onSurfaceVariant,
-                  ),
-                  Text("Remove"),
-                ],
-              ),
-              onTap: onRemovePressed,
-            ),
-          ],
-        ),
-      );
     }
 
     return Row(

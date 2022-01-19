@@ -5,6 +5,7 @@ import 'package:demixr_app/screens/demixing/demixing_screen.dart';
 import 'package:demixr_app/screens/error/error_screen.dart';
 import 'package:demixr_app/screens/home/home_screen.dart';
 import 'package:demixr_app/screens/player/player_screen.dart';
+import 'package:demixr_app/screens/youtube/youtube_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:demixr_app/constants.dart' show BoxesNames, ColorPalette;
 import 'package:flutter/services.dart';
@@ -75,6 +76,11 @@ class MyApp extends StatelessWidget {
           GetPage(
             name: '/player',
             page: () => const PlayerScreen(),
+            transition: Transition.downToUp,
+          ),
+          GetPage(
+            name: '/youtube',
+            page: () => const YoutubeScreen(),
             transition: Transition.downToUp,
           ),
         ],

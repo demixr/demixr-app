@@ -8,10 +8,8 @@ import 'package:demixr_app/providers/song_provider.dart';
 import 'package:demixr_app/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:form_builder_validators/form_builder_validators.dart';
 import 'package:get/route_manager.dart';
 import 'package:provider/provider.dart';
-import 'package:flutter_form_builder/flutter_form_builder.dart';
 
 class SongSelection extends StatelessWidget {
   const SongSelection({Key? key}) : super(key: key);
@@ -25,34 +23,7 @@ class SongSelection extends StatelessWidget {
               getAssetPath('youtube', AssetType.icon),
             ),
             textSize: 16,
-            onPressed: () {
-              showDialog(
-                  context: context,
-                  builder: (context) {
-                    return AlertDialog(
-                      backgroundColor: ColorPalette.surfaceVariant,
-                      content: FormBuilder(
-                        key: provider.urlFormKey,
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            FormBuilderTextField(
-                              name: 'url',
-                              validator: FormBuilderValidators.compose([
-                                FormBuilderValidators.required(context),
-                                FormBuilderValidators.url(context),
-                              ]),
-                            ),
-                            Button('Ok', onPressed: () {
-                              provider.downloadFromYoutube();
-                              Get.back();
-                            }),
-                          ],
-                        ),
-                      ),
-                    );
-                  });
-            },
+            onPressed: () => Get.toNamed('/youtube'),
           ),
           const SizedBox(width: 10),
           Button(
