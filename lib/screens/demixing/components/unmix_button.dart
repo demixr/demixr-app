@@ -1,7 +1,4 @@
-import 'package:dartz/dartz.dart';
 import 'package:demixr_app/components/buttons.dart';
-import 'package:demixr_app/models/failure/failure.dart';
-import 'package:demixr_app/models/song.dart';
 import 'package:demixr_app/providers/demixing_provider.dart';
 import 'package:demixr_app/providers/library_provider.dart';
 import 'package:demixr_app/providers/song_provider.dart';
@@ -21,8 +18,6 @@ class UnmixButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return Consumer<SongProvider>(
       builder: (context, songProvider, child) {
-        Either<Failure, Song> song = songProvider.song;
-
         return Button(
           'Unmix',
           icon: SvgPicture.asset(getAssetPath('rocket', AssetType.icon)),
@@ -32,7 +27,7 @@ class UnmixButton extends StatelessWidget {
               const EdgeInsets.only(left: 100, top: 25, right: 100, bottom: 25),
           radius: 25,
           textSize: 18,
-          onPressed: song.fold(
+          onPressed: songProvider.song.fold(
             (failure) => () {
               Fluttertoast.showToast(
                 msg: 'You need to select a song first',

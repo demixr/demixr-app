@@ -1,10 +1,9 @@
-import 'package:dartz/dartz.dart';
 import 'package:demixr_app/components/buttons.dart';
 import 'package:demixr_app/components/extended_widgets.dart';
 import 'package:demixr_app/components/song_widget.dart';
 import 'package:demixr_app/constants.dart';
-import 'package:demixr_app/models/failure/failure.dart';
 import 'package:demixr_app/models/song.dart';
+import 'package:demixr_app/models/song_download.dart';
 import 'package:demixr_app/providers/song_provider.dart';
 import 'package:demixr_app/utils.dart';
 import 'package:flutter/material.dart';
@@ -101,8 +100,7 @@ class SongSelection extends StatelessWidget {
         ),
       );
 
-  Widget buildSelectedSongCard(Song song, Either<Failure, String> coverPath,
-          {VoidCallback? onRemovePressed}) =>
+  Widget buildSelectedSongCard(Song song, {VoidCallback? onRemovePressed}) =>
       Card(
         color: ColorPalette.surfaceVariant,
         clipBehavior: Clip.antiAlias,
@@ -112,8 +110,23 @@ class SongSelection extends StatelessWidget {
           child: SongWidget(
             title: song.title,
             artists: song.artists,
-            coverPath: coverPath,
+            coverPath: song.albumCover,
             onRemovePressed: onRemovePressed,
+          ),
+        ),
+      );
+
+  Widget buildDownloadSongCard(SongDownload song) => Card(
+        color: ColorPalette.surfaceVariant,
+        clipBehavior: Clip.antiAlias,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        child: Padding(
+          padding: const EdgeInsets.all(10),
+          child: SongWidget(
+            title: song.title,
+            artists: song.artists,
+            coverPath: song.albumCover,
+            download: true,
           ),
         ),
       );
@@ -122,16 +135,20 @@ class SongSelection extends StatelessWidget {
   Widget build(BuildContext context) {
     return Consumer<SongProvider>(
       builder: (context, songProvider, child) {
-        Either<Failure, Song> song = songProvider.song;
         List<Widget> children = [buildSelectionCard(songProvider, context)];
 
+        // Add the download song card if a download is in progress
+        songProvider.songDownload.fold(
+          (failure) => null,
+          (song) => children.add(buildDownloadSongCard(song)),
+        );
+
         // Add the song card if a song is selected
-        song.fold(
+        songProvider.song.fold(
           (failure) => null,
           (song) => children.add(
             buildSelectedSongCard(
               song,
-              song.albumCover,
               onRemovePressed: () => songProvider.removeSelectedSong(),
             ),
           ),

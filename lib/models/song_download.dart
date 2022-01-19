@@ -1,32 +1,23 @@
 import 'package:dartz/dartz.dart';
-import 'package:demixr_app/models/song_download.dart';
 
 import 'failure/failure.dart';
 import 'failure/no_album_cover.dart';
 
-class Song {
+class SongDownload {
   String title;
 
   List<String> artists;
 
-  String path;
+  String url;
 
   String? coverPath;
 
-  Song({
+  SongDownload({
     required this.title,
     required this.artists,
-    required this.path,
+    required this.url,
     this.coverPath,
   });
-
-  Song.fromDownload(SongDownload song, String path)
-      : this(
-          title: song.title,
-          artists: song.artists,
-          coverPath: song.coverPath,
-          path: path,
-        );
 
   Either<Failure, String> get albumCover =>
       coverPath == null ? Left(NoAlbumCover()) : Right(coverPath!);

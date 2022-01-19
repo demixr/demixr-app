@@ -84,7 +84,7 @@ class LibrarySongs extends StatelessWidget {
                   library.removeSong(index);
                   Get.snackbar(
                     'Demixr',
-                    '${currentSong.title} was removed from library',
+                    '${currentSong.title} was removed from the library',
                     backgroundColor: ColorPalette.primary,
                     colorText: ColorPalette.onPrimary,
                     animationDuration: const Duration(milliseconds: 500),

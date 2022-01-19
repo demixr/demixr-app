@@ -10,6 +10,7 @@ import 'package:demixr_app/models/failure/song_download_failure.dart';
 import 'package:demixr_app/models/failure/song_load_failure.dart';
 import 'package:demixr_app/models/failure/song_not_found_on_youtube.dart';
 import 'package:demixr_app/models/song.dart';
+import 'package:demixr_app/models/song_download.dart';
 import 'package:demixr_app/services/song_loader.dart';
 import 'package:demixr_app/utils.dart';
 import 'package:ffmpeg_kit_flutter/ffmpeg_kit.dart';
@@ -44,7 +45,7 @@ class SongHelper {
 
       String newPath;
       try {
-        newPath = await _convertToWav(file.path!);
+        newPath = await convertToWav(file.path!);
       } on ConversionException {
         return Left(SongConversionFailure());
       }
@@ -78,7 +79,8 @@ class SongHelper {
     return file.path;
   }
 
-  Future<Either<Failure, Song>> getSongInfosFromYoutube(String url) async {
+  Future<Either<Failure, SongDownload>> getSongInfosFromYoutube(
+      String url) async {
     final yt = YoutubeExplode();
 
     Video video;
@@ -100,21 +102,20 @@ class SongHelper {
 
     yt.close();
 
-    return Right(Song(
+    return Right(SongDownload(
       title: video.title,
       artists: [video.author],
-      path: url,
+      url: url,
       coverPath: coverPath,
     ));
   }
 
-  Future<Either<Failure, Song>> downloadFromYoutube(Song song) async {
+  Future<Either<Failure, Song>> downloadFromYoutube(SongDownload song) async {
     final yt = YoutubeExplode();
-    String url = song.path;
 
     File file;
     try {
-      final manifest = await yt.videos.streamsClient.getManifest(url);
+      final manifest = await yt.videos.streamsClient.getManifest(song.url);
       final streamInfo = manifest.audioOnly.withHighestBitrate();
 
       // Get the actual stream
@@ -137,14 +138,12 @@ class SongHelper {
 
     String newPath;
     try {
-      newPath = await _convertToWav(file.path);
+      newPath = await convertToWav(file.path);
     } on ConversionException {
       return Left(SongConversionFailure());
     }
 
-    song.path = newPath;
-
-    return Right(song);
+    return Right(Song.fromDownload(song, newPath));
   }
 
   Future<String> _downloadThumbnail(String url, String title) async {
@@ -176,7 +175,7 @@ class SongHelper {
   }
 }
 
-Future<String> _convertToWav(String path) async {
+Future<String> convertToWav(String path) async {
   final session = await FFprobeKit.getMediaInformation(path);
   final information = session.getMediaInformation();
 

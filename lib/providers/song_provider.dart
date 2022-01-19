@@ -3,6 +3,7 @@ import 'package:demixr_app/helpers/song_helper.dart';
 import 'package:demixr_app/models/failure/failure.dart';
 import 'package:demixr_app/models/failure/no_song_selected.dart';
 import 'package:demixr_app/models/song.dart';
+import 'package:demixr_app/models/song_download.dart';
 import 'package:demixr_app/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
@@ -12,10 +13,11 @@ class SongProvider extends ChangeNotifier {
   final _ytHelper = SongHelper();
   final _urlFormKey = GlobalKey<FormBuilderState>();
   Either<Failure, Song> _song = Left(NoSongSelected());
-
-  bool downloadInProgress = false;
+  Either<Failure, SongDownload> _songDownload = Left(NoSongSelected());
 
   Either<Failure, Song> get song => _song;
+
+  Either<Failure, SongDownload> get songDownload => _songDownload;
 
   GlobalKey<FormBuilderState> get urlFormKey => _urlFormKey;
 
@@ -38,16 +40,20 @@ class SongProvider extends ChangeNotifier {
     if (_urlFormKey.currentState!.saveAndValidate()) {
       String url = _urlFormKey.currentState!.value['url'];
 
-      _song = await _ytHelper.getSongInfosFromYoutube(url);
+      _song = Left(NoSongSelected());
+      _songDownload = await _ytHelper.getSongInfosFromYoutube(url);
 
-      await _song.fold(
-        (failure) => null,
+      await _songDownload.fold(
+        (failure) async => errorSnackbar(
+            'Could not download the song', failure.message,
+            seconds: 5),
         (song) async {
-          setDownloadStatus(status: true);
+          notifyListeners();
           _song = await _ytHelper.downloadFromYoutube(song);
-          setDownloadStatus(status: false);
         },
       );
+
+      _songDownload = Left(NoSongSelected());
 
       _song.leftMap(
         (failure) => errorSnackbar(
@@ -55,10 +61,7 @@ class SongProvider extends ChangeNotifier {
             seconds: 5),
       );
     }
-  }
 
-  void setDownloadStatus({required bool status}) {
-    downloadInProgress = status;
     notifyListeners();
   }
 

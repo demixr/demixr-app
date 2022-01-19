@@ -81,6 +81,7 @@ class SongWidget extends StatelessWidget {
   final Either<Failure, String> coverPath;
   final VoidCallback? onRemovePressed;
   final Color textColor;
+  final bool download;
 
   const SongWidget({
     Key? key,
@@ -89,24 +90,34 @@ class SongWidget extends StatelessWidget {
     required this.coverPath,
     this.onRemovePressed,
     this.textColor = ColorPalette.onSurface,
+    this.download = false,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        SpacedRow(
-          spacing: 15,
-          children: [
-            AlbumCover(imagePath: coverPath),
-            SongInfos(
-              title: title,
-              artists: artists,
-              textColor: textColor,
-            ),
-          ],
-        ),
+    List<Widget> children = [
+      SpacedRow(
+        spacing: 15,
+        children: [
+          AlbumCover(imagePath: coverPath),
+          SongInfos(
+            title: title,
+            artists: artists,
+            textColor: textColor,
+          ),
+        ],
+      ),
+    ];
+
+    if (download) {
+      children.add(const Padding(
+          padding: EdgeInsets.all(10),
+          child: CircularProgressIndicator(
+            color: ColorPalette.primary,
+            strokeWidth: 5,
+          )));
+    } else {
+      children.add(
         PopupMenuButton(
           padding: const EdgeInsets.all(0),
           color: ColorPalette.surfaceVariant,
@@ -129,7 +140,12 @@ class SongWidget extends StatelessWidget {
             ),
           ],
         ),
-      ],
+      );
+    }
+
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: children,
     );
   }
 }
