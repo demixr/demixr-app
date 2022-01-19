@@ -11,15 +11,12 @@ import 'package:flutter_form_builder/flutter_form_builder.dart';
 class SongProvider extends ChangeNotifier {
   final _helper = SongHelper();
   final _ytHelper = SongHelper();
-  final _urlFormKey = GlobalKey<FormBuilderState>();
   Either<Failure, Song> _song = Left(NoSongSelected());
   Either<Failure, SongDownload> _songDownload = Left(NoSongSelected());
 
   Either<Failure, Song> get song => _song;
 
   Either<Failure, SongDownload> get songDownload => _songDownload;
-
-  GlobalKey<FormBuilderState> get urlFormKey => _urlFormKey;
 
   Future<void> loadFromDevice() async {
     _song = await _helper.loadFromDevice();
@@ -36,10 +33,7 @@ class SongProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> downloadFromYoutube() async {
-    if (_urlFormKey.currentState!.saveAndValidate()) {
-      String url = _urlFormKey.currentState!.value['url'];
-
+  Future<void> downloadFromYoutube(String url) async {
       _song = Left(NoSongSelected());
       _songDownload = await _ytHelper.getSongInfosFromYoutube(url);
 
@@ -60,7 +54,6 @@ class SongProvider extends ChangeNotifier {
             'Could not download the song', failure.message,
             seconds: 5),
       );
-    }
 
     notifyListeners();
   }
