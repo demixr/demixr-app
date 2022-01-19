@@ -17,7 +17,6 @@ class YoutubeScreen extends StatelessWidget {
         child: Stack(
           fit: StackFit.expand,
             children: const [
-              VideoList(),
               SearchBar(),
             ],
           ),

@@ -19,4 +19,9 @@ class YoutubeProvider extends ChangeNotifier {
     _videos = await api.getTrends(regionCode: _regionCode);
     notifyListeners();
   }
+
+  Future<void> search(String query) async {
+    _videos = await api.search(query);
+    notifyListeners();
+  }
 }
