@@ -96,16 +96,20 @@ class SongWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     List<Widget> children = [
-      SpacedRow(
-        spacing: 15,
-        children: [
-          AlbumCover(imagePath: coverPath),
-          SongInfos(
-            title: title,
-            artists: artists,
-            textColor: textColor,
-          ),
-        ],
+      Expanded(
+        child: SpacedRow(
+          spacing: 15,
+          children: [
+            AlbumCover(imagePath: coverPath),
+            Expanded(
+              child: SongInfos(
+                title: title,
+                artists: artists,
+                textColor: textColor,
+              ),
+            ),
+          ],
+        ),
       ),
     ];
 

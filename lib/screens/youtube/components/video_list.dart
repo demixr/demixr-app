@@ -21,19 +21,11 @@ class VideoList extends StatelessWidget {
           itemBuilder: (context, index) {
             final item = youtube.videos.elementAt(index);
 
-            return Card(
-              color: ColorPalette.surfaceVariant,
-              clipBehavior: Clip.antiAlias,
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12)),
-              child: Padding(
-                padding: const EdgeInsets.all(10),
-                child: VideoWidget(
-                  title: item.title,
-                  author: item.channelTitle,
-                  coverUrl: item.thumbnail.medium.url,
-                ),
-              ),
+            return VideoWidget(
+              title: item.title,
+              author: item.channelTitle,
+              coverUrl: item.thumbnail.medium.url,
+              url: item.url,
             );
           },
         );

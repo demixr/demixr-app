@@ -5,8 +5,10 @@ import 'package:demixr_app/components/extended_widgets.dart';
 import 'package:demixr_app/constants.dart';
 import 'package:demixr_app/models/failure/failure.dart';
 import 'package:demixr_app/models/failure/no_album_cover.dart';
+import 'package:demixr_app/providers/youtube_provider.dart';
 import 'package:demixr_app/utils.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class VideoInfos extends StatelessWidget {
   final String title;
@@ -78,18 +80,18 @@ class VideoWidget extends StatelessWidget {
   final String title;
   final String author;
   final String? coverUrl;
+  final String url;
   final VoidCallback? onRemovePressed;
   final Color textColor;
-  final bool download;
 
   const VideoWidget({
     Key? key,
     required this.title,
     required this.author,
     required this.coverUrl,
+    required this.url,
     this.onRemovePressed,
     this.textColor = ColorPalette.onSurface,
-    this.download = false,
   }) : super(key: key);
 
   @override
@@ -115,18 +117,22 @@ class VideoWidget extends StatelessWidget {
       ),
     ];
 
-    if (download) {
-      children.add(const Padding(
-          padding: EdgeInsets.all(10),
-          child: CircularProgressIndicator(
-            color: ColorPalette.primary,
-            strokeWidth: 5,
-          )));
-    }
-
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: children,
+    final youtubeProvider = context.read<YoutubeProvider>();
+    return TextButton(
+      onPressed: () => youtubeProvider.download(url),
+      style: TextButton.styleFrom(padding: const EdgeInsets.all(0)),
+      child: Card(
+        color: ColorPalette.surfaceVariant,
+        clipBehavior: Clip.antiAlias,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        child: Padding(
+          padding: const EdgeInsets.all(10),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: children,
+          ),
+        ),
+      ),
     );
   }
 }
