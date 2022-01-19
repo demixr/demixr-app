@@ -3,7 +3,6 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:youtube_api/youtube_api.dart';
 
 class YoutubeProvider extends ChangeNotifier {
-
   final String _apiKey = dotenv.env['YOUTUBE_API_KEY'] ?? '';
   late YoutubeAPI api;
   List<YouTubeVideo> _videos = [];
@@ -13,6 +12,8 @@ class YoutubeProvider extends ChangeNotifier {
     api = YoutubeAPI(_apiKey);
     loadTrends();
   }
+
+  List<YouTubeVideo> get videos => _videos;
 
   Future<void> loadTrends() async {
     _videos = await api.getTrends(regionCode: _regionCode);

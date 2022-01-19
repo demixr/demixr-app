@@ -4,9 +4,9 @@ import 'package:dartz/dartz.dart';
 import 'package:demixr_app/components/extended_widgets.dart';
 import 'package:demixr_app/constants.dart';
 import 'package:demixr_app/models/failure/failure.dart';
+import 'package:demixr_app/models/failure/no_album_cover.dart';
 import 'package:demixr_app/utils.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 
 class VideoInfos extends StatelessWidget {
   final String title;
@@ -49,23 +49,23 @@ class VideoInfos extends StatelessWidget {
 }
 
 class Thumbnail extends StatelessWidget {
-  final Either<Failure, String> imagePath;
+  final Either<Failure, String> imageUrl;
   final double size;
 
-  const Thumbnail({Key? key, required this.imagePath, this.size = 100})
+  const Thumbnail({Key? key, required this.imageUrl, this.size = 120})
       : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return imagePath.fold(
+    return imageUrl.fold(
       (failure) => Image.asset(
         getAssetPath('default_cover', AssetType.image),
         fit: BoxFit.contain,
         width: size,
         height: size,
       ),
-      (coverPath) => Image.file(
-        File(coverPath),
+      (url) => Image.network(
+        url,
         fit: BoxFit.cover,
         width: size,
         height: size,
@@ -77,7 +77,7 @@ class Thumbnail extends StatelessWidget {
 class VideoWidget extends StatelessWidget {
   final String title;
   final String author;
-  final Either<Failure, String> coverPath;
+  final String? coverUrl;
   final VoidCallback? onRemovePressed;
   final Color textColor;
   final bool download;
@@ -86,7 +86,7 @@ class VideoWidget extends StatelessWidget {
     Key? key,
     required this.title,
     required this.author,
-    required this.coverPath,
+    required this.coverUrl,
     this.onRemovePressed,
     this.textColor = ColorPalette.onSurface,
     this.download = false,
@@ -94,17 +94,24 @@ class VideoWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    Either<Failure, String> imageUrl =
+        (coverUrl == null) ? Left(NoAlbumCover()) : Right(coverUrl!);
+
     List<Widget> children = [
-      SpacedRow(
-        spacing: 15,
-        children: [
-          Thumbnail(imagePath: coverPath),
-          VideoInfos(
-            title: title,
-            author: author,
-            textColor: textColor,
-          ),
-        ],
+      Expanded(
+        child: SpacedRow(
+          spacing: 15,
+          children: [
+            Thumbnail(imageUrl: imageUrl),
+            Expanded(
+              child: VideoInfos(
+                title: title,
+                author: author,
+                textColor: textColor,
+              ),
+            ),
+          ],
+        ),
       ),
     ];
 
