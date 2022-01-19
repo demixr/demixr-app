@@ -78,7 +78,7 @@ class SongHelper {
     return file.path;
   }
 
-  Future<Either<Failure, Song>> downloadFromYoutube(String url) async {
+  Future<Either<Failure, Song>> getSongInfosFromYoutube(String url) async {
     final yt = YoutubeExplode();
 
     Video video;
@@ -98,6 +98,20 @@ class SongHelper {
       coverPath = null;
     }
 
+    yt.close();
+
+    return Right(Song(
+      title: video.title,
+      artists: [video.author],
+      path: url,
+      coverPath: coverPath,
+    ));
+  }
+
+  Future<Either<Failure, Song>> downloadFromYoutube(Song song) async {
+    final yt = YoutubeExplode();
+    String url = song.path;
+
     File file;
     try {
       final manifest = await yt.videos.streamsClient.getManifest(url);
@@ -106,7 +120,7 @@ class SongHelper {
       // Get the actual stream
       final stream = yt.videos.streamsClient.get(streamInfo);
 
-      file = File(p.join(await getAppTemp(), video.title));
+      file = File(p.join(await getAppTemp(), song.title));
       final fileStream = file.openWrite();
 
       // Pipe all the content of the stream into the file.
@@ -128,12 +142,9 @@ class SongHelper {
       return Left(SongConversionFailure());
     }
 
-    return Right(Song(
-      title: video.title,
-      artists: [video.author],
-      path: newPath,
-      coverPath: coverPath,
-    ));
+    song.path = newPath;
+
+    return Right(song);
   }
 
   Future<String> _downloadThumbnail(String url, String title) async {

@@ -13,6 +13,8 @@ class SongProvider extends ChangeNotifier {
   final _urlFormKey = GlobalKey<FormBuilderState>();
   Either<Failure, Song> _song = Left(NoSongSelected());
 
+  bool downloadInProgress = false;
+
   Either<Failure, Song> get song => _song;
 
   GlobalKey<FormBuilderState> get urlFormKey => _urlFormKey;
@@ -36,18 +38,28 @@ class SongProvider extends ChangeNotifier {
     if (_urlFormKey.currentState!.saveAndValidate()) {
       String url = _urlFormKey.currentState!.value['url'];
 
-      _song = await _ytHelper.downloadFromYoutube(url);
+      _song = await _ytHelper.getSongInfosFromYoutube(url);
 
       await _song.fold(
-        (failure) async {
-          errorSnackbar('Could not download the song', failure.message,
-              seconds: 5);
+        (failure) => null,
+        (song) async {
+          setDownloadStatus(status: true);
+          _song = await _ytHelper.downloadFromYoutube(song);
+          setDownloadStatus(status: false);
         },
-        (song) => null,
       );
 
-      notifyListeners();
+      _song.leftMap(
+        (failure) => errorSnackbar(
+            'Could not download the song', failure.message,
+            seconds: 5),
+      );
     }
+  }
+
+  void setDownloadStatus({required bool status}) {
+    downloadInProgress = status;
+    notifyListeners();
   }
 
   void removeSelectedSong() {
