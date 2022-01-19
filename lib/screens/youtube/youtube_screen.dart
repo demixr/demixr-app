@@ -1,6 +1,7 @@
 import 'package:demixr_app/components/extended_widgets.dart';
 import 'package:demixr_app/components/navbar.dart';
 import 'package:demixr_app/providers/youtube_provider.dart';
+import 'package:demixr_app/screens/youtube/components/search_bar.dart';
 import 'package:demixr_app/screens/youtube/components/video_list.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -13,21 +14,14 @@ class YoutubeScreen extends StatelessWidget {
     return Scaffold(
       body: ChangeNotifierProvider(
         create: (context) => YoutubeProvider(),
-        child: Container(
-          height: double.maxFinite,
-          width: double.maxFinite,
-          margin: const EdgeInsets.all(10),
-          child: SpacedColumn(
-            spacing: 50,
+        child: Stack(
+          fit: StackFit.expand,
             children: const [
-              NavBar(),
-              Expanded(
-                child: VideoList(),
-              ),
+              VideoList(),
+              SearchBar(),
             ],
           ),
         ),
-      ),
-    );
+      );
   }
 }

@@ -61,6 +61,7 @@ dependencies:
   image: ^3.1.1
   youtube_api: ^1.0.4
   flutter_dotenv: ^5.0.2
+  material_floating_search_bar: ^0.3.6
 
 dev_dependencies:
   flutter_test:

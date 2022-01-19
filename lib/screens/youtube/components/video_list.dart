@@ -15,6 +15,7 @@ class VideoList extends StatelessWidget {
     return Consumer<YoutubeProvider>(
       builder: (context, youtube, child) {
         return ListView.builder(
+          shrinkWrap: true,
           padding: const EdgeInsets.all(0),
           itemCount: youtube.videos.length,
           itemBuilder: (context, index) {
