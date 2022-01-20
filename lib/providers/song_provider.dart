@@ -6,7 +6,6 @@ import 'package:demixr_app/models/song.dart';
 import 'package:demixr_app/models/song_download.dart';
 import 'package:demixr_app/utils.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_form_builder/flutter_form_builder.dart';
 
 class SongProvider extends ChangeNotifier {
   final _helper = SongHelper();
@@ -34,26 +33,25 @@ class SongProvider extends ChangeNotifier {
   }
 
   Future<void> downloadFromYoutube(String url) async {
-      _song = Left(NoSongSelected());
-      _songDownload = await _ytHelper.getSongInfosFromYoutube(url);
+    _song = Left(NoSongSelected());
+    _songDownload = await _ytHelper.getSongInfosFromYoutube(url);
 
-      await _songDownload.fold(
-        (failure) async => errorSnackbar(
-            'Could not download the song', failure.message,
-            seconds: 5),
-        (song) async {
-          notifyListeners();
-          _song = await _ytHelper.downloadFromYoutube(song);
-        },
-      );
+    await _songDownload.fold(
+      (failure) async => errorSnackbar(
+          'Could not download the song', failure.message,
+          seconds: 5),
+      (song) async {
+        notifyListeners();
+        _song = await _ytHelper.downloadFromYoutube(song);
+      },
+    );
 
-      _songDownload = Left(NoSongSelected());
+    _songDownload = Left(NoSongSelected());
 
-      _song.leftMap(
-        (failure) => errorSnackbar(
-            'Could not download the song', failure.message,
-            seconds: 5),
-      );
+    _song.leftMap(
+      (failure) => errorSnackbar('Could not download the song', failure.message,
+          seconds: 5),
+    );
 
     notifyListeners();
   }

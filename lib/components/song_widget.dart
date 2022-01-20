@@ -118,7 +118,7 @@ class SongWidget extends StatelessWidget {
           padding: EdgeInsets.all(10),
           child: CircularProgressIndicator(
             color: ColorPalette.primary,
-            strokeWidth: 5,
+            strokeWidth: 4,
           )));
     } else {
       children.add(

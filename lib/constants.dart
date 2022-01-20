@@ -23,6 +23,10 @@ class ColorPalette {
     Color.fromRGBO(250, 184, 196, 0.25),
     Color.fromRGBO(89, 86, 233, 0.25),
   ];
+  static const List<Color> indicatorColors = [
+    ...ColorPalette.primaryGradient,
+    ColorPalette.errorContainer,
+  ];
 }
 
 class Paths {

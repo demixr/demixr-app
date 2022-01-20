@@ -1,4 +1,3 @@
-import 'package:demixr_app/providers/demixing_provider.dart';
 import 'package:demixr_app/providers/song_provider.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -14,7 +13,6 @@ class YoutubeProvider extends ChangeNotifier {
 
   YoutubeProvider(this.songProvider) {
     api = YoutubeAPI(_apiKey);
-    loadTrends();
   }
 
   List<YouTubeVideo> get videos => _videos;
@@ -27,6 +25,12 @@ class YoutubeProvider extends ChangeNotifier {
   Future<void> search(String query) async {
     _videos = await api.search(query);
     notifyListeners();
+  }
+
+  Future<bool> loadMore() async {
+    _videos.addAll(await api.nextPage());
+    notifyListeners();
+    return true;
   }
 
   void download(String url) {
