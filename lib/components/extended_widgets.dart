@@ -13,7 +13,6 @@ class SpacedColumn extends Column {
     List<Widget> children = const <Widget>[],
     double spacing = 0,
   }) : super(
-          // children: addSpacers(children, SizedBox(height: spacing)),
           children: children.intersperse(SizedBox(height: spacing)).toList(),
           key: key,
           mainAxisAlignment: mainAxisAlignment,

@@ -18,7 +18,7 @@ class SongSelection extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Button(
-            'Youtube link',
+            'Search Youtube',
             icon: SvgPicture.asset(
               getAssetPath('youtube', AssetType.icon),
             ),

@@ -1,11 +1,7 @@
-import 'package:dartz/dartz.dart';
-import 'package:demixr_app/models/failure/no_album_cover.dart';
 import 'package:demixr_app/providers/youtube_provider.dart';
 import 'package:demixr_app/screens/youtube/components/video_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-
-import '../../../constants.dart';
 
 class VideoList extends StatelessWidget {
   const VideoList({Key? key}) : super(key: key);

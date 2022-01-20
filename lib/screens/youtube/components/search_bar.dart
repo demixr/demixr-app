@@ -10,46 +10,33 @@ class SearchBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isPortrait = MediaQuery.of(context).orientation == Orientation.portrait;
     final youtube = context.read<YoutubeProvider>();
 
-    return FloatingSearchBar(
-      hint: 'Search...',
-      queryStyle: const TextStyle(color: Colors.black,
-          decoration: TextDecoration.none),
-      accentColor: Colors.black,
-      scrollPadding: const EdgeInsets.only(top: 16, bottom: 56),
+    Color surfaceColor = ColorPalette.surface;
+    Color textColor = ColorPalette.onSurface;
+
+    return FloatingSearchAppBar(
+      hint: 'Search Youtube',
+      hintStyle: TextStyle(color: textColor),
+      titleStyle: TextStyle(color: textColor),
+      colorOnScroll: surfaceColor,
+      color: surfaceColor,
+      iconColor: textColor,
+      accentColor: textColor,
+      shadowColor: Colors.black,
+      hideKeyboardOnDownScroll: true,
       transitionDuration: const Duration(milliseconds: 300),
       transitionCurve: Curves.easeInOut,
-      physics: const BouncingScrollPhysics(),
-      axisAlignment: isPortrait ? 0.0 : -1.0,
-      openAxisAlignment: 0.0,
-      width: isPortrait ? 600 : 500,
       debounceDelay: const Duration(milliseconds: 500),
       clearQueryOnClose: false,
       onSubmitted: (query) => youtube.search(query),
-      // Specify a custom transition to be used for
-      // animating between opened and closed stated.
-      transition: CircularFloatingSearchBarTransition(),
+      alwaysOpened: true,
       actions: [
         FloatingSearchBarAction.searchToClear(
           showIfClosed: false,
         ),
       ],
       body: const VideoList(),
-      builder: (context, transition) {
-        return ClipRRect(
-          borderRadius: BorderRadius.circular(8),
-          child: Material(
-            color: Colors.white,
-            elevation: 4.0,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [],
-            ),
-          ),
-        );
-      },
     );
   }
 }
