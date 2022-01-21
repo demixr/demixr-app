@@ -2,6 +2,7 @@ import 'package:demixr_app/models/unmixed_song.dart';
 import 'package:demixr_app/providers/library_provider.dart';
 import 'package:demixr_app/providers/player_provider.dart';
 import 'package:demixr_app/screens/demixing/demixing_screen.dart';
+import 'package:demixr_app/screens/demixing/processing/processing_screen.dart';
 import 'package:demixr_app/screens/error/error_screen.dart';
 import 'package:demixr_app/screens/home/home_screen.dart';
 import 'package:demixr_app/screens/player/player_screen.dart';
@@ -71,12 +72,18 @@ class MyApp extends StatelessWidget {
             transition: Transition.downToUp,
           ),
           GetPage(
+            name: '/demixing/processing',
+            page: () => const ProcessingScreen(),
+            transitionDuration: const Duration(milliseconds: 800),
+            transition: Transition.circularReveal,
+          ),
+          GetPage(
             name: '/player',
             page: () => const PlayerScreen(),
             transition: Transition.downToUp,
           ),
           GetPage(
-            name: '/youtube',
+            name: '/demixing/youtube',
             page: () => const YoutubeScreen(),
             transition: Transition.downToUp,
           ),

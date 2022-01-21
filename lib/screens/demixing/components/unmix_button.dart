@@ -5,7 +5,6 @@ import 'package:demixr_app/providers/song_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:get/get.dart';
 import 'package:provider/provider.dart';
 
 import '../../../constants.dart';
@@ -39,9 +38,7 @@ class UnmixButton extends StatelessWidget {
               var demixingProvider = context.read<DemixingProvider>();
               var library = context.read<LibraryProvider>();
 
-              demixingProvider
-                  .unmix(song, library)
-                  ?.then((_) => Get.offNamed('/player'));
+              demixingProvider.unmix(song, library);
             },
           ),
         );

@@ -23,7 +23,8 @@ class SongSelection extends StatelessWidget {
               getAssetPath('youtube', AssetType.icon),
             ),
             textSize: 16,
-            onPressed: () => Get.toNamed('/youtube', arguments: provider),
+            onPressed: () =>
+                Get.toNamed('/demixing/youtube', arguments: provider),
           ),
           const SizedBox(width: 10),
           Button(
