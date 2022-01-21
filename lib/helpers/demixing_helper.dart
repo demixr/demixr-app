@@ -32,22 +32,22 @@ class DemixingHelper {
 
     return UnmixedSong.fromSong(
       song,
-      vocals: separated['vocals']!,
-      drums: separated['drums']!,
-      bass: separated['bass']!,
-      other: separated['other']!,
+      vocals: separated[Stem.vocals.value]!,
+      bass: separated[Stem.bass.value]!,
+      drums: separated[Stem.drums.value]!,
+      other: separated[Stem.other.value]!,
     );
   }
 
   void checkResult(Map<String, String> separated) {
     final stems = [
-      Stem.vocals.name,
-      Stem.bass.name,
-      Stem.drums.name,
-      Stem.other.name,
+      Stem.bass.value,
+      Stem.drums.value,
+      Stem.other.value,
+      Stem.vocals.value,
     ];
 
-    if (listEquals(separated.keys.toList(), stems)) {
+    if (!listEquals(separated.keys.toList()..sort(), stems..sort())) {
       throw DemixingException('Invalid demixing result');
     }
   }

@@ -94,6 +94,8 @@ extension StemsName on Stem {
         return 'Other';
     }
   }
+
+  String get value => name.toLowerCase();
 }
 
 class Preferences {
