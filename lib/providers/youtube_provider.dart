@@ -1,35 +1,40 @@
+import 'package:dartz/dartz.dart';
+import 'package:demixr_app/models/failure/failure.dart';
+import 'package:demixr_app/models/failure/no_search_result.dart';
 import 'package:demixr_app/providers/song_provider.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:get/get.dart';
-import 'package:youtube_api/youtube_api.dart';
+import 'package:youtube_explode_dart/youtube_explode_dart.dart';
 
 class YoutubeProvider extends ChangeNotifier {
-  final String _apiKey = dotenv.env['YOUTUBE_API_KEY'] ?? '';
-  late YoutubeAPI api;
-  List<YouTubeVideo> _videos = [];
-  final String _regionCode = 'US';
+  final SearchClient _youtube = YoutubeExplode().search;
+  Either<Failure, SearchList> _videos = Left(NoSearchResult());
   final SongProvider songProvider;
 
-  YoutubeProvider(this.songProvider) {
-    api = YoutubeAPI(_apiKey);
-  }
+  YoutubeProvider(this.songProvider);
 
-  List<YouTubeVideo> get videos => _videos;
-
-  Future<void> loadTrends() async {
-    _videos = await api.getTrends(regionCode: _regionCode);
-    notifyListeners();
-  }
+  Either<Failure, SearchList> get videos => _videos;
 
   Future<void> search(String query) async {
-    _videos = await api.search(query);
+    final searchList = await _youtube.getVideos(query);
+    _videos = Right(searchList);
     notifyListeners();
   }
 
   Future<bool> loadMore() async {
-    _videos.addAll(await api.nextPage());
+    await _videos.fold(
+      (failure) => null,
+      (videos) async {
+        final nextPage = await videos.nextPage();
+
+        if (nextPage != null) {
+          final allVideos = nextPage..insertAll(0, videos);
+          _videos = Right(allVideos);
+        }
+      },
+    );
     notifyListeners();
+
     return true;
   }
 

@@ -39,17 +39,21 @@ class VideoList extends StatelessWidget {
           child: ListView.builder(
             shrinkWrap: true,
             padding: const EdgeInsets.all(0),
-            itemCount: youtube.videos.length,
-            itemBuilder: (context, index) {
-              final item = youtube.videos.elementAt(index);
+            itemCount:
+                youtube.videos.fold((empty) => 0, (videos) => videos.length),
+            itemBuilder: (context, index) => youtube.videos.fold(
+              (empty) => const SizedBox.shrink(),
+              (videos) {
+                final item = videos.elementAt(index);
 
-              return VideoWidget(
-                title: item.title,
-                author: item.channelTitle,
-                coverUrl: item.thumbnail.medium.url,
-                url: item.url,
-              );
-            },
+                return VideoWidget(
+                  title: item.title,
+                  author: item.author,
+                  coverUrl: item.thumbnails.mediumResUrl,
+                  url: item.url,
+                );
+              },
+            ),
           ),
         );
       },

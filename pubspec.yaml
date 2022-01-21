@@ -59,7 +59,6 @@ dependencies:
   form_builder_validators: ^7.2.0
   fluttertoast: ^8.0.8
   image: ^3.1.1
-  youtube_api: ^1.0.4
   flutter_dotenv: ^5.0.2
   material_floating_search_bar: ^0.3.6
   loadmore: ^2.0.1
