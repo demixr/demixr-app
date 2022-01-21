@@ -105,3 +105,13 @@ Future<String> getAppTemp() async {
   final directory = await getTemporaryDirectory();
   return directory.path;
 }
+
+extension Format on Duration {
+  String _padTwoDigits(int n) => n.toString().padLeft(2, '0');
+
+  String formatMinSec() {
+    final minutes = _padTwoDigits(inMinutes);
+    final seconds = _padTwoDigits(inSeconds.remainder(60));
+    return '$minutes:$seconds';
+  }
+}

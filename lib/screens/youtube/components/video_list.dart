@@ -88,6 +88,7 @@ class VideoList extends StatelessWidget {
                   title: item.title,
                   author: item.author,
                   coverUrl: item.thumbnails.mediumResUrl,
+                  duration: item.duration,
                   url: item.url,
                 );
               },
