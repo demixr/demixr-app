@@ -10,6 +10,7 @@ class YoutubeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       body: ChangeNotifierProvider(
         create: (context) => YoutubeProvider(Get.arguments),
         child: Stack(

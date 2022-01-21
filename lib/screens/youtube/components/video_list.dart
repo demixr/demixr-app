@@ -6,6 +6,8 @@ import 'package:loading_indicator/loading_indicator.dart';
 import 'package:loadmore/loadmore.dart';
 import 'package:provider/provider.dart';
 
+import '../../../utils.dart';
+
 class CustomLoadMoreDelegate extends LoadMoreDelegate {
   @override
   Widget buildChild(LoadMoreStatus status,
@@ -23,6 +25,42 @@ class CustomLoadMoreDelegate extends LoadMoreDelegate {
     }
 
     return const SizedBox.shrink();
+  }
+}
+
+class EmptySearch extends StatelessWidget {
+  const EmptySearch({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: double.maxFinite,
+      height: double.maxFinite,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          SizedBox(
+            width: 250,
+            child: Image.asset(
+              getAssetPath('search_astronaut', AssetType.image),
+              fit: BoxFit.cover,
+            ),
+          ),
+          const SizedBox(
+            width: 200,
+            child: Text(
+              'Type a song name to search Youtube',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 18,
+                color: ColorPalette.onSurface,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
 

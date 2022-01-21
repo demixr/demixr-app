@@ -1,7 +1,11 @@
+import 'dart:io';
+
 import 'package:dartz/dartz.dart';
 import 'package:demixr_app/models/failure/failure.dart';
+import 'package:demixr_app/models/failure/no_internet_connection.dart';
 import 'package:demixr_app/models/failure/no_search_result.dart';
 import 'package:demixr_app/providers/song_provider.dart';
+import 'package:demixr_app/utils.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
 import 'package:youtube_explode_dart/youtube_explode_dart.dart';
@@ -16,8 +20,14 @@ class YoutubeProvider extends ChangeNotifier {
   Either<Failure, SearchList> get videos => _videos;
 
   Future<void> search(String query) async {
-    final searchList = await _youtube.getVideos(query);
-    _videos = Right(searchList);
+    try {
+      final searchList = await _youtube.getVideos(query);
+      _videos = Right(searchList);
+    } on SocketException {
+      _videos = Left(NoInternetConnection());
+      errorSnackbar('Search failed', 'Could not reach Youtube', seconds: 5);
+    }
+
     notifyListeners();
   }
 

@@ -36,7 +36,13 @@ class SearchBar extends StatelessWidget {
           showIfClosed: false,
         ),
       ],
-      body: const VideoList(),
+      body: Consumer<YoutubeProvider>(
+        builder: (context, youtube, child) {
+          return youtube.videos.isLeft()
+              ? const EmptySearch()
+              : const VideoList();
+        },
+      ),
     );
   }
 }
