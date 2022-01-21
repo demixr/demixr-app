@@ -12,19 +12,9 @@ import 'package:get/route_manager.dart';
 class DemixingProvider extends ChangeNotifier {
   final _helper = DemixingHelper();
   final PreferencesProvider preferences;
-  bool _isDemixing = false;
   CancelableOperation<UnmixedSong>? _operation;
 
   DemixingProvider(this.preferences);
-
-  bool get isDemixing => _isDemixing;
-
-  _setStatus({required bool isDemixing}) {
-    if (_isDemixing != isDemixing) {
-      _isDemixing = isDemixing;
-      notifyListeners();
-    }
-  }
 
   void unmix(Song song, LibraryProvider library) {
     separate(song)
@@ -39,7 +29,6 @@ class DemixingProvider extends ChangeNotifier {
   }
 
   CancelableOperation<UnmixedSong>? separate(Song song) {
-    _setStatus(isDemixing: true);
     Get.toNamed('/demixing/processing', arguments: this);
 
     _operation = CancelableOperation<UnmixedSong>.fromFuture(_helper
@@ -54,7 +43,6 @@ class DemixingProvider extends ChangeNotifier {
 
   void cancelDemixing() {
     _operation?.cancel();
-    _setStatus(isDemixing: false);
     Get.back();
   }
 }
