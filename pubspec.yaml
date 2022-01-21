@@ -79,7 +79,8 @@ dev_dependencies:
 flutter_icons:
   android: true
   ios: true
-  image_path: "assets/images/logo.png"
+  image_path_android: "assets/images/logo_android.png"
+  image_path_ios: "assets/images/logo_ios.png"
 
 flutter_native_splash:
   android: true
