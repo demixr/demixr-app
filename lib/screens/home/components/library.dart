@@ -1,5 +1,3 @@
-import 'dart:typed_data';
-
 import 'package:dartz/dartz.dart';
 import 'package:demixr_app/components/song_widget.dart';
 import 'package:demixr_app/constants.dart';
@@ -11,7 +9,6 @@ import 'package:get/get.dart';
 import 'package:provider/provider.dart';
 
 import '../../../utils.dart';
-import '../../../helpers/song_helper.dart';
 
 class Library extends StatelessWidget {
   const Library({Key? key}) : super(key: key);
@@ -73,44 +70,34 @@ class LibrarySongs extends StatelessWidget {
             index = library.getIndexByOrder(index);
             final currentSong = library.getAt(index);
 
-            return FutureBuilder<Either<Failure, Uint8List>>(
-                future: currentSong.mixture.albumCover,
-                builder: (context, snapshot) {
-                  if (snapshot.hasData) {
-                    final infosColor = library.matchSelectedSong(index)
-                        ? ColorPalette.primary
-                        : ColorPalette.onSurface;
+            final infosColor = library.matchSelectedSong(index)
+                ? ColorPalette.primary
+                : ColorPalette.onSurface;
 
-                    return buildSongButton(
-                      SongWidget(
-                        title: currentSong.mixture.title,
-                        artists: currentSong.mixture.artists,
-                        cover: snapshot.data!,
-                        textColor: infosColor,
-                        onRemovePressed: () {
-                          library.removeSong(index);
-                          Get.snackbar(
-                            'Demixr',
-                            '${currentSong.mixture.title} was removed from library',
-                            backgroundColor: ColorPalette.primary,
-                            colorText: ColorPalette.onPrimary,
-                            animationDuration:
-                                const Duration(milliseconds: 500),
-                          );
-                        },
-                      ),
-                      onPressed: () {
-                        library.setCurrentSongIndex(index);
-                        Get.toNamed('player');
-                      },
-                    );
-                  } else {
-                    return const Text('Loading');
-                  }
-                });
+            return buildSongButton(
+              SongWidget(
+                title: currentSong.title,
+                artists: currentSong.artists,
+                coverPath: currentSong.albumCover,
+                textColor: infosColor,
+                onRemovePressed: () {
+                  library.removeSong(index);
+                  Get.snackbar(
+                    'Demixr',
+                    '${currentSong.title} was removed from the library',
+                    backgroundColor: ColorPalette.primary,
+                    colorText: ColorPalette.onPrimary,
+                    animationDuration: const Duration(milliseconds: 500),
+                  );
+                },
+              ),
+              onPressed: () {
+                library.setCurrentSongIndex(index);
+                Get.toNamed('player');
+              },
+            );
           },
         );
-        // return buildSongButton(const SongWidget(), context);
       },
     );
   }

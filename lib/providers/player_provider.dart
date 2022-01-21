@@ -25,7 +25,7 @@ class PlayerProvider extends ChangeNotifier {
 
   Stream<Duration> get positionStream => _player.onAudioPositionChanged;
 
-  Future<int> get songDuration async => await _player.getDuration();
+  int get songDuration => _player.duration;
 
   bool isStemMute(Stem stem) => _player.getStemState(stem) == StemState.mute;
 
@@ -48,6 +48,8 @@ class PlayerProvider extends ChangeNotifier {
         (song) {
           _player.setUrls(song);
           _player.seek(position);
+          _player.setDuration().then((_) => notifyListeners());
+
           state = PlayerState.pause;
 
           _player.onPlayerCompletion.listen((event) {

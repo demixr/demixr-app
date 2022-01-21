@@ -1,11 +1,12 @@
-import 'package:demixr_app/models/song.dart';
 import 'package:demixr_app/models/unmixed_song.dart';
 import 'package:demixr_app/providers/library_provider.dart';
 import 'package:demixr_app/providers/player_provider.dart';
 import 'package:demixr_app/screens/demixing/demixing_screen.dart';
+import 'package:demixr_app/screens/demixing/processing/processing_screen.dart';
 import 'package:demixr_app/screens/error/error_screen.dart';
 import 'package:demixr_app/screens/home/home_screen.dart';
 import 'package:demixr_app/screens/player/player_screen.dart';
+import 'package:demixr_app/screens/youtube/youtube_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:demixr_app/constants.dart' show BoxesNames, ColorPalette;
 import 'package:flutter/services.dart';
@@ -19,7 +20,6 @@ Future<void> main() async {
   await Hive.initFlutter();
 
   Hive.registerAdapter<UnmixedSong>(UnmixedSongAdapter());
-  Hive.registerAdapter<Song>(SongAdapter());
 
   await Hive.openBox<dynamic>(BoxesNames.preferences);
   await Hive.openBox<UnmixedSong>(BoxesNames.library);
@@ -71,11 +71,23 @@ class MyApp extends StatelessWidget {
             transition: Transition.downToUp,
           ),
           GetPage(
+            name: '/demixing/processing',
+            page: () => const ProcessingScreen(),
+            transitionDuration: const Duration(milliseconds: 800),
+            transition: Transition.circularReveal,
+          ),
+          GetPage(
             name: '/player',
             page: () => const PlayerScreen(),
             transition: Transition.downToUp,
           ),
+          GetPage(
+            name: '/demixing/youtube',
+            page: () => const YoutubeScreen(),
+            transition: Transition.downToUp,
+          ),
         ],
+        supportedLocales: const [Locale('en')],
       ),
     );
   }

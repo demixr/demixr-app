@@ -1,13 +1,16 @@
 import 'dart:io';
-import 'dart:typed_data';
 
 import 'package:dartz/dartz.dart';
 import 'package:demixr_app/constants.dart';
 import 'package:demixr_app/models/exceptions/conversion_exception.dart';
 import 'package:demixr_app/models/failure/failure.dart';
-import 'package:demixr_app/models/failure/no_album_cover.dart';
+import 'package:demixr_app/models/failure/no_internet_connection.dart';
+import 'package:demixr_app/models/failure/song_conversion_failure.dart';
+import 'package:demixr_app/models/failure/song_download_failure.dart';
 import 'package:demixr_app/models/failure/song_load_failure.dart';
+import 'package:demixr_app/models/failure/song_not_found_on_youtube.dart';
 import 'package:demixr_app/models/song.dart';
+import 'package:demixr_app/models/song_download.dart';
 import 'package:demixr_app/services/song_loader.dart';
 import 'package:demixr_app/utils.dart';
 import 'package:ffmpeg_kit_flutter/ffmpeg_kit.dart';
@@ -15,8 +18,10 @@ import 'package:ffmpeg_kit_flutter/ffprobe_kit.dart';
 import 'package:ffmpeg_kit_flutter/return_code.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter_media_metadata/flutter_media_metadata.dart';
-import 'package:get/route_manager.dart';
-import 'package:path/path.dart';
+import 'package:youtube_explode_dart/youtube_explode_dart.dart';
+import 'package:path/path.dart' as p;
+import 'package:http/http.dart' show get;
+import 'package:image/image.dart';
 
 class SongHelper {
   final _service = SongLoader();
@@ -33,15 +38,16 @@ class SongHelper {
       Tuple2<String, List<String>> songInfos = _getSongInfos(
         metadata.trackName,
         metadata.trackArtistNames,
-        basename(path.path).removeExtension(),
+        p.basename(path.path).removeExtension(),
       );
+
+      String? coverPath = await _saveCover(path.path, songInfos.value1);
 
       String newPath;
       try {
         newPath = await convertToWav(file.path!);
-      } on ConversionException catch (e) {
-        Get.snackbar('Song conversion error', e.message);
-        return Left(SongLoadFailure());
+      } on ConversionException {
+        return Left(SongConversionFailure());
       }
 
       return Right(
@@ -49,9 +55,106 @@ class SongHelper {
           title: songInfos.value1,
           artists: songInfos.value2,
           path: newPath,
+          coverPath: coverPath,
         ),
       );
     });
+  }
+
+  Future<String?> _saveCover(String songPath, String title) async {
+    var metadata = await MetadataRetriever.fromFile(File(songPath));
+    final albumCover = metadata.albumArt;
+
+    if (albumCover == null) return null;
+
+    Image? image = decodeImage(albumCover);
+    if (image == null) return null;
+
+    final tempDir = await getAppTemp();
+    final filePath = p.join(tempDir, '${title}_cover.jpg');
+
+    File file = File(filePath);
+    file.writeAsBytesSync(encodeJpg(image));
+
+    return file.path;
+  }
+
+  Future<Either<Failure, SongDownload>> getSongInfosFromYoutube(
+      String url) async {
+    final yt = YoutubeExplode();
+
+    Video video;
+    try {
+      video = await yt.videos.get(url);
+    } on ArgumentError {
+      return Left(SongNotFoundOnYoutube());
+    } on SocketException {
+      return Left(NoInternetConnection());
+    }
+
+    String? coverPath;
+    try {
+      coverPath =
+          await _downloadThumbnail(video.thumbnails.mediumResUrl, video.title);
+    } catch (e) {
+      coverPath = null;
+    }
+
+    yt.close();
+
+    return Right(SongDownload(
+      title: video.title,
+      artists: [video.author],
+      url: url,
+      coverPath: coverPath,
+    ));
+  }
+
+  Future<Either<Failure, Song>> downloadFromYoutube(SongDownload song) async {
+    final yt = YoutubeExplode();
+
+    File file;
+    try {
+      final manifest = await yt.videos.streamsClient.getManifest(song.url);
+      final streamInfo = manifest.audioOnly.withHighestBitrate();
+
+      // Get the actual stream
+      final stream = yt.videos.streamsClient.get(streamInfo);
+
+      file = File(p.join(await getAppTemp(), song.title));
+      final fileStream = file.openWrite();
+
+      // Pipe all the content of the stream into the file.
+      await stream.pipe(fileStream);
+
+      // Close the file.
+      await fileStream.flush();
+      await fileStream.close();
+    } catch (_) {
+      return Left(SongDownloadFailure());
+    }
+
+    yt.close();
+
+    String newPath;
+    try {
+      newPath = await convertToWav(file.path);
+    } on ConversionException {
+      return Left(SongConversionFailure());
+    }
+
+    return Right(Song.fromDownload(song, newPath));
+  }
+
+  Future<String> _downloadThumbnail(String url, String title) async {
+    final response = await get(Uri.parse(url));
+    final tempDir = await getAppTemp();
+    final filePath = p.join(tempDir, '${title}_cover.jpg');
+
+    File file = File(filePath);
+    file.writeAsBytesSync(response.bodyBytes);
+
+    return file.path;
   }
 
   Tuple2<String, List<String>> _getSongInfos(
@@ -70,42 +173,31 @@ class SongHelper {
 
     return Tuple2(title, artists);
   }
-
-  Future<String> convertToWav(String path) async {
-    final session = await FFprobeKit.getMediaInformation(path);
-    final information = session.getMediaInformation();
-
-    String? format = information?.getProperties('format_name');
-
-    if (format == null) {
-      throw ConversionException('SongLoader: Failed to get the file format');
-    } else if (format == 'mp3') {
-      final outputPath = '${withoutExtension(path)}.wav';
-      File(outputPath).deleteIfExists();
-
-      final convertSession =
-          await FFmpegKit.execute('-i "$path" -acodec pcm_u8 "$outputPath"');
-      final convertRc = await convertSession.getReturnCode();
-
-      if (ReturnCode.isSuccess(convertRc)) {
-        path = outputPath;
-      } else {
-        throw ConversionException(
-            'SongLoader: Failed to convert audio file to wav');
-      }
-    }
-
-    return path;
-  }
 }
 
-extension Cover on Song {
-  Future<Either<Failure, Uint8List>> get albumCover async {
-    var metadata = await MetadataRetriever.fromFile(File(path));
-    final albumCover = metadata.albumArt;
+Future<String> convertToWav(String path) async {
+  final session = await FFprobeKit.getMediaInformation(path);
+  final information = session.getMediaInformation();
 
-    if (albumCover == null) return Left(NoAlbumCover());
+  String? format = information?.getProperties('format_name');
 
-    return Right(albumCover);
+  if (format == null) {
+    throw ConversionException('SongLoader: Failed to get the file format');
+  } else if (format != 'wav') {
+    final outputPath = '${p.withoutExtension(path)}.wav';
+    File(outputPath).deleteIfExists();
+
+    final convertSession =
+        await FFmpegKit.execute('-i "$path" -acodec pcm_u8 "$outputPath"');
+    final convertRc = await convertSession.getReturnCode();
+
+    if (ReturnCode.isSuccess(convertRc)) {
+      path = outputPath;
+    } else {
+      throw ConversionException(
+          'SongLoader: Failed to convert audio file to wav');
+    }
   }
+
+  return path;
 }

@@ -7,32 +7,30 @@ import 'package:demixr_app/providers/preferences_provider.dart';
 import 'package:demixr_app/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:async/async.dart';
+import 'package:get/route_manager.dart';
 
 class DemixingProvider extends ChangeNotifier {
   final _helper = DemixingHelper();
   final PreferencesProvider preferences;
-  bool _isDemixing = false;
   CancelableOperation<UnmixedSong>? _operation;
 
   DemixingProvider(this.preferences);
 
-  bool get isDemixing => _isDemixing;
-
-  _setStatus({required bool isDemixing}) {
-    if (_isDemixing != isDemixing) {
-      _isDemixing = isDemixing;
-      notifyListeners();
-    }
-  }
-
-  CancelableOperation<bool>? unmix(Song song, LibraryProvider library) {
-    return separate(song)
+  void unmix(Song song, LibraryProvider library) {
+    separate(song)
         ?.then((unmixed) => library.saveSong(unmixed))
-        .then((index) => library.setCurrentSongIndex(index));
+        .then((index) => library.setCurrentSongIndex(index))
+        .then(
+          (_) => Get.offAllNamed(
+            '/player',
+            predicate: (route) => route.settings.name == '/',
+          ),
+        );
   }
 
   CancelableOperation<UnmixedSong>? separate(Song song) {
-    _setStatus(isDemixing: true);
+    Get.toNamed('/demixing/processing', arguments: this);
+
     _operation = CancelableOperation<UnmixedSong>.fromFuture(_helper
         .separate(song, preferences.getModelPath())
         .onError((DemixingException error, _) {
@@ -45,6 +43,6 @@ class DemixingProvider extends ChangeNotifier {
 
   void cancelDemixing() {
     _operation?.cancel();
-    _setStatus(isDemixing: false);
+    Get.back();
   }
 }

@@ -1,4 +1,4 @@
-import 'dart:typed_data';
+import 'dart:io';
 
 import 'package:dartz/dartz.dart';
 import 'package:demixr_app/constants.dart';
@@ -50,23 +50,23 @@ class SongInfos extends StatelessWidget {
 }
 
 class AlbumCover extends StatelessWidget {
-  final Either<Failure, Uint8List> image;
+  final Either<Failure, String> imagePath;
   final double size;
 
-  const AlbumCover({Key? key, required this.image, this.size = 65})
+  const AlbumCover({Key? key, required this.imagePath, this.size = 65})
       : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return image.fold(
+    return imagePath.fold(
       (failure) => Image.asset(
         getAssetPath('default_cover', AssetType.image),
         fit: BoxFit.contain,
         width: size,
         height: size,
       ),
-      (cover) => Image.memory(
-        cover,
+      (coverPath) => Image.file(
+        File(coverPath),
         fit: BoxFit.cover,
         width: size,
         height: size,
@@ -78,35 +78,50 @@ class AlbumCover extends StatelessWidget {
 class SongWidget extends StatelessWidget {
   final String title;
   final List<String> artists;
-  final Either<Failure, Uint8List> cover;
+  final Either<Failure, String> coverPath;
   final VoidCallback? onRemovePressed;
   final Color textColor;
+  final bool download;
 
   const SongWidget({
     Key? key,
     required this.title,
     required this.artists,
-    required this.cover,
+    required this.coverPath,
     this.onRemovePressed,
     this.textColor = ColorPalette.onSurface,
+    this.download = false,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        SpacedRow(
+    List<Widget> children = [
+      Expanded(
+        child: SpacedRow(
           spacing: 15,
           children: [
-            AlbumCover(image: cover),
-            SongInfos(
-              title: title,
-              artists: artists,
-              textColor: textColor,
+            AlbumCover(imagePath: coverPath),
+            Expanded(
+              child: SongInfos(
+                title: title,
+                artists: artists,
+                textColor: textColor,
+              ),
             ),
           ],
         ),
+      ),
+    ];
+
+    if (download) {
+      children.add(const Padding(
+          padding: EdgeInsets.all(10),
+          child: CircularProgressIndicator(
+            color: ColorPalette.primary,
+            strokeWidth: 4,
+          )));
+    } else {
+      children.add(
         PopupMenuButton(
           padding: const EdgeInsets.all(0),
           color: ColorPalette.surfaceVariant,
@@ -129,7 +144,12 @@ class SongWidget extends StatelessWidget {
             ),
           ],
         ),
-      ],
+      );
+    }
+
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: children,
     );
   }
 }

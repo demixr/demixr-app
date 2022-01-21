@@ -9,41 +9,34 @@ class SongProgressBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final player = context.read<PlayerProvider>();
-    return FutureBuilder<int>(
-      future: player.songDuration,
-      builder: (context, snapshot) {
-        if (snapshot.hasData) {
-          final songDuration = snapshot.data!;
+    return Consumer<PlayerProvider>(
+      builder: (context, player, child) {
+        return StreamBuilder<Duration>(
+          stream: player.positionStream,
+          builder: (context, snapshot) {
+            final position = snapshot.data;
 
-          return StreamBuilder<Duration>(
-            stream: player.positionStream,
-            builder: (context, snapshot) {
-              final position = snapshot.data;
-              final progress = position ?? player.position;
-              final total = Duration(milliseconds: songDuration);
+            player.position = position ?? player.position;
+            final progress = player.position;
+            final total = Duration(milliseconds: player.songDuration);
 
-              return ProgressBar(
-                progress: progress,
-                total: total,
-                progressBarColor: ColorPalette.inverseSurface,
-                baseBarColor: Colors.white.withOpacity(0.2),
-                barHeight: 3,
-                thumbRadius: 5,
-                thumbColor: ColorPalette.inverseSurface,
-                thumbGlowRadius: 12,
-                timeLabelTextStyle:
-                    const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
-                onSeek: (duration) {
-                  player.seek(duration);
-                },
-              );
-            },
-          );
-        } else {
-          // return an empty widget
-          return const SizedBox.shrink();
-        }
+            return ProgressBar(
+              progress: progress,
+              total: total,
+              progressBarColor: ColorPalette.inverseSurface,
+              baseBarColor: Colors.white.withOpacity(0.2),
+              barHeight: 3,
+              thumbRadius: 5,
+              thumbColor: ColorPalette.inverseSurface,
+              thumbGlowRadius: 12,
+              timeLabelTextStyle:
+                  const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+              onSeek: (duration) {
+                player.seek(duration);
+              },
+            );
+          },
+        );
       },
     );
   }

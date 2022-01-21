@@ -12,6 +12,7 @@ class StemsPlayer {
   Map<Stem, AudioPlayer> players = {};
   Map<Stem, StemState> stemStates = {};
   bool mixtureOn = false;
+  int duration = 0;
 
   StemsPlayer() {
     players = {
@@ -40,6 +41,10 @@ class StemsPlayer {
 
   Future<int> getDuration() => aPlayer.getDuration();
 
+  Future<void> setDuration() async {
+    duration = await getDuration();
+  }
+
   StemState getStemState(Stem stem) => stemStates[stem] ?? StemState.mute;
 
   bool get allStemsUnmute {
@@ -47,8 +52,8 @@ class StemsPlayer {
   }
 
   void setUrls(UnmixedSong song) {
-    players.forEach((stem, player) =>
-        player.setUrl(song.getStem(stem).path, isLocal: true));
+    players.forEach(
+        (stem, player) => player.setUrl(song.getStem(stem), isLocal: true));
   }
 
   void pause() {

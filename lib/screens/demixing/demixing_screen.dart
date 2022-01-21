@@ -1,11 +1,8 @@
 import 'package:demixr_app/providers/demixing_provider.dart';
 import 'package:demixr_app/providers/preferences_provider.dart';
 import 'package:demixr_app/screens/demixing/components/selection_screen.dart';
-import 'package:demixr_app/screens/demixing/components/loading_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-
-import 'components/loading_screen.dart';
 
 class DemixingScreen extends StatelessWidget {
   const DemixingScreen({Key? key}) : super(key: key);
@@ -18,9 +15,7 @@ class DemixingScreen extends StatelessWidget {
             DemixingProvider(context.read<PreferencesProvider>()),
         child: Consumer<DemixingProvider>(
           builder: (context, demixingProvider, child) {
-            return demixingProvider.isDemixing
-                ? const LoadingScreen()
-                : const SelectionScreen();
+            return const SelectionScreen();
           },
         ),
       ),
