@@ -66,7 +66,13 @@ In order to use the models on mobile, they are transformed to [torchscript](http
 
 Latest mobile build of the models: https://github.com/demixr/openunmix-torchscript/releases/latest/.
 
+## Performance
 
+Using a Pixel 6, demixing a 4-minute audio file takes:
+* 3 minutes using the `umxhq` model.
+* 4 minutes 10 seconds using the `umxl` model.
+
+> Note: Inference is done on CPU as GPU is not yet fully supported by PyTorch Mobile.
 
 ## Download Demixr
 
