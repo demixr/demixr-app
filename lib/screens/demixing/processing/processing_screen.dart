@@ -1,3 +1,4 @@
+import 'package:demixr_app/components/buttons.dart';
 import 'package:demixr_app/components/extended_widgets.dart';
 import 'package:demixr_app/constants.dart';
 import 'package:demixr_app/components/cancel_button.dart';
@@ -64,7 +65,37 @@ class ProcessingScreen extends StatelessWidget {
                 );
               },
             ),
-            CancelButton(onPressed: () => demixingProvider.cancelDemixing()),
+            CancelButton(onPressed: () {
+              showDialog(
+                  context: context,
+                  barrierDismissible: true,
+                  builder: (context) {
+                    return AlertDialog(
+                      title: const Text('Cancel'),
+                      elevation: 24,
+                      content: const Text(
+                          'Do you really want to cancel the demixing?'),
+                      backgroundColor: ColorPalette.surfaceVariant,
+                      actions: [
+                        Button(
+                          'No',
+                          onPressed: Get.back,
+                          color: Colors.transparent,
+                          textColor: ColorPalette.primary,
+                        ),
+                        Button(
+                          'Yes, cancel',
+                          onPressed: () {
+                            demixingProvider.cancelDemixing();
+                            Get.back();
+                          },
+                          color: Colors.transparent,
+                          textColor: ColorPalette.primary,
+                        ),
+                      ],
+                    );
+                  });
+            }),
           ],
         ),
       ),
