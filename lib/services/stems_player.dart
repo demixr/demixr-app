@@ -39,12 +39,6 @@ class StemsPlayer {
 
   Stream<void> get onPlayerCompletion => aPlayer.onPlayerCompletion;
 
-  Future<int> getDuration() => aPlayer.getDuration();
-
-  Future<void> setDuration() async {
-    duration = await getDuration();
-  }
-
   StemState getStemState(Stem stem) => stemStates[stem] ?? StemState.mute;
 
   bool get allStemsUnmute {

@@ -21,23 +21,27 @@ class UnmixedSong {
   String? coverPath;
 
   @HiveField(3)
-  String mixture;
+  Duration duration;
 
   @HiveField(4)
-  String vocals;
+  String mixture;
 
   @HiveField(5)
-  String bass;
+  String vocals;
 
   @HiveField(6)
-  String drums;
+  String bass;
 
   @HiveField(7)
+  String drums;
+
+  @HiveField(8)
   String other;
 
   UnmixedSong({
     required this.title,
     required this.artists,
+    required this.duration,
     required this.mixture,
     required this.vocals,
     required this.bass,
@@ -55,6 +59,7 @@ class UnmixedSong {
   }) : this(
           title: song.title,
           artists: song.artists,
+          duration: song.duration,
           coverPath: song.coverPath,
           mixture: song.path,
           vocals: vocals,

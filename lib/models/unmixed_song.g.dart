@@ -19,11 +19,12 @@ class UnmixedSongAdapter extends TypeAdapter<UnmixedSong> {
     return UnmixedSong(
       title: fields[0] as String,
       artists: (fields[1] as List).cast<String>(),
-      mixture: fields[3] as String,
-      vocals: fields[4] as String,
-      bass: fields[5] as String,
-      drums: fields[6] as String,
-      other: fields[7] as String,
+      duration: fields[3] as Duration,
+      mixture: fields[4] as String,
+      vocals: fields[5] as String,
+      bass: fields[6] as String,
+      drums: fields[7] as String,
+      other: fields[8] as String,
       coverPath: fields[2] as String?,
     );
   }
@@ -31,7 +32,7 @@ class UnmixedSongAdapter extends TypeAdapter<UnmixedSong> {
   @override
   void write(BinaryWriter writer, UnmixedSong obj) {
     writer
-      ..writeByte(8)
+      ..writeByte(9)
       ..writeByte(0)
       ..write(obj.title)
       ..writeByte(1)
@@ -39,14 +40,16 @@ class UnmixedSongAdapter extends TypeAdapter<UnmixedSong> {
       ..writeByte(2)
       ..write(obj.coverPath)
       ..writeByte(3)
-      ..write(obj.mixture)
+      ..write(obj.duration)
       ..writeByte(4)
-      ..write(obj.vocals)
+      ..write(obj.mixture)
       ..writeByte(5)
-      ..write(obj.bass)
+      ..write(obj.vocals)
       ..writeByte(6)
-      ..write(obj.drums)
+      ..write(obj.bass)
       ..writeByte(7)
+      ..write(obj.drums)
+      ..writeByte(8)
       ..write(obj.other);
   }
 

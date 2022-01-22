@@ -18,7 +18,7 @@ class SongProgressBar extends StatelessWidget {
 
             player.position = position ?? player.position;
             final progress = player.position;
-            final total = Duration(milliseconds: player.songDuration);
+            final total = player.songDuration;
 
             return ProgressBar(
               progress: progress,

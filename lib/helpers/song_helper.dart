@@ -56,6 +56,7 @@ class SongHelper {
           artists: songInfos.value2,
           path: newPath,
           coverPath: coverPath,
+          duration: Duration(milliseconds: metadata.trackDuration ?? 0),
         ),
       );
     });
@@ -107,6 +108,7 @@ class SongHelper {
       artists: [video.author],
       url: url,
       coverPath: coverPath,
+      duration: video.duration ?? Duration.zero,
     ));
   }
 

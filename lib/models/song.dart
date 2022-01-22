@@ -13,10 +13,13 @@ class Song {
 
   String? coverPath;
 
+  Duration duration;
+
   Song({
     required this.title,
     required this.artists,
     required this.path,
+    required this.duration,
     this.coverPath,
   });
 
@@ -26,6 +29,7 @@ class Song {
           artists: song.artists,
           coverPath: song.coverPath,
           path: path,
+          duration: song.duration,
         );
 
   Either<Failure, String> get albumCover =>
