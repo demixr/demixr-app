@@ -58,6 +58,9 @@ class ProcessingScreen extends StatelessWidget {
                   backgroundColor: ColorPalette.surfaceVariant,
                   progressColor: ColorPalette.primary,
                   linearStrokeCap: LinearStrokeCap.round,
+                  animation: true,
+                  animationDuration: 1000,
+                  animateFromLastPercent: true,
                 );
               },
             ),

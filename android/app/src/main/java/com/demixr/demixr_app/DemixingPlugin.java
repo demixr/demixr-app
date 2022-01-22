@@ -39,7 +39,7 @@ public class DemixingPlugin implements FlutterPlugin, MethodCallHandler, EventCh
     private static final String eventName = "demixing/progress";
     private static final String separateMethod = "separate";
 
-    private static final int numBufferFrame = 2000000;
+    private static final int numBufferFrame = 250000;
 
     // cpp resample function
     static {
@@ -197,7 +197,7 @@ public class DemixingPlugin implements FlutterPlugin, MethodCallHandler, EventCh
         int numChannels = wavFile.getNumChannels();
 
         long numFrames = wavFile.getNumFrames();
-        int nbChunks = (int) (numFrames / numBufferFrame);
+        int nbChunks = (int) (numFrames / numBufferFrame) + 1;
 
         float[] buffer = new float[numBufferFrame * numChannels];
         int framesRead = wavFile.readFrames(buffer, numBufferFrame);
