@@ -22,19 +22,25 @@ import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import io.flutter.embedding.engine.plugins.FlutterPlugin;
 import io.flutter.plugin.common.BinaryMessenger;
+import io.flutter.plugin.common.EventChannel;
 import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
 import io.flutter.plugin.common.MethodChannel.Result;
 import io.flutter.plugin.common.StandardMethodCodec;
 
-public class DemixingPlugin implements FlutterPlugin, MethodCallHandler {
+public class DemixingPlugin implements FlutterPlugin, MethodCallHandler, EventChannel.StreamHandler {
     private static Module module;
-    private MethodChannel channel;
+    private MethodChannel methodChannel;
+    private EventChannel eventChannel;
+    private EventChannel.EventSink progressStream;
 
     private static final String channelName = "demixing";
+    private static final String eventName = "demixing/progress";
     private static final String separateMethod = "separate";
+
     private static final int numBufferFrame = 2000000;
+    private Integer demixingPercentage = 0;
 
     // cpp resample function
     static {
@@ -50,13 +56,16 @@ public class DemixingPlugin implements FlutterPlugin, MethodCallHandler {
         BinaryMessenger messenger = binding.getBinaryMessenger();
         BinaryMessenger.TaskQueue taskQueue =
                 messenger.makeBackgroundTaskQueue();
-        channel =
+        methodChannel =
                 new MethodChannel(
                         messenger,
                         channelName,
                         StandardMethodCodec.INSTANCE,
                         taskQueue);
-        channel.setMethodCallHandler(this);
+        methodChannel.setMethodCallHandler(this);
+
+        eventChannel = new EventChannel(messenger, eventName);
+        eventChannel.setStreamHandler(this);
     }
 
     @RequiresApi(api = Build.VERSION_CODES.N)
@@ -82,7 +91,18 @@ public class DemixingPlugin implements FlutterPlugin, MethodCallHandler {
 
     @Override
     public void onDetachedFromEngine(@NonNull FlutterPluginBinding binding) {
-        channel.setMethodCallHandler(null);
+        methodChannel.setMethodCallHandler(null);
+        eventChannel.setStreamHandler(null);
+    }
+
+    @java.lang.Override
+    public void onListen(java.lang.Object arguments, EventChannel.EventSink events) {
+        progressStream = events;
+    }
+
+    @java.lang.Override
+    public void onCancel(java.lang.Object arguments) {
+        progressStream = null;
     }
 
     private void loadModel(String modelPath) {
@@ -186,7 +206,6 @@ public class DemixingPlugin implements FlutterPlugin, MethodCallHandler {
         int framesRead = wavFile.readFrames(buffer, numBufferFrame);
 
         int currentChunk = 0;
-        int percentage = 0;
 
         while (framesRead != 0) {
             // Resample sound
@@ -207,7 +226,8 @@ public class DemixingPlugin implements FlutterPlugin, MethodCallHandler {
 
             // compute current demixing percentage
             currentChunk += 1;
-            percentage = currentChunk / nbChunks * 100;
+            demixingPercentage = currentChunk / nbChunks * 100;
+            progressStream.success(demixingPercentage);
         }
     }
 
