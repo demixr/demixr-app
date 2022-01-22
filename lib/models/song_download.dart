@@ -12,10 +12,13 @@ class SongDownload {
 
   String? coverPath;
 
+  Duration duration;
+
   SongDownload({
     required this.title,
     required this.artists,
     required this.url,
+    required this.duration,
     this.coverPath,
   });
 
