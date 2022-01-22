@@ -15,7 +15,7 @@ class SongSelection extends StatelessWidget {
   const SongSelection({Key? key}) : super(key: key);
 
   Widget buildButtons(SongProvider provider, BuildContext context) => Row(
-        mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
           Button(
             'Search Youtube',
@@ -25,8 +25,9 @@ class SongSelection extends StatelessWidget {
             textSize: 16,
             onPressed: () =>
                 Get.toNamed('/demixing/youtube', arguments: provider),
+            padding:
+                const EdgeInsets.only(left: 15, top: 10, right: 15, bottom: 10),
           ),
-          const SizedBox(width: 10),
           Button(
             'Browse files',
             icon: const Icon(
@@ -36,6 +37,8 @@ class SongSelection extends StatelessWidget {
             ),
             textSize: 16,
             onPressed: provider.loadFromDevice,
+            padding:
+                const EdgeInsets.only(left: 15, top: 10, right: 15, bottom: 10),
           ),
         ],
       );

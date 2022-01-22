@@ -12,11 +12,16 @@ import 'package:get/route_manager.dart';
 class DemixingProvider extends ChangeNotifier {
   final _helper = DemixingHelper();
   final PreferencesProvider preferences;
+  late Stream<double> _progressStream;
   CancelableOperation<UnmixedSong>? _operation;
 
   DemixingProvider(this.preferences);
 
+  Stream<double> get progressStream => _progressStream;
+
   void unmix(Song song, LibraryProvider library) {
+    _progressStream =
+        _helper.progressStream.receiveBroadcastStream().cast<double>();
     separate(song)
         ?.then((unmixed) => library.saveSong(unmixed))
         .then((index) => library.setCurrentSongIndex(index))

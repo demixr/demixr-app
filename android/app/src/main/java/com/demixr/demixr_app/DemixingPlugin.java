@@ -22,23 +22,30 @@ import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import io.flutter.embedding.engine.plugins.FlutterPlugin;
 import io.flutter.plugin.common.BinaryMessenger;
+import io.flutter.plugin.common.EventChannel;
 import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
 import io.flutter.plugin.common.MethodChannel.Result;
 import io.flutter.plugin.common.StandardMethodCodec;
 
-public class DemixingPlugin implements FlutterPlugin, MethodCallHandler {
+public class DemixingPlugin implements FlutterPlugin, MethodCallHandler, EventChannel.StreamHandler {
     private static Module module;
-    private MethodChannel channel;
+    private MethodChannel methodChannel;
+    private EventChannel eventChannel;
+    private EventChannel.EventSink progressStream;
 
     private static final String channelName = "demixing";
+    private static final String eventName = "demixing/progress";
     private static final String separateMethod = "separate";
+
+    private static final int numBufferFrame = 250000;
 
     // cpp resample function
     static {
         System.loadLibrary("wavResampler");
     }
+
     public native float[] resample(float[] inputBuffer, int numInputFrames, int inputSampleRate, int channelCount);
 
     private final int MONO = 1;
@@ -47,15 +54,16 @@ public class DemixingPlugin implements FlutterPlugin, MethodCallHandler {
     @Override
     public void onAttachedToEngine(@NonNull FlutterPluginBinding binding) {
         BinaryMessenger messenger = binding.getBinaryMessenger();
-        BinaryMessenger.TaskQueue taskQueue =
-                messenger.makeBackgroundTaskQueue();
-        channel =
-                new MethodChannel(
-                        messenger,
-                        channelName,
-                        StandardMethodCodec.INSTANCE,
-                        taskQueue);
-        channel.setMethodCallHandler(this);
+        BinaryMessenger.TaskQueue taskQueue = messenger.makeBackgroundTaskQueue();
+        methodChannel = new MethodChannel(
+                messenger,
+                channelName,
+                StandardMethodCodec.INSTANCE,
+                taskQueue);
+        methodChannel.setMethodCallHandler(this);
+
+        eventChannel = new EventChannel(messenger, eventName);
+        eventChannel.setStreamHandler(this);
     }
 
     @RequiresApi(api = Build.VERSION_CODES.N)
@@ -71,8 +79,7 @@ public class DemixingPlugin implements FlutterPlugin, MethodCallHandler {
 
                 new Handler(Looper.getMainLooper()).post(() -> result.success(stems));
             } catch (Exception e) {
-                new Handler(Looper.getMainLooper()).post(() ->
-                        result.error("DemixingError", e.getMessage(), null));
+                new Handler(Looper.getMainLooper()).post(() -> result.error("DemixingError", e.getMessage(), null));
             }
         } else {
             new Handler(Looper.getMainLooper()).post(result::notImplemented);
@@ -81,7 +88,18 @@ public class DemixingPlugin implements FlutterPlugin, MethodCallHandler {
 
     @Override
     public void onDetachedFromEngine(@NonNull FlutterPluginBinding binding) {
-        channel.setMethodCallHandler(null);
+        methodChannel.setMethodCallHandler(null);
+        eventChannel.setStreamHandler(null);
+    }
+
+    @java.lang.Override
+    public void onListen(java.lang.Object arguments, EventChannel.EventSink events) {
+        progressStream = events;
+    }
+
+    @java.lang.Override
+    public void onCancel(java.lang.Object arguments) {
+        progressStream = null;
     }
 
     private void loadModel(String modelPath) {
@@ -96,7 +114,8 @@ public class DemixingPlugin implements FlutterPlugin, MethodCallHandler {
     }
 
     // Close the wav files (input and outputs)
-    private void closeWavFiles(WavFile inputWav, Map<String, WavFile> stemFiles, String[] stemNames) throws IOException {
+    private void closeWavFiles(WavFile inputWav, Map<String, WavFile> stemFiles, String[] stemNames)
+            throws IOException {
         inputWav.close();
         for (String stemName : stemNames) {
             Objects.requireNonNull(stemFiles.get(stemName)).close();
@@ -104,7 +123,7 @@ public class DemixingPlugin implements FlutterPlugin, MethodCallHandler {
     }
 
     private Map<String, WavFile> createFiles(String[] stemNames, String outputDir, int numChannels, int numFrames,
-                                             int numBits, int sampleRate) throws IOException, WavFileException {
+            int numBits, int sampleRate) throws IOException, WavFileException {
         Map<String, WavFile> stemFiles = new HashMap<>();
 
         for (String stemName : stemNames) {
@@ -129,8 +148,7 @@ public class DemixingPlugin implements FlutterPlugin, MethodCallHandler {
         // convert to stereo
         if (numChannels == MONO) {
             monoToStereo(buffer, flatAudio, framesRead);
-        }
-        else {
+        } else {
             // First channel
             for (int i = 0; i < framesRead; i++) {
                 flatAudio.put(buffer[i * 2]);
@@ -143,7 +161,7 @@ public class DemixingPlugin implements FlutterPlugin, MethodCallHandler {
         }
 
         // Create Tensor from flattened array
-        return Tensor.fromBlob(flatAudio, new long[]{1, STEREO, framesRead});
+        return Tensor.fromBlob(flatAudio, new long[] { 1, STEREO, framesRead });
     }
 
     private float[][][] reshapeOutput(float[] prediction, int numStems, int framesRead) {
@@ -161,7 +179,7 @@ public class DemixingPlugin implements FlutterPlugin, MethodCallHandler {
     }
 
     private void writeToWavFile(Map<String, WavFile> stemFiles, String[] stemNames,
-                                float[][][] outputStems, int numStems, int numBufferFrame) throws IOException, WavFileException {
+            float[][][] outputStems, int numStems, int numBufferFrame) throws IOException, WavFileException {
         for (int i = 0; i < numStems; i++) {
             Objects.requireNonNull(stemFiles.get(stemNames[i])).writeFrames(outputStems[i], numBufferFrame);
         }
@@ -175,11 +193,16 @@ public class DemixingPlugin implements FlutterPlugin, MethodCallHandler {
     }
 
     private void predictByChunk(WavFile wavFile, Map<String, WavFile> stemFiles, String[] stemNames,
-                                int numBufferFrame, int numStems) throws IOException, WavFileException {
+            int numStems) throws IOException, WavFileException {
         int numChannels = wavFile.getNumChannels();
+
+        long numFrames = wavFile.getNumFrames();
+        int nbChunks = (int) (numFrames / numBufferFrame) + 1;
 
         float[] buffer = new float[numBufferFrame * numChannels];
         int framesRead = wavFile.readFrames(buffer, numBufferFrame);
+
+        double currentChunk = 0.0;
 
         while (framesRead != 0) {
             // Resample sound
@@ -197,6 +220,11 @@ public class DemixingPlugin implements FlutterPlugin, MethodCallHandler {
             // Get next frames
             buffer = new float[numBufferFrame * numChannels];
             framesRead = wavFile.readFrames(buffer, numBufferFrame);
+
+            // compute current demixing percentage
+            currentChunk += 1;
+            Double demixingPercentage = currentChunk / nbChunks;
+            new Handler(Looper.getMainLooper()).post(() -> progressStream.success(demixingPercentage));
         }
     }
 
@@ -210,11 +238,10 @@ public class DemixingPlugin implements FlutterPlugin, MethodCallHandler {
         int numChannels = wavFile.getNumChannels();
         int numFrames = (int) wavFile.getNumFrames();
         int numStems = 4;
-        int numBufferFrame = 2000000;
         int numBits = 16;
         int sampleRate = 44100;
 
-        String[] stemNames = new String[]{"vocals", "drums", "bass", "other"};
+        String[] stemNames = new String[] { "vocals", "drums", "bass", "other" };
         Map<String, WavFile> stemFiles = createFiles(stemNames,
                 outputDir,
                 numChannels,
@@ -222,7 +249,7 @@ public class DemixingPlugin implements FlutterPlugin, MethodCallHandler {
                 numBits,
                 sampleRate);
 
-        predictByChunk(wavFile, stemFiles, stemNames, numBufferFrame, numStems);
+        predictByChunk(wavFile, stemFiles, stemNames, numStems);
 
         closeWavFiles(wavFile, stemFiles, stemNames);
 

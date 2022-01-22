@@ -8,13 +8,14 @@ import 'package:flutter/services.dart';
 import '../constants.dart';
 
 class DemixingHelper {
-  static const platform = MethodChannel('demixing');
+  static const _methodChannel = MethodChannel(PlatformChannels.demixing);
+  static const _eventChannel = EventChannel(PlatformChannels.demixingProgress);
 
   Future<UnmixedSong> separate(Song song, String modelPath) async {
     Map<dynamic, dynamic> result;
 
     try {
-      result = await platform.invokeMethod(
+      result = await _methodChannel.invokeMethod(
         'separate',
         <String, String>{
           'songPath': song.path,
@@ -38,6 +39,8 @@ class DemixingHelper {
       other: separated[Stem.other.value]!,
     );
   }
+
+  EventChannel get progressStream => _eventChannel;
 
   void checkResult(Map<String, String> separated) {
     final stems = [
