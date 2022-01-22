@@ -40,7 +40,7 @@ public class DemixingPlugin implements FlutterPlugin, MethodCallHandler, EventCh
     private static final String separateMethod = "separate";
 
     private static final int numBufferFrame = 2000000;
-    private Integer demixingPercentage = 0;
+    private Double demixingPercentage = 0.0;
 
     // cpp resample function
     static {
@@ -205,7 +205,7 @@ public class DemixingPlugin implements FlutterPlugin, MethodCallHandler, EventCh
         float[] buffer = new float[numBufferFrame * numChannels];
         int framesRead = wavFile.readFrames(buffer, numBufferFrame);
 
-        int currentChunk = 0;
+        double currentChunk = 0.0;
 
         while (framesRead != 0) {
             // Resample sound
@@ -226,7 +226,7 @@ public class DemixingPlugin implements FlutterPlugin, MethodCallHandler, EventCh
 
             // compute current demixing percentage
             currentChunk += 1;
-            demixingPercentage = currentChunk / nbChunks * 100;
+            demixingPercentage = currentChunk / nbChunks;
             progressStream.success(demixingPercentage);
         }
     }
