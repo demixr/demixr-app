@@ -34,6 +34,7 @@ public class DemixingPlugin implements FlutterPlugin, MethodCallHandler {
 
     private static final String channelName = "demixing";
     private static final String separateMethod = "separate";
+    private static final int numBufferFrame = 2000000;
 
     // cpp resample function
     static {
@@ -175,11 +176,17 @@ public class DemixingPlugin implements FlutterPlugin, MethodCallHandler {
     }
 
     private void predictByChunk(WavFile wavFile, Map<String, WavFile> stemFiles, String[] stemNames,
-                                int numBufferFrame, int numStems) throws IOException, WavFileException {
+                                int numStems) throws IOException, WavFileException {
         int numChannels = wavFile.getNumChannels();
+
+        long numFrames = wavFile.getNumFrames();
+        int nbChunks = (int) (numFrames / numBufferFrame);
 
         float[] buffer = new float[numBufferFrame * numChannels];
         int framesRead = wavFile.readFrames(buffer, numBufferFrame);
+
+        int currentChunk = 0;
+        int percentage = 0;
 
         while (framesRead != 0) {
             // Resample sound
@@ -197,6 +204,10 @@ public class DemixingPlugin implements FlutterPlugin, MethodCallHandler {
             // Get next frames
             buffer = new float[numBufferFrame * numChannels];
             framesRead = wavFile.readFrames(buffer, numBufferFrame);
+
+            // compute current demixing percentage
+            currentChunk += 1;
+            percentage = currentChunk / nbChunks * 100;
         }
     }
 
@@ -210,7 +221,6 @@ public class DemixingPlugin implements FlutterPlugin, MethodCallHandler {
         int numChannels = wavFile.getNumChannels();
         int numFrames = (int) wavFile.getNumFrames();
         int numStems = 4;
-        int numBufferFrame = 2000000;
         int numBits = 16;
         int sampleRate = 44100;
 
@@ -222,7 +232,7 @@ public class DemixingPlugin implements FlutterPlugin, MethodCallHandler {
                 numBits,
                 sampleRate);
 
-        predictByChunk(wavFile, stemFiles, stemNames, numBufferFrame, numStems);
+        predictByChunk(wavFile, stemFiles, stemNames, numStems);
 
         closeWavFiles(wavFile, stemFiles, stemNames);
 
