@@ -99,3 +99,14 @@ You can report bugs using Github issues. Consider filling in the following infor
 1. Fork the repo and create your branch from `main`
 2. Make sure to add documentation and tests if necessary
 3. Create a pull request
+
+
+
+## References
+
+* [Open-Unmix](https://sigsep.github.io/open-unmix/)
+* [Flutter](https://docs.flutter.dev/)
+* [Pytorch Mobile](https://pytorch.org/mobile/home/)
+* [Oboe](https://github.com/google/oboe)
+* [Youtube Explode Dart](https://github.com/Hexer10/youtube_explode_dart)
+* [WaveFiles](http://www.labbookpages.co.uk/audio/javaWavFiles.html)
