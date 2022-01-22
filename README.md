@@ -31,7 +31,7 @@ Music source separation is the task of decomposing music into its constitutive c
 
 * Load songs from the device
   * Supported formats: `mp3` and `wav`
-* Download songs from Youtube
+* Download songs from YouTube
 * Source separation in 4 different stems: `Vocals`, `Bass`, `Drums` and `Other`
 * Local library of unmixed songs
 * Integrated music player with the ability to mute / unmute each stem
@@ -40,7 +40,7 @@ Music source separation is the task of decomposing music into its constitutive c
 
 ## Demixing
 
-The **demixing** is made using `Pytorch Mobile` and a source separation model optimized for mobile.
+The **demixing** is made using `PyTorch Mobile` and a source separation model optimized for mobile.
 
 
 
@@ -60,7 +60,7 @@ Two of the models are available in the application:
 | `umxhq` | Default model trained on [MUSDB18-HQ](https://sigsep.github.io/datasets/musdb.html#uncompressed-wav), which comprises the same tracks as in MUSDB18 but un-compressed which yield in a full bandwidth of 22050 Hz. |
 
 
-In order to use the models on mobile, they are transformed to [torchscript](https://pytorch.org/docs/stable/jit.html) then optimized for mobile and for the `Pytorch Mobile` lite interpreter: https://github.com/demixr/openunmix-torchscript.
+In order to use the models on mobile, they are transformed to [torchscript](https://pytorch.org/docs/stable/jit.html) then optimized for mobile and for the `PyTorch Mobile` lite interpreter: https://github.com/demixr/openunmix-torchscript.
 
 
 
@@ -76,7 +76,7 @@ You can download and install the Android application from the [latest Github rel
 
 ## Contributing
 
-You are more than welome to contribute to Demixr, wether it's for:
+You are more than welome to contribute to Demixr, whether it's for:
 
 * Reporting a bug
 * Discussing the current state of the code
