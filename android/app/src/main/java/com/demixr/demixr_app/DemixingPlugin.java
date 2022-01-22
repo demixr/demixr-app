@@ -224,6 +224,8 @@ public class DemixingPlugin implements FlutterPlugin, MethodCallHandler, EventCh
             // compute current demixing percentage
             currentChunk += 1;
             Double demixingPercentage = currentChunk / nbChunks;
+
+            if (progressStream == null) break;
             new Handler(Looper.getMainLooper()).post(() -> progressStream.success(demixingPercentage));
         }
     }
