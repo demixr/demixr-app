@@ -48,13 +48,13 @@ class ProcessingScreen extends StatelessWidget {
                 ),
               ],
             ),
-            StreamBuilder<int>(
+            StreamBuilder<double>(
               stream: demixingProvider.progressStream,
               builder: (context, snapshot) {
-                int progress = 0;
+                double progress = 0;
                 if (snapshot.hasData) progress = snapshot.data!;
                 return LinearPercentIndicator(
-                  percent: progress / 100,
+                  percent: progress,
                   backgroundColor: ColorPalette.surfaceVariant,
                   progressColor: ColorPalette.primary,
                   linearStrokeCap: LinearStrokeCap.round,
