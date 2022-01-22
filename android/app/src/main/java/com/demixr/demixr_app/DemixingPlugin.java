@@ -205,7 +205,6 @@ public class DemixingPlugin implements FlutterPlugin, MethodCallHandler, EventCh
         int framesRead = wavFile.readFrames(buffer, numBufferFrame);
 
         double currentChunk = 0.0;
-        Double demixingPercentage = 0.0;
 
         while (framesRead != 0) {
             // Resample sound
@@ -226,8 +225,8 @@ public class DemixingPlugin implements FlutterPlugin, MethodCallHandler, EventCh
 
             // compute current demixing percentage
             currentChunk += 1;
-            demixingPercentage = currentChunk / nbChunks;
-            progressStream.success(demixingPercentage);
+            Double demixingPercentage = currentChunk / nbChunks;
+            new Handler(Looper.getMainLooper()).post(() -> progressStream.success(demixingPercentage));
         }
     }
 
