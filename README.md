@@ -23,7 +23,7 @@
 
 ## Music source separation
 
-> <TODO>
+Music source separation is the task of decomposing music into its constitutive components, e. g., yielding separated stems for the vocals, bass, and drums.
 
 
 
@@ -52,7 +52,6 @@ The models are trained on the [MUSDB18](https://sigsep.github.io/datasets/musdb.
 
 
 
-
 Two of the models are available in the application:
 
 | Model   | Description                                                  |
@@ -77,4 +76,26 @@ You can download and install the Android application from the [latest Github rel
 
 ## Contributing
 
-> <TODO>
+You are more than welome to contribute to Demixr, wether it's for:
+
+* Reporting a bug
+* Discussing the current state of the code
+* Submitting a fix
+* Proposing new features
+* Becoming a maintainer
+
+### Report a bug
+
+You can report bugs using Github issues. Consider filling in the following informations for an optimal report:
+
+* Quick summary
+* Steps to reproduce
+* What you expected would happen
+* What actually happend
+* A screenshot if the bug is graphical
+
+### Submiting a new feature / fix
+
+1. Fork the repo and create your branch from `main`
+2. Make sure to add documentation and tests if necessary
+3. Create a pull request
