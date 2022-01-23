@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:dartz/dartz.dart';
 import 'package:demixr_app/constants.dart';
 import 'package:demixr_app/models/failure/failure.dart';
@@ -30,6 +32,19 @@ class PreferencesProvider extends ChangeNotifier {
     _model = Right(model);
 
     notifyListeners();
+  }
+
+  bool isModelSelected(Model model) {
+    final selected = _repository.getModel();
+    return model.name == selected;
+  }
+
+  Future<bool> isModelAvailable(Model model) async {
+    final modelPath = _repository.getModelPath(model.name);
+    if (modelPath == null) return false;
+
+    final file = File(modelPath);
+    return await file.exists();
   }
 
   String getModelPath() {

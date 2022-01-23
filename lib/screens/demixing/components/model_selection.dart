@@ -1,7 +1,9 @@
 import 'package:demixr_app/components/buttons.dart';
 import 'package:demixr_app/components/extended_widgets.dart';
 import 'package:demixr_app/models/model.dart';
+import 'package:demixr_app/providers/preferences_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import '../../../constants.dart';
 import '../../../utils.dart';
@@ -9,7 +11,34 @@ import '../../../utils.dart';
 class ModelSelection extends StatelessWidget {
   const ModelSelection({Key? key}) : super(key: key);
 
-  Widget buildModelTile(Model model, String imagePath) {
+  Future<Widget> buildSelectButton(BuildContext context, Model model) async {
+    final preferences = context.read<PreferencesProvider>();
+    if (preferences.isModelSelected(model)) {
+      return const IconButton(
+        onPressed: null,
+        icon: Icon(
+          Icons.check,
+          color: Colors.greenAccent,
+        ),
+      );
+    } else if (await preferences.isModelAvailable(model)) {
+      return Button(
+        'USE',
+        color: Colors.transparent,
+        textColor: ColorPalette.primary,
+        onPressed: () {},
+      );
+    } else {
+      return Button(
+        'DOWNLOAD',
+        color: Colors.transparent,
+        textColor: ColorPalette.primary,
+        onPressed: () {},
+      );
+    }
+  }
+
+  Widget buildModelTile(BuildContext context, Model model, String imagePath) {
     return Padding(
       padding: const EdgeInsets.all(10),
       child: SpacedRow(
@@ -39,11 +68,16 @@ class ModelSelection extends StatelessWidget {
               ],
             ),
           ),
-          Button(
-            'Use',
-            color: Colors.transparent,
-            textColor: ColorPalette.primary,
-            onPressed: () {},
+          FutureBuilder<Widget>(
+            future: buildSelectButton(context, model),
+            builder: (context, snapshot) {
+              if (snapshot.hasData) {
+                return snapshot.data!;
+              } else {
+                return const CircularProgressIndicator(
+                    color: ColorPalette.primary);
+              }
+            },
           ),
         ],
       ),
@@ -60,6 +94,7 @@ class ModelSelection extends StatelessWidget {
     List<Widget> children = [
       for (var model in Models.all)
         buildModelTile(
+          context,
           model,
           getAssetPath('open_unmix', AssetType.image),
         )
