@@ -58,7 +58,7 @@ class ModelGroup extends StatelessWidget {
       children.add(
         RichText(
           text: TextSpan(
-            text: 'More informations',
+            text: 'More information',
             style: TextStyle(
                 color: ColorPalette.link,
                 fontSize: 12,

@@ -1,3 +1,4 @@
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:demixr_app/components/extended_widgets.dart';
 import 'package:demixr_app/models/model.dart';
 import 'package:flutter/material.dart';
@@ -37,14 +38,18 @@ class ModelCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 spacing: 5,
                 children: [
-                  Text(
+                  AutoSizeText(
                     model.name.toUpperCase() +
                         (model.isDefault ? ' (default)' : ''),
                     style: const TextStyle(fontSize: 16),
+                    minFontSize: 12,
+                    maxLines: 1,
                   ),
-                  Text(
+                  AutoSizeText(
                     model.description,
                     style: const TextStyle(fontSize: 14),
+                    minFontSize: 10,
+                    maxLines: 3,
                   ),
                 ],
               ),
