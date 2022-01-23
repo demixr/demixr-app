@@ -1,3 +1,4 @@
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:demixr_app/components/buttons.dart';
 import 'package:demixr_app/components/extended_widgets.dart';
 import 'package:demixr_app/components/song_widget.dart';
@@ -22,7 +23,7 @@ class SongSelection extends StatelessWidget {
             icon: SvgPicture.asset(
               getAssetPath('youtube', AssetType.icon),
             ),
-            textSize: 16,
+            textSize: 14,
             onPressed: () =>
                 Get.toNamed('/demixing/youtube', arguments: provider),
             padding:
@@ -35,7 +36,7 @@ class SongSelection extends StatelessWidget {
               color: ColorPalette.onPrimary,
               size: 18,
             ),
-            textSize: 16,
+            textSize: 14,
             onPressed: provider.loadFromDevice,
             padding:
                 const EdgeInsets.only(left: 15, top: 10, right: 15, bottom: 10),
@@ -54,20 +55,23 @@ class SongSelection extends StatelessWidget {
             spacing: 30,
             children: [
               const ListTile(
-                title: Text(
+                title: AutoSizeText(
                   'Song selection',
                   style: TextStyle(
                       color: ColorPalette.primary,
                       fontSize: 22,
                       fontWeight: FontWeight.w600),
                   textAlign: TextAlign.center,
+                  maxLines: 1,
                 ),
               ),
-              const Text(
+              const AutoSizeText(
                 'You can select a song from your device or directly from Youtube.',
                 style: TextStyle(
                     color: ColorPalette.onSurfaceVariant, fontSize: 16),
                 textAlign: TextAlign.center,
+                maxLines: 2,
+                minFontSize: 10,
               ),
               buildButtons(provider, context),
             ],
