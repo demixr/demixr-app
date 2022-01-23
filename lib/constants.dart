@@ -69,6 +69,8 @@ class Models {
 
     throw ArgumentError('Models: The given model name does not exist');
   }
+
+  static const List<Model> all = [Models.umxhq, Models.umxl];
 }
 
 enum Stem {
