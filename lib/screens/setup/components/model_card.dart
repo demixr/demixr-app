@@ -48,7 +48,7 @@ class ModelCard extends StatelessWidget {
                   AutoSizeText(
                     model.description,
                     style: const TextStyle(fontSize: 14),
-                    minFontSize: 10,
+                    minFontSize: 8,
                     maxLines: 3,
                   ),
                 ],

@@ -1,3 +1,4 @@
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:demixr_app/components/extended_widgets.dart';
 import 'package:demixr_app/constants.dart';
 import 'package:demixr_app/models/model.dart';
@@ -56,8 +57,8 @@ class ModelGroup extends StatelessWidget {
 
     if (infosUrl != null) {
       children.add(
-        RichText(
-          text: TextSpan(
+        AutoSizeText.rich(
+          TextSpan(
             text: 'More information',
             style: TextStyle(
                 color: ColorPalette.link,
@@ -65,6 +66,7 @@ class ModelGroup extends StatelessWidget {
                 decoration: TextDecoration.underline),
             recognizer: TapGestureRecognizer()..onTap = () => launch(infosUrl!),
           ),
+          maxLines: 1,
         ),
       );
     }
