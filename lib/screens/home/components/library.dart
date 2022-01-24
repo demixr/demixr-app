@@ -1,3 +1,4 @@
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:dartz/dartz.dart';
 import 'package:demixr_app/components/song_widget.dart';
 import 'package:demixr_app/constants.dart';
@@ -20,9 +21,10 @@ class Library extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const Text(
+          const AutoSizeText(
             'Library',
             style: TextStyle(color: ColorPalette.onSurface, fontSize: 36),
+            maxLines: 1,
           ),
           Expanded(
             child: Consumer<LibraryProvider>(
@@ -112,18 +114,20 @@ class EmptyLibrary extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.start,
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        SizedBox(
+        FractionallySizedBox(
           child: Image.asset(getAssetPath('astronaut', AssetType.image)),
+          widthFactor: 0.6,
         ),
-        const SizedBox(
-          width: 200,
-          child: Text(
+        const FractionallySizedBox(
+          widthFactor: 0.6,
+          child: AutoSizeText(
             'Your library is empty at the moment',
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 18,
               color: ColorPalette.onSurface,
             ),
+            maxLines: 2,
           ),
         ),
       ],

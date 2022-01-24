@@ -22,9 +22,7 @@ class UnmixButton extends StatelessWidget {
           icon: SvgPicture.asset(getAssetPath('rocket', AssetType.icon)),
           color: ColorPalette.tertiary,
           textColor: ColorPalette.onTertiary,
-          padding:
-              const EdgeInsets.only(left: 100, top: 25, right: 100, bottom: 25),
-          radius: 25,
+          padding: const EdgeInsets.all(25),
           textSize: 18,
           onPressed: songProvider.song.fold(
             (failure) => () {

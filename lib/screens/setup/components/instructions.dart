@@ -1,3 +1,4 @@
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:demixr_app/components/extended_widgets.dart';
 import 'package:demixr_app/constants.dart';
 import 'package:flutter/material.dart';
@@ -11,8 +12,9 @@ class Instructions extends StatelessWidget {
       spacing: 10,
       mainAxisAlignment: MainAxisAlignment.start,
       children: const [
-        Text(
+        AutoSizeText(
           'First, select a model to separate your music',
+          maxLines: 2,
           textAlign: TextAlign.center,
           style: TextStyle(
             fontSize: 36,

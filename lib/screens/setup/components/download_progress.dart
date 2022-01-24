@@ -1,3 +1,4 @@
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:demixr_app/components/cancel_button.dart';
 import 'package:demixr_app/components/extended_widgets.dart';
 import 'package:demixr_app/constants.dart';
@@ -51,9 +52,10 @@ class DownloadProgress extends StatelessWidget {
               },
             ),
           ),
-          const Text(
+          const AutoSizeText(
             'The model is being downloaded',
             textAlign: TextAlign.center,
+            maxLines: 2,
             style:
                 TextStyle(fontSize: 24, color: ColorPalette.onSurfaceVariant),
           ),

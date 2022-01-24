@@ -1,3 +1,5 @@
+import 'package:auto_size_text/auto_size_text.dart';
+import 'package:demixr_app/components/extended_widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:demixr_app/constants.dart';
 
@@ -34,19 +36,20 @@ class Button extends StatelessWidget {
         borderRadius: BorderRadius.all(Radius.circular(radius)),
       ),
     );
-    final textWidget = Text(
+    final textWidget = AutoSizeText(
       text,
       style: TextStyle(
         color: textColor,
         fontWeight: FontWeight.w700,
         fontSize: textSize,
       ),
+      maxLines: 1,
+      minFontSize: 6,
     );
 
-    const space = SizedBox(width: 10);
-    final buttonChildren =
-        icon != null ? [icon!, space, textWidget] : [textWidget];
-    final buttonContent = Row(
+    final buttonChildren = icon != null ? [icon!, textWidget] : [textWidget];
+    final buttonContent = SpacedRow(
+      spacing: 5,
       mainAxisAlignment: MainAxisAlignment.center,
       mainAxisSize: MainAxisSize.min,
       children: buttonChildren,
