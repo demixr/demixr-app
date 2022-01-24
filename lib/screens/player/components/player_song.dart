@@ -9,7 +9,7 @@ class PlayerSong extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const double imageSize = 200;
+    const double? imageSize = 185;
     return Consumer<LibraryProvider>(
       builder: (context, library, child) {
         final currentSong = library.currentSong;

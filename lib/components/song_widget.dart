@@ -59,7 +59,7 @@ class SongInfos extends StatelessWidget {
 
 class AlbumCover extends StatelessWidget {
   final Either<Failure, String> imagePath;
-  final double size;
+  final double? size;
 
   const AlbumCover({Key? key, required this.imagePath, this.size = 65})
       : super(key: key);
