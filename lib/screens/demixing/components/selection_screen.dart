@@ -30,7 +30,10 @@ class SelectionScreen extends StatelessWidget {
                 children: const [
                   PageTitle('Demixing'),
                   SongSelection(),
-                  UnmixButton(),
+                  FractionallySizedBox(
+                    child: UnmixButton(),
+                    widthFactor: 0.7,
+                  ),
                 ],
               ),
             ),

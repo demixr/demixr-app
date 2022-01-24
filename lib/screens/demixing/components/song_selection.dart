@@ -18,28 +18,32 @@ class SongSelection extends StatelessWidget {
   Widget buildButtons(SongProvider provider, BuildContext context) => Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
-          Button(
-            'Search Youtube',
-            icon: SvgPicture.asset(
-              getAssetPath('youtube', AssetType.icon),
+          FittedBox(
+            child: Button(
+              'Search Youtube',
+              icon: SvgPicture.asset(
+                getAssetPath('youtube', AssetType.icon),
+              ),
+              textSize: 14,
+              onPressed: () =>
+                  Get.toNamed('/demixing/youtube', arguments: provider),
+              padding: const EdgeInsets.only(
+                  left: 15, top: 10, right: 15, bottom: 10),
             ),
-            textSize: 14,
-            onPressed: () =>
-                Get.toNamed('/demixing/youtube', arguments: provider),
-            padding:
-                const EdgeInsets.only(left: 15, top: 10, right: 15, bottom: 10),
           ),
-          Button(
-            'Browse files',
-            icon: const Icon(
-              Icons.file_upload,
-              color: ColorPalette.onPrimary,
-              size: 18,
+          FittedBox(
+            child: Button(
+              'Browse files',
+              icon: const Icon(
+                Icons.file_upload,
+                color: ColorPalette.onPrimary,
+                size: 18,
+              ),
+              textSize: 14,
+              onPressed: provider.loadFromDevice,
+              padding: const EdgeInsets.only(
+                  left: 15, top: 10, right: 15, bottom: 10),
             ),
-            textSize: 14,
-            onPressed: provider.loadFromDevice,
-            padding:
-                const EdgeInsets.only(left: 15, top: 10, right: 15, bottom: 10),
           ),
         ],
       );

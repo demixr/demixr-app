@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:dartz/dartz.dart';
 import 'package:demixr_app/constants.dart';
 import 'package:demixr_app/models/failure/failure.dart';
@@ -32,13 +33,20 @@ class SongInfos extends StatelessWidget {
       crossAxisAlignment:
           alignCenter ? CrossAxisAlignment.center : CrossAxisAlignment.start,
       children: [
-        Text(
+        AutoSizeText(
           title,
+          textAlign: alignCenter ? TextAlign.center : TextAlign.left,
+          maxLines: 2,
+          minFontSize: 10,
+          overflow: TextOverflow.ellipsis,
           style: TextStyle(
               fontSize: size, color: textColor, fontWeight: FontWeight.w600),
         ),
-        Text(
+        AutoSizeText(
           artists.join(', '),
+          textAlign: alignCenter ? TextAlign.center : TextAlign.left,
+          maxLines: 1,
+          minFontSize: 8,
           style: TextStyle(
               fontSize: size - 2,
               color: textColor,
