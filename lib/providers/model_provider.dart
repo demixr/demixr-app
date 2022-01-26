@@ -2,7 +2,6 @@ import 'dart:io';
 
 import 'package:demixr_app/models/model.dart';
 import 'package:demixr_app/providers/preferences_provider.dart';
-import 'package:demixr_app/repositories/preferences_repository.dart';
 import 'package:flowder/flowder.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -11,23 +10,25 @@ import 'package:path/path.dart' as p;
 import '../constants.dart';
 
 class ModelProvider extends ChangeNotifier {
-  PreferencesRepository repository;
-  PreferencesProvider preferences;
+  late PreferencesProvider _preferences;
   double progress = 0;
   int currentDownloaded = 0;
 
   DownloaderCore? downloader;
 
-  ModelProvider({required this.repository, required this.preferences});
+  ModelProvider();
+
+  void setPreferences(PreferencesProvider preferences) {
+    _preferences = preferences;
+  }
 
   void downloadModel(Model model) async {
     Get.toNamed('/model/download');
 
     final filename = '${model.name}${Models.fileExtension}';
-    final directory = await repository.modelsPath;
+    final directory = await _preferences.repository.modelsPath;
 
     final path = p.join(directory, filename);
-    repository.setModelPath(path, model.name);
 
     final options = DownloaderUtils(
       progressCallback: (current, total) {
@@ -39,7 +40,10 @@ class ModelProvider extends ChangeNotifier {
       progress: ProgressImplementation(),
       deleteOnCancel: true,
       onDone: () {
-        preferences.setModel(model);
+        _preferences.repository.setModelPath(path, model.name);
+        _preferences.setModel(model);
+        _clearDownload();
+
         Get.offAllNamed('/');
       },
     );
@@ -64,7 +68,7 @@ class ModelProvider extends ChangeNotifier {
   void cancelDownload() {
     downloader?.cancel();
     _clearDownload();
-    notifyListeners();
+    Get.back();
   }
 
   void _clearDownload() {
