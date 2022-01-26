@@ -17,7 +17,7 @@ class ModelSelection extends StatelessWidget {
     final preferences = context.read<PreferencesProvider>();
     final modelProvider = context.read<ModelProvider>();
 
-    if (preferences.isModelSelected(model)) {
+    if (await preferences.isModelSelected(model)) {
       return const IconButton(
         onPressed: null,
         icon: Icon(
@@ -28,6 +28,7 @@ class ModelSelection extends StatelessWidget {
     } else if (await preferences.isModelAvailable(model)) {
       return Button(
         'Use'.toUpperCase(),
+        padding: const EdgeInsets.all(10),
         color: Colors.transparent,
         textColor: ColorPalette.primary,
         onPressed: () => preferences.setModel(model),
@@ -35,6 +36,7 @@ class ModelSelection extends StatelessWidget {
     } else {
       return Button(
         'Download'.toUpperCase(),
+        padding: const EdgeInsets.all(10),
         color: Colors.transparent,
         textColor: ColorPalette.primary,
         onPressed: () => modelProvider.downloadModel(model, onDone: Get.back),

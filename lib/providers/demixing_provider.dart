@@ -1,3 +1,4 @@
+import 'package:demixr_app/constants.dart';
 import 'package:demixr_app/helpers/demixing_helper.dart';
 import 'package:demixr_app/models/exceptions/demixing_exception.dart';
 import 'package:demixr_app/models/song.dart';
@@ -19,7 +20,13 @@ class DemixingProvider extends ChangeNotifier {
 
   Stream<double> get progressStream => _progressStream;
 
-  void unmix(Song song, LibraryProvider library) {
+  Future<void> unmix(Song song, LibraryProvider library) async {
+    if (!(await preferences.isSelectedModelAvailable())) {
+      errorSnackbar('Model unavailable',
+          'The selected model is not available, download it to continue.');
+      return;
+    }
+
     _progressStream =
         _helper.progressStream.receiveBroadcastStream().cast<double>();
     separate(song)

@@ -34,9 +34,16 @@ class PreferencesProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  bool isModelSelected(Model model) {
+  Future<bool> isModelSelected(Model model) async {
     final selected = _repository.getModel();
-    return model.name == selected;
+    return model.name == selected && await isModelAvailable(model);
+  }
+
+  Future<bool> isSelectedModelAvailable() async {
+    return await _model.fold(
+      (noModel) => false,
+      (model) => isModelAvailable(model),
+    );
   }
 
   Future<bool> isModelAvailable(Model model) async {
