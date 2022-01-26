@@ -23,14 +23,14 @@ class ModelSelection extends StatelessWidget {
       );
     } else if (await preferences.isModelAvailable(model)) {
       return Button(
-        'USE',
+        'Use'.toUpperCase(),
         color: Colors.transparent,
         textColor: ColorPalette.primary,
         onPressed: () {},
       );
     } else {
       return Button(
-        'DOWNLOAD',
+        'Download'.toUpperCase(),
         color: Colors.transparent,
         textColor: ColorPalette.primary,
         onPressed: () {},

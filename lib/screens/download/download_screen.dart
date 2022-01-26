@@ -8,8 +8,8 @@ import 'package:get/route_manager.dart';
 import 'package:percent_indicator/circular_percent_indicator.dart';
 import 'package:provider/provider.dart';
 
-class DownloadProgress extends StatelessWidget {
-  const DownloadProgress({Key? key}) : super(key: key);
+class DownloadScreen extends StatelessWidget {
+  const DownloadScreen({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {

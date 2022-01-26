@@ -13,7 +13,6 @@ import '../constants.dart';
 class ModelProvider extends ChangeNotifier {
   PreferencesRepository repository;
   PreferencesProvider preferences;
-  bool downloadInProgress = false;
   double progress = 0;
   int currentDownloaded = 0;
 
@@ -22,8 +21,7 @@ class ModelProvider extends ChangeNotifier {
   ModelProvider({required this.repository, required this.preferences});
 
   void downloadModel(Model model) async {
-    downloadInProgress = true;
-    notifyListeners();
+    Get.toNamed('/model/download');
 
     final filename = '${model.name}${Models.fileExtension}';
     final directory = await repository.modelsPath;
@@ -41,9 +39,7 @@ class ModelProvider extends ChangeNotifier {
       progress: ProgressImplementation(),
       deleteOnCancel: true,
       onDone: () {
-        downloadInProgress = false;
         preferences.setModel(model);
-
         Get.offAllNamed('/');
       },
     );
@@ -72,7 +68,6 @@ class ModelProvider extends ChangeNotifier {
   }
 
   void _clearDownload() {
-    downloadInProgress = false;
     progress = 0;
     currentDownloaded = 0;
     downloader = null;
