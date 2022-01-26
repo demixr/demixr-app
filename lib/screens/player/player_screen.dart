@@ -1,5 +1,6 @@
 import 'package:demixr_app/components/navbar.dart';
 import 'package:demixr_app/screens/player/components/controller.dart';
+import 'package:demixr_app/screens/player/components/infos_dialog.dart';
 import 'package:demixr_app/screens/player/components/player_song.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
@@ -22,7 +23,10 @@ class PlayerScreen extends StatelessWidget {
             NavBar(
               extra: [
                 IconButton(
-                  onPressed: () {},
+                  onPressed: () => showDialog(
+                    context: context,
+                    builder: (context) => const InfosDialog(),
+                  ),
                   icon: SvgPicture.asset(
                     getAssetPath('dots', AssetType.icon),
                   ),

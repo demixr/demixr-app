@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:dartz/dartz.dart';
 import 'package:demixr_app/constants.dart';
 import 'package:demixr_app/models/failure/failure.dart';
@@ -16,6 +18,9 @@ class PreferencesProvider extends ChangeNotifier {
 
   bool get hasModel => _model.fold((noModelSelected) => false, (model) => true);
 
+  String get modelName =>
+      _model.fold((noModel) => 'unknown', (model) => model.name);
+
   PreferencesRepository get repository => _repository;
 
   void _loadPreferences() {
@@ -30,6 +35,26 @@ class PreferencesProvider extends ChangeNotifier {
     _model = Right(model);
 
     notifyListeners();
+  }
+
+  Future<bool> isModelSelected(Model model) async {
+    final selected = _repository.getModel();
+    return model.name == selected && await isModelAvailable(model);
+  }
+
+  Future<bool> isSelectedModelAvailable() async {
+    return await _model.fold(
+      (noModel) => false,
+      (model) => isModelAvailable(model),
+    );
+  }
+
+  Future<bool> isModelAvailable(Model model) async {
+    final modelPath = _repository.getModelPath(model.name);
+    if (modelPath == null) return false;
+
+    final file = File(modelPath);
+    return await file.exists();
   }
 
   String getModelPath() {

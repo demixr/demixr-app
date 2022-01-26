@@ -38,6 +38,9 @@ class UnmixedSong {
   @HiveField(8)
   String other;
 
+  @HiveField(9)
+  String modelName;
+
   UnmixedSong({
     required this.title,
     required this.artists,
@@ -47,6 +50,7 @@ class UnmixedSong {
     required this.bass,
     required this.drums,
     required this.other,
+    required this.modelName,
     this.coverPath,
   });
 
@@ -56,6 +60,7 @@ class UnmixedSong {
     required String bass,
     required String drums,
     required String other,
+    required String modelName,
   }) : this(
           title: song.title,
           artists: song.artists,
@@ -66,6 +71,7 @@ class UnmixedSong {
           bass: bass,
           drums: drums,
           other: other,
+          modelName: modelName,
         );
 
   String getStem(Stem stem) {

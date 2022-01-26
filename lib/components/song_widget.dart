@@ -13,6 +13,7 @@ import 'extended_widgets.dart';
 class SongInfos extends StatelessWidget {
   final String title;
   final List<String> artists;
+  final String? modelName;
   final double size;
   final bool alignCenter;
   final Color textColor;
@@ -24,6 +25,7 @@ class SongInfos extends StatelessWidget {
     this.size = 16,
     this.alignCenter = false,
     this.textColor = ColorPalette.onSurface,
+    this.modelName,
   }) : super(key: key);
 
   @override
@@ -43,14 +45,15 @@ class SongInfos extends StatelessWidget {
               fontSize: size, color: textColor, fontWeight: FontWeight.w600),
         ),
         AutoSizeText(
-          artists.join(', '),
+          artists.join(', ') + (modelName != null ? ' \u2027 $modelName' : ''),
           textAlign: alignCenter ? TextAlign.center : TextAlign.left,
           maxLines: 1,
           minFontSize: 8,
           style: TextStyle(
-              fontSize: size - 2,
-              color: textColor,
-              fontWeight: FontWeight.w400),
+            fontSize: size - 2,
+            color: ColorPalette.onSurfaceVariant,
+            fontWeight: FontWeight.w400,
+          ),
         ),
       ],
     );
@@ -86,6 +89,7 @@ class AlbumCover extends StatelessWidget {
 class SongWidget extends StatelessWidget {
   final String title;
   final List<String> artists;
+  final String? modelName;
   final Either<Failure, String> coverPath;
   final VoidCallback? onRemovePressed;
   final Color textColor;
@@ -99,6 +103,7 @@ class SongWidget extends StatelessWidget {
     this.onRemovePressed,
     this.textColor = ColorPalette.onSurface,
     this.download = false,
+    this.modelName,
   }) : super(key: key);
 
   @override
@@ -114,6 +119,7 @@ class SongWidget extends StatelessWidget {
                 title: title,
                 artists: artists,
                 textColor: textColor,
+                modelName: modelName,
               ),
             ),
           ],

@@ -1,9 +1,11 @@
 import 'package:demixr_app/models/duration_adapter.dart';
 import 'package:demixr_app/models/unmixed_song.dart';
 import 'package:demixr_app/providers/library_provider.dart';
+import 'package:demixr_app/providers/model_provider.dart';
 import 'package:demixr_app/providers/player_provider.dart';
 import 'package:demixr_app/screens/demixing/demixing_screen.dart';
 import 'package:demixr_app/screens/demixing/processing/processing_screen.dart';
+import 'package:demixr_app/screens/download/download_screen.dart';
 import 'package:demixr_app/screens/error/error_screen.dart';
 import 'package:demixr_app/screens/home/home_screen.dart';
 import 'package:demixr_app/screens/player/player_screen.dart';
@@ -44,6 +46,11 @@ class MyApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider<PreferencesProvider>(
             create: (_) => PreferencesProvider()),
+        ChangeNotifierProxyProvider<PreferencesProvider, ModelProvider>(
+          create: (context) => ModelProvider(),
+          update: (context, preferences, modelProvider) =>
+              (modelProvider ?? ModelProvider())..setPreferences(preferences),
+        ),
         ChangeNotifierProvider<LibraryProvider>(
             create: (_) => LibraryProvider()),
         ChangeNotifierProxyProvider<LibraryProvider, PlayerProvider>(
@@ -93,6 +100,11 @@ class MyApp extends StatelessWidget {
             name: '/demixing/youtube',
             page: () => const YoutubeScreen(),
             transition: Transition.downToUp,
+          ),
+          GetPage(
+            name: '/model/download',
+            page: () => const DownloadScreen(),
+            transition: Transition.circularReveal,
           ),
         ],
         supportedLocales: const [Locale('en')],

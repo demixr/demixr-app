@@ -61,6 +61,7 @@ dependencies:
   loadmore: ^2.0.1
   loading_indicator: ^3.0.2
   auto_size_text: ^3.0.0
+  modal_bottom_sheet: ^2.0.0
 
 dev_dependencies:
   flutter_test:

@@ -82,6 +82,7 @@ class LibrarySongs extends StatelessWidget {
                 artists: currentSong.artists,
                 coverPath: currentSong.albumCover,
                 textColor: infosColor,
+                modelName: currentSong.modelName,
                 onRemovePressed: () {
                   library.removeSong(index);
                   Get.snackbar(

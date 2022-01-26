@@ -19,9 +19,16 @@ class DemixingProvider extends ChangeNotifier {
 
   Stream<double> get progressStream => _progressStream;
 
-  void unmix(Song song, LibraryProvider library) {
+  Future<void> unmix(Song song, LibraryProvider library) async {
+    if (!(await preferences.isSelectedModelAvailable())) {
+      errorSnackbar('Model unavailable',
+          'The selected model is not available, download it to continue.');
+      return;
+    }
+
     _progressStream =
         _helper.progressStream.receiveBroadcastStream().cast<double>();
+
     separate(song)
         ?.then((unmixed) => library.saveSong(unmixed))
         .then((index) => library.setCurrentSongIndex(index))
@@ -37,7 +44,7 @@ class DemixingProvider extends ChangeNotifier {
     Get.toNamed('/demixing/processing', arguments: this);
 
     _operation = CancelableOperation<UnmixedSong>.fromFuture(_helper
-        .separate(song, preferences.getModelPath())
+        .separate(song, preferences.getModelPath(), preferences.modelName)
         .onError((DemixingException error, _) {
       errorSnackbar('Demixing error', error.message, seconds: 5);
       cancelDemixing();
