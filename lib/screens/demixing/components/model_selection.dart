@@ -1,8 +1,10 @@
 import 'package:demixr_app/components/buttons.dart';
 import 'package:demixr_app/components/extended_widgets.dart';
 import 'package:demixr_app/models/model.dart';
+import 'package:demixr_app/providers/model_provider.dart';
 import 'package:demixr_app/providers/preferences_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:get/route_manager.dart';
 import 'package:provider/provider.dart';
 
 import '../../../constants.dart';
@@ -13,6 +15,8 @@ class ModelSelection extends StatelessWidget {
 
   Future<Widget> buildSelectButton(BuildContext context, Model model) async {
     final preferences = context.read<PreferencesProvider>();
+    final modelProvider = context.read<ModelProvider>();
+
     if (preferences.isModelSelected(model)) {
       return const IconButton(
         onPressed: null,
@@ -26,14 +30,14 @@ class ModelSelection extends StatelessWidget {
         'Use'.toUpperCase(),
         color: Colors.transparent,
         textColor: ColorPalette.primary,
-        onPressed: () {},
+        onPressed: () => preferences.setModel(model),
       );
     } else {
       return Button(
         'Download'.toUpperCase(),
         color: Colors.transparent,
         textColor: ColorPalette.primary,
-        onPressed: () {},
+        onPressed: () => modelProvider.downloadModel(model, onDone: Get.back),
       );
     }
   }
@@ -43,6 +47,7 @@ class ModelSelection extends StatelessWidget {
       padding: const EdgeInsets.all(10),
       child: SpacedRow(
         spacing: 10,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           CircleAvatar(
             backgroundColor: ColorPalette.surface,
@@ -52,6 +57,7 @@ class ModelSelection extends StatelessWidget {
             ).image,
           ),
           Expanded(
+            flex: 7,
             child: SpacedColumn(
               crossAxisAlignment: CrossAxisAlignment.start,
               spacing: 5,
@@ -68,15 +74,19 @@ class ModelSelection extends StatelessWidget {
               ],
             ),
           ),
-          FutureBuilder<Widget>(
-            future: buildSelectButton(context, model),
-            builder: (context, snapshot) {
-              if (snapshot.hasData) {
-                return snapshot.data!;
-              } else {
-                return const CircularProgressIndicator(
-                    color: ColorPalette.primary);
-              }
+          Consumer<PreferencesProvider>(
+            builder: (context, preferences, child) {
+              return FutureBuilder<Widget>(
+                future: buildSelectButton(context, model),
+                builder: (context, snapshot) {
+                  if (snapshot.hasData) {
+                    return snapshot.data!;
+                  } else {
+                    return const CircularProgressIndicator(
+                        color: ColorPalette.primary);
+                  }
+                },
+              );
             },
           ),
         ],

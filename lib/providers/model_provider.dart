@@ -22,7 +22,7 @@ class ModelProvider extends ChangeNotifier {
     _preferences = preferences;
   }
 
-  void downloadModel(Model model) async {
+  void downloadModel(Model model, {required VoidCallback onDone}) async {
     Get.toNamed('/model/download');
 
     final filename = '${model.name}${Models.fileExtension}';
@@ -44,7 +44,7 @@ class ModelProvider extends ChangeNotifier {
         _preferences.setModel(model);
         _clearDownload();
 
-        Get.offAllNamed('/');
+        onDone();
       },
     );
 

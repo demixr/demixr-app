@@ -6,6 +6,7 @@ import 'package:demixr_app/providers/model_provider.dart';
 import 'package:demixr_app/screens/setup/components/model_card.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:get/route_manager.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -35,7 +36,8 @@ class ModelGroup extends StatelessWidget {
             imagePath: imagePath,
           ),
           style: TextButton.styleFrom(padding: const EdgeInsets.all(0)),
-          onPressed: () => modelProvider.downloadModel(model),
+          onPressed: () => modelProvider.downloadModel(model,
+              onDone: () => Get.offAllNamed('/')),
         )
     ];
 
