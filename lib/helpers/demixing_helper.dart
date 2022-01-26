@@ -11,7 +11,8 @@ class DemixingHelper {
   static const _methodChannel = MethodChannel(PlatformChannels.demixing);
   static const _eventChannel = EventChannel(PlatformChannels.demixingProgress);
 
-  Future<UnmixedSong> separate(Song song, String modelPath) async {
+  Future<UnmixedSong> separate(
+      Song song, String modelPath, String modelName) async {
     Map<dynamic, dynamic> result;
 
     try {
@@ -37,6 +38,7 @@ class DemixingHelper {
       bass: separated[Stem.bass.value]!,
       drums: separated[Stem.drums.value]!,
       other: separated[Stem.other.value]!,
+      modelName: modelName,
     );
   }
 

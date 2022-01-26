@@ -18,6 +18,9 @@ class PreferencesProvider extends ChangeNotifier {
 
   bool get hasModel => _model.fold((noModelSelected) => false, (model) => true);
 
+  String get modelName =>
+      _model.fold((noModel) => 'unknown', (model) => model.name);
+
   PreferencesRepository get repository => _repository;
 
   void _loadPreferences() {

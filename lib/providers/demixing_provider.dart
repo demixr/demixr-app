@@ -1,4 +1,3 @@
-import 'package:demixr_app/constants.dart';
 import 'package:demixr_app/helpers/demixing_helper.dart';
 import 'package:demixr_app/models/exceptions/demixing_exception.dart';
 import 'package:demixr_app/models/song.dart';
@@ -29,6 +28,7 @@ class DemixingProvider extends ChangeNotifier {
 
     _progressStream =
         _helper.progressStream.receiveBroadcastStream().cast<double>();
+
     separate(song)
         ?.then((unmixed) => library.saveSong(unmixed))
         .then((index) => library.setCurrentSongIndex(index))
@@ -44,7 +44,7 @@ class DemixingProvider extends ChangeNotifier {
     Get.toNamed('/demixing/processing', arguments: this);
 
     _operation = CancelableOperation<UnmixedSong>.fromFuture(_helper
-        .separate(song, preferences.getModelPath())
+        .separate(song, preferences.getModelPath(), preferences.modelName)
         .onError((DemixingException error, _) {
       errorSnackbar('Demixing error', error.message, seconds: 5);
       cancelDemixing();
