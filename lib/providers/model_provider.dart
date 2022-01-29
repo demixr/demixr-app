@@ -1,14 +1,18 @@
 import 'dart:io';
 
-import 'package:demixr_app/models/model.dart';
-import 'package:demixr_app/providers/preferences_provider.dart';
-import 'package:flowder/flowder.dart';
 import 'package:flutter/material.dart';
+import 'package:flowder/flowder.dart';
 import 'package:get/get.dart';
 import 'package:path/path.dart' as p;
 
+import '../models/model.dart';
+import '../providers/preferences_provider.dart';
 import '../constants.dart';
 
+/// Provider handling the model downloads.
+///
+/// Uses the [PreferencesProvider] to store the model informations
+/// and holds the [progress] and [currentDownloade] metrics.
 class ModelProvider extends ChangeNotifier {
   late PreferencesProvider _preferences;
   double progress = 0;
@@ -18,10 +22,15 @@ class ModelProvider extends ChangeNotifier {
 
   ModelProvider();
 
+  /// Sets the [preferences] with the app [PreferencesProvider].
   void setPreferences(PreferencesProvider preferences) {
     _preferences = preferences;
   }
 
+  /// Downloads the given [model] to the app external storage.
+  ///
+  /// Displays the progress on the [DownloadScreen].
+  /// Runs the [onDone] callback when the download is over.
   void downloadModel(Model model, {required VoidCallback onDone}) async {
     Get.toNamed('/model/download');
 
@@ -65,12 +74,14 @@ class ModelProvider extends ChangeNotifier {
     }
   }
 
+  /// Cancels the current download registered in the [downloader].
   void cancelDownload() {
     downloader?.cancel();
     _clearDownload();
     Get.back();
   }
 
+  /// Clear the current download properties.
   void _clearDownload() {
     progress = 0;
     currentDownloaded = 0;
