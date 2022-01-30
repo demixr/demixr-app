@@ -10,7 +10,7 @@ import '../providers/library_provider.dart';
 import '../providers/preferences_provider.dart';
 import '../utils.dart';
 
-/// Provider handling the demixing logic
+/// Provider handling the demixing logic.
 ///
 /// Uses the [DemixingHelper] to start the separation with the right model
 /// based on the [preferences].
