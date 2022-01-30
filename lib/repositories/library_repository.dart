@@ -9,13 +9,13 @@ import '../utils.dart';
 
 /// Repository for the library local persistence.
 ///
-/// Uses [Hive] to store the songs, and saves the files in the app
+/// Uses Hive to store the songs, and saves the files in the app
 /// external storage.
 class LibraryRepository {
   final _box = Hive.box<UnmixedSong>(BoxesNames.library);
   final _directoryName = 'library';
 
-  /// The [Hive] box.
+  /// The Hive box.
   Box<UnmixedSong> get box => _box;
 
   /// The library directory path on the file system.
