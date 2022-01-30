@@ -1,24 +1,31 @@
 import 'dart:io';
 
+import 'package:flutter/material.dart';
 import 'package:dartz/dartz.dart';
-import 'package:demixr_app/models/failure/failure.dart';
-import 'package:demixr_app/models/failure/no_internet_connection.dart';
-import 'package:demixr_app/models/failure/no_search_result.dart';
-import 'package:demixr_app/providers/song_provider.dart';
-import 'package:demixr_app/utils.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
 import 'package:youtube_explode_dart/youtube_explode_dart.dart';
 
+import '../models/failure/failure.dart';
+import '../models/failure/no_internet_connection.dart';
+import '../models/failure/no_search_result.dart';
+import '../providers/song_provider.dart';
+import '../utils.dart';
+
+/// Provider handling the Youtube search.
+///
+/// Uses the [YoutubeExplode] search client.
+/// Calls the [songProvider] to download a song when selected.
 class YoutubeProvider extends ChangeNotifier {
+  final SongProvider songProvider;
   final SearchClient _youtube = YoutubeExplode().search;
   Either<Failure, SearchList> _videos = Left(NoSearchResult());
-  final SongProvider songProvider;
 
   YoutubeProvider(this.songProvider);
 
+  /// The videos of the current search.
   Either<Failure, SearchList> get videos => _videos;
 
+  /// Searches the [query] on youtube with [YoutubeExplode].
   Future<void> search(String query) async {
     try {
       final searchList = await _youtube.getVideos(query);
@@ -31,6 +38,9 @@ class YoutubeProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Loads more videos.
+  ///
+  /// Loads the videos of the next page while keeping the precedent ones.
   Future<bool> loadMore() async {
     await _videos.fold(
       (failure) => null,
@@ -48,6 +58,9 @@ class YoutubeProvider extends ChangeNotifier {
     return true;
   }
 
+  /// Downloads the audio of the Youtube video at the given [url].
+  ///
+  /// Calls the [songProvider] to start the download.
   void download(String url) {
     songProvider.downloadFromYoutube(url);
     Get.back();
