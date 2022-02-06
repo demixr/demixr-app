@@ -69,8 +69,11 @@ Latest mobile build of the models: https://github.com/demixr/openunmix-torchscri
 ## Performance
 
 Using a Pixel 6, demixing a 4-minute audio file takes:
-* 3 minutes using the `umxhq` model.
-* 4 minutes 10 seconds using the `umxl` model.
+* 3 minutes using the quantized `umxhq` model.
+* 4 minutes 10 seconds using the quantized `umxl` model.
+
+The quantized `umxhq` model is around 2.3x faster than the `umxhq` model.
+The quantized `umxl` model is at least 3.4x faster the the `umxl` model.
 
 > Note: Inference is done on CPU as GPU is not yet fully supported by PyTorch Mobile.
 
