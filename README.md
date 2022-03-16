@@ -9,8 +9,6 @@
 ![Version badge](https://img.shields.io/github/v/release/demixr/demixr-app?color=orange&label=version&style=for-the-badge)
 ![Github build badge](https://img.shields.io/github/workflow/status/demixr/demixr-app/Build%20and%20release%20app?style=for-the-badge)
 
-
-
 > :warning: This project is still in development, all the features might not work perfectly yet
 
 
@@ -81,7 +79,9 @@ The quantized `umxl` model is at least 3.4x faster the the `umxl` model.
 
 You can download and install the Android application from the [latest Github release](https://github.com/demixr/demixr-app/releases/latest/) by selecting the appropriate platform `apk` file.
 
+## Demo
 
+https://user-images.githubusercontent.com/34341442/151656743-57e4d414-d8a8-4495-962a-55b27e08ab4c.mp4
 
 ## Contributing
 

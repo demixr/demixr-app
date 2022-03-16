@@ -1,18 +1,6 @@
 import 'dart:io';
 
 import 'package:dartz/dartz.dart';
-import 'package:demixr_app/constants.dart';
-import 'package:demixr_app/models/exceptions/conversion_exception.dart';
-import 'package:demixr_app/models/failure/failure.dart';
-import 'package:demixr_app/models/failure/no_internet_connection.dart';
-import 'package:demixr_app/models/failure/song_conversion_failure.dart';
-import 'package:demixr_app/models/failure/song_download_failure.dart';
-import 'package:demixr_app/models/failure/song_load_failure.dart';
-import 'package:demixr_app/models/failure/song_not_found_on_youtube.dart';
-import 'package:demixr_app/models/song.dart';
-import 'package:demixr_app/models/song_download.dart';
-import 'package:demixr_app/services/song_loader.dart';
-import 'package:demixr_app/utils.dart';
 import 'package:ffmpeg_kit_flutter/ffmpeg_kit.dart';
 import 'package:ffmpeg_kit_flutter/ffprobe_kit.dart';
 import 'package:ffmpeg_kit_flutter/return_code.dart';
@@ -23,9 +11,27 @@ import 'package:path/path.dart' as p;
 import 'package:http/http.dart' show get;
 import 'package:image/image.dart';
 
+import '../models/song.dart';
+import '../models/song_download.dart';
+import '../models/exceptions/conversion_exception.dart';
+import '../models/failure/failure.dart';
+import '../models/failure/no_internet_connection.dart';
+import '../models/failure/song_conversion_failure.dart';
+import '../models/failure/song_download_failure.dart';
+import '../models/failure/song_load_failure.dart';
+import '../models/failure/song_not_found_on_youtube.dart';
+import '../services/song_loader.dart';
+import '../constants.dart';
+import '../utils.dart';
+
+/// Helper handling the loading of the songs.
+///
+/// Uses the service [SongLoader] to load from the device and [YoutubeExplode]
+/// to download from Youtube and retrieve the song informations.
 class SongHelper {
   final _service = SongLoader();
 
+  /// Loads a song from the device and retrieve it's title, artists and cover.
   Future<Either<Failure, Song>> loadFromDevice() async {
     Either<Failure, PlatformFile> file = await _service.getFromDevice();
 
@@ -62,6 +68,7 @@ class SongHelper {
     });
   }
 
+  /// Saves the song cover from the metadata to the app cache.
   Future<String?> _saveCover(String songPath, String title) async {
     var metadata = await MetadataRetriever.fromFile(File(songPath));
     final albumCover = metadata.albumArt;
@@ -80,6 +87,9 @@ class SongHelper {
     return file.path;
   }
 
+  /// Gets the informations from the song at the given Youtube [url].
+  ///
+  /// Finds the song title, artists and download the thumbnail.
   Future<Either<Failure, SongDownload>> getSongInfosFromYoutube(
       String url) async {
     final yt = YoutubeExplode();
@@ -112,6 +122,7 @@ class SongHelper {
     ));
   }
 
+  /// Downloads the given [song] from Youtube with [YoutubeExplode].
   Future<Either<Failure, Song>> downloadFromYoutube(SongDownload song) async {
     final yt = YoutubeExplode();
 
@@ -148,6 +159,7 @@ class SongHelper {
     return Right(Song.fromDownload(song, newPath));
   }
 
+  /// Download the Youtube video thumbnail at the given [url] to the cache.
   Future<String> _downloadThumbnail(String url, String title) async {
     final response = await get(Uri.parse(url));
     final tempDir = await getAppTemp();
@@ -159,6 +171,8 @@ class SongHelper {
     return file.path;
   }
 
+  /// Determines a song informations either from the subscripted [title]
+  /// and [artists] or from the [filename].
   Tuple2<String, List<String>> _getSongInfos(
     String? title,
     List<String>? artists,
@@ -177,6 +191,12 @@ class SongHelper {
   }
 }
 
+/// Converts the song at the given [path] to the Waveform format (`wav`).
+///
+/// Uses FFmpeg via [FFmpegKit] to retrieve the format of the current file and
+/// convert it if needed.
+/// Throws a [ConvertionException] if the format could not be found, or if the
+/// convertion failed.
 Future<String> convertToWav(String path) async {
   final session = await FFprobeKit.getMediaInformation(path);
   final information = session.getMediaInformation();

@@ -1,14 +1,19 @@
-import 'package:demixr_app/helpers/demixing_helper.dart';
-import 'package:demixr_app/models/exceptions/demixing_exception.dart';
-import 'package:demixr_app/models/song.dart';
-import 'package:demixr_app/models/unmixed_song.dart';
-import 'package:demixr_app/providers/library_provider.dart';
-import 'package:demixr_app/providers/preferences_provider.dart';
-import 'package:demixr_app/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:async/async.dart';
 import 'package:get/route_manager.dart';
 
+import '../helpers/demixing_helper.dart';
+import '../models/exceptions/demixing_exception.dart';
+import '../models/song.dart';
+import '../models/unmixed_song.dart';
+import '../providers/library_provider.dart';
+import '../providers/preferences_provider.dart';
+import '../utils.dart';
+
+/// Provider handling the demixing logic.
+///
+/// Uses the [DemixingHelper] to start the separation with the right model
+/// based on the [preferences].
 class DemixingProvider extends ChangeNotifier {
   final _helper = DemixingHelper();
   final PreferencesProvider preferences;
@@ -17,8 +22,12 @@ class DemixingProvider extends ChangeNotifier {
 
   DemixingProvider(this.preferences);
 
+  /// The stream of the demixing progress
   Stream<double> get progressStream => _progressStream;
 
+  /// Starts the demixing for the provided [song] if a model is available.
+  ///
+  /// Runs the separation and save the unmixed song in the [library] on success.
   Future<void> unmix(Song song, LibraryProvider library) async {
     if (!(await preferences.isSelectedModelAvailable())) {
       errorSnackbar('Model unavailable',
@@ -40,6 +49,10 @@ class DemixingProvider extends ChangeNotifier {
         );
   }
 
+  /// Creates a cancelable async operation for the separation of the [song].
+  ///
+  /// Calls the [DemixingHelper] to separate and throws a [DemixingException]
+  /// on error.
   CancelableOperation<UnmixedSong>? separate(Song song) {
     Get.toNamed('/demixing/processing', arguments: this);
 
@@ -53,6 +66,7 @@ class DemixingProvider extends ChangeNotifier {
     return _operation;
   }
 
+  /// Cancel the current demixing [_operation].
   void cancelDemixing() {
     _operation?.cancel();
     Get.back();
