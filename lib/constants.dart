@@ -52,7 +52,7 @@ class Models {
     description:
         'Model trained on the MUSDB18-HQ dataset.\nFaster separation (~ length of the song).\n(140 MB)',
     url:
-        'https://github.com/demixr/openunmix-torchscript/releases/latest/download/umxhq.ptl',
+        'https://github.com/demixr/openunmix-torchscript/releases/download/v1.2/umxhq.ptl',
     isDefault: true,
   );
   static const umxl = Model(
@@ -60,7 +60,7 @@ class Models {
     description:
         'Model trained on extra data. Longer separation, but improved performance.\n(290 MB)',
     url:
-        'https://github.com/demixr/openunmix-torchscript/releases/latest/download/umxl.ptl',
+        'https://github.com/demixr/openunmix-torchscript/releases/download/v1.2/umxl.ptl',
   );
 
   static Model fromName(String name) {

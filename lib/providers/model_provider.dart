@@ -62,7 +62,7 @@ class ModelProvider extends ChangeNotifier {
 
     final options = DownloaderUtils(
       progressCallback: (current, total) {
-        progress = (current / total);
+        progress = total > 0 ? (current / total) : 0;
         currentDownloaded = current ~/ 1e6;
         notifyListeners();
       },
