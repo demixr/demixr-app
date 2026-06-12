@@ -1,7 +1,7 @@
 import 'dart:io';
 
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:flowder/flowder.dart';
 import 'package:get/get.dart';
 import 'package:path/path.dart' as p;
 
@@ -10,15 +10,15 @@ import '../providers/preferences_provider.dart';
 import '../constants.dart';
 
 /// Provider handling the model downloads.
-///
-/// Uses the [PreferencesProvider] to store the model informations
-/// and holds the [progress] and [currentDownloade] metrics.
+/// Uses Dio directly for reliable cross-platform downloads.
 class ModelProvider extends ChangeNotifier {
   late PreferencesProvider _preferences;
   double progress = 0;
   int currentDownloaded = 0;
+  bool isDownloading = false;
+  String? errorMessage;
 
-  DownloaderCore? downloader;
+  CancelToken? _cancelToken;
 
   ModelProvider();
 
@@ -27,19 +27,19 @@ class ModelProvider extends ChangeNotifier {
     _preferences = preferences;
   }
 
-  /// Downloads the given [model] to the app external storage.
-  ///
-  /// Displays the progress on the [DownloadScreen].
-  /// Runs the [onDone] callback when the download is over.
+  /// Downloads the given [model] to the app storage directory.
   void downloadModel(Model model, {required VoidCallback onDone}) async {
     Get.toNamed('/model/download');
 
     final filename = '${model.name}${Models.fileExtension}';
     final directory = await _preferences.repository.modelsPath;
-
     final path = p.join(directory, filename);
 
-    // Verify the directory is writable before starting the download
+    isDownloading = true;
+    errorMessage = null;
+    notifyListeners();
+
+    // Verify the directory is writable
     final dir = Directory(directory);
     if (!await dir.exists()) {
       try {
@@ -50,7 +50,6 @@ class ModelProvider extends ChangeNotifier {
       }
     }
 
-    // Verify we can write to the directory
     final testFile = File(p.join(directory, '.write_test'));
     try {
       await testFile.writeAsBytes([]);
@@ -60,26 +59,48 @@ class ModelProvider extends ChangeNotifier {
       return;
     }
 
-    final options = DownloaderUtils(
-      progressCallback: (current, total) {
-        progress = total > 0 ? (current / total) : 0;
-        currentDownloaded = current ~/ 1e6;
-        notifyListeners();
-      },
-      file: File(path),
-      progress: ProgressImplementation(),
-      deleteOnCancel: true,
-      onDone: () {
-        _preferences.repository.setModelPath(path, model.name);
-        _preferences.setModel(model);
-        _clearDownload();
+    _cancelToken = CancelToken();
 
-        onDone();
-      },
-    );
+    final dio = Dio(BaseOptions(
+      receiveTimeout: const Duration(minutes: 30),
+      sendTimeout: const Duration(minutes: 30),
+    ));
 
     try {
-      downloader = await Flowder.download(model.url, options);
+      await dio.download(
+        model.url,
+        path,
+        onReceiveProgress: (received, total) {
+          if (total > 0) {
+            progress = received / total;
+            currentDownloaded = received ~/ (1024 * 1024);
+            notifyListeners();
+          } else {
+            // Unknown total, show bytes downloaded
+            currentDownloaded = received ~/ (1024 * 1024);
+            notifyListeners();
+          }
+        },
+        cancelToken: _cancelToken,
+      );
+
+      // Download completed successfully
+      _preferences.repository.setModelPath(path, model.name);
+      _preferences.setModel(model);
+      _clearDownload();
+      onDone();
+    } on DioException catch (e) {
+      if (e.type == DioExceptionType.cancel) {
+        // User cancelled — remove the partial file
+        final file = File(path);
+        if (await file.exists()) {
+          await file.delete();
+        }
+        return;
+      }
+      _showDownloadError(
+        'Could not download the model: ${e.message ?? e.toString()}',
+      );
     } catch (e) {
       _showDownloadError('Could not download the model: $e');
     }
@@ -97,9 +118,9 @@ class ModelProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Cancels the current download registered in the [downloader].
+  /// Cancels the current download.
   void cancelDownload() {
-    downloader?.cancel();
+    _cancelToken?.cancel();
     _clearDownload();
     Get.back();
   }
@@ -108,6 +129,8 @@ class ModelProvider extends ChangeNotifier {
   void _clearDownload() {
     progress = 0;
     currentDownloaded = 0;
-    downloader = null;
+    isDownloading = false;
+    errorMessage = null;
+    _cancelToken = null;
   }
 }
