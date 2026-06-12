@@ -7,8 +7,8 @@ import 'package:demixr_app/screens/setup/components/model_card.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:get/route_manager.dart';
-import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:provider/provider.dart';
 
 class ModelGroup extends StatelessWidget {
   final String title;
@@ -31,13 +31,13 @@ class ModelGroup extends StatelessWidget {
     List<Widget> modelCards = [
       for (var model in models)
         TextButton(
+          style: TextButton.styleFrom(padding: const EdgeInsets.all(0)),
+          onPressed: () => modelProvider.downloadModel(model,
+              onDone: () => Get.offAllNamed('/')),
           child: ModelCard(
             model: model,
             imagePath: imagePath,
           ),
-          style: TextButton.styleFrom(padding: const EdgeInsets.all(0)),
-          onPressed: () => modelProvider.downloadModel(model,
-              onDone: () => Get.offAllNamed('/')),
         )
     ];
 
@@ -66,7 +66,8 @@ class ModelGroup extends StatelessWidget {
                 color: ColorPalette.link,
                 fontSize: 12,
                 decoration: TextDecoration.underline),
-            recognizer: TapGestureRecognizer()..onTap = () => launch(infosUrl!),
+            recognizer: TapGestureRecognizer()
+              ..onTap = () => launchUrl(Uri.parse(infosUrl!)),
           ),
           maxLines: 1,
         ),

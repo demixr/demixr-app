@@ -1,5 +1,4 @@
 import 'package:auto_size_text/auto_size_text.dart';
-import 'package:demixr_app/components/buttons.dart';
 import 'package:demixr_app/components/extended_widgets.dart';
 import 'package:demixr_app/constants.dart';
 import 'package:demixr_app/components/cancel_button.dart';
@@ -65,7 +64,7 @@ class ProcessingScreen extends StatelessWidget {
                     percent: progress,
                     backgroundColor: ColorPalette.surfaceVariant,
                     progressColor: ColorPalette.primary,
-                    linearStrokeCap: LinearStrokeCap.round,
+                    barRadius: const Radius.circular(10),
                     animation: true,
                     animationDuration: 1000,
                     animateFromLastPercent: true,
@@ -86,21 +85,21 @@ class ProcessingScreen extends StatelessWidget {
                       backgroundColor: ColorPalette.surfaceVariant,
                       actions: [
                         TextButton(
+                          onPressed: Get.back,
                           child: const Text(
                             'No',
                             style: TextStyle(color: ColorPalette.primary),
                           ),
-                          onPressed: Get.back,
                         ),
                         TextButton(
-                          child: const Text(
-                            'Yes, cancel',
-                            style: TextStyle(color: ColorPalette.primary),
-                          ),
                           onPressed: () {
                             demixingProvider.cancelDemixing();
                             Get.back();
                           },
+                          child: const Text(
+                            'Yes, cancel',
+                            style: TextStyle(color: ColorPalette.primary),
+                          ),
                         ),
                       ],
                     );

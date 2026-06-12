@@ -16,7 +16,7 @@ class SetupScreen extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           crossAxisAlignment: CrossAxisAlignment.center,
-          children: const [
+          children: [
             SetupTitle(),
             Instructions(),
             ModelSelection(),

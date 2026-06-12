@@ -19,8 +19,8 @@ class StemSelection extends StatelessWidget {
       child: Padding(
         padding:
             const EdgeInsets.only(left: 20, top: 10, right: 20, bottom: 10),
-        child: Column(
-          children: const [
+        child: const Column(
+          children: [
             StemButton(Stem.vocals),
             StemButton(Stem.bass),
             StemButton(Stem.drums),

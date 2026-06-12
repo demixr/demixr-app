@@ -7,9 +7,9 @@ class SetupTitle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
+    return const Column(
       mainAxisAlignment: MainAxisAlignment.start,
-      children: const [
+      children: [
         AutoSizeText(
           'Welcome',
           maxLines: 1,

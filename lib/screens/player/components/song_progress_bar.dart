@@ -24,7 +24,7 @@ class SongProgressBar extends StatelessWidget {
               progress: progress,
               total: total,
               progressBarColor: ColorPalette.inverseSurface,
-              baseBarColor: Colors.white.withOpacity(0.2),
+              baseBarColor: Colors.white.withValues(alpha: 0.2),
               barHeight: 3,
               thumbRadius: 5,
               thumbColor: ColorPalette.inverseSurface,

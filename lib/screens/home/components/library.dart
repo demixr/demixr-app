@@ -46,11 +46,11 @@ class LibrarySongs extends StatelessWidget {
 
   Widget buildSongButton(SongWidget song, {VoidCallback? onPressed}) =>
       TextButton(
-        onPressed: onPressed,
-        child: song,
         style: TextButton.styleFrom(
             padding:
                 const EdgeInsets.only(left: 2, top: 5, right: 2, bottom: 5)),
+        onPressed: onPressed,
+        child: song,
       );
 
   bool isSongSelected(UnmixedSong song, Either<Failure, UnmixedSong> selected) {
@@ -116,8 +116,8 @@ class EmptyLibrary extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         FractionallySizedBox(
-          child: Image.asset(getAssetPath('astronaut', AssetType.image)),
           widthFactor: 0.6,
+          child: Image.asset(getAssetPath('astronaut', AssetType.image)),
         ),
         const FractionallySizedBox(
           widthFactor: 0.6,

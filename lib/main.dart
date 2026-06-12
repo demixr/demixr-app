@@ -114,9 +114,9 @@ class MyApp extends StatelessWidget {
 
   AnnotatedRegion<SystemUiOverlayStyle> buildHome() {
     return const AnnotatedRegion<SystemUiOverlayStyle>(
-        child: HomeScreen(),
         value: SystemUiOverlayStyle(
             statusBarColor: Colors.transparent,
-            statusBarIconBrightness: Brightness.light));
+            statusBarIconBrightness: Brightness.light),
+        child: HomeScreen());
   }
 }

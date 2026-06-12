@@ -7,9 +7,9 @@ class HomeTitle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
+    return const Column(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: const [
+      children: [
         AutoSizeText(
           'Demixr',
           style: TextStyle(

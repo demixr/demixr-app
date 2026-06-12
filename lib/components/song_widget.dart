@@ -144,6 +144,7 @@ class SongWidget extends StatelessWidget {
           ),
           itemBuilder: (context) => [
             PopupMenuItem(
+              onTap: onRemovePressed,
               child: SpacedRow(
                 spacing: 5,
                 children: const [
@@ -154,7 +155,6 @@ class SongWidget extends StatelessWidget {
                   Text("Remove"),
                 ],
               ),
-              onTap: onRemovePressed,
             ),
           ],
         ),
