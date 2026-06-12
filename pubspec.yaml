@@ -54,14 +54,13 @@ dependencies:
     git:
       url: https://github.com/Harsh223/flowder.git
   percent_indicator: ^4.2.5
-  ffmpeg_kit_flutter: ^6.0.3
+  ffmpeg_kit_flutter_new_audio: ^2.0.0
   youtube_explode_dart: ^3.1.0
   fluttertoast: ^9.1.0
   image: ^4.8.0
   loadmore: ^2.1.0
   loading_indicator: ^3.0.2
   auto_size_text: ^3.0.0
-  modal_bottom_sheet: ^3.0.0
 
 dev_dependencies:
   flutter_test:

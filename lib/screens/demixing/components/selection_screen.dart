@@ -3,7 +3,6 @@ import 'package:demixr_app/components/page_title.dart';
 import 'package:demixr_app/constants.dart';
 import 'package:demixr_app/providers/song_provider.dart';
 import 'package:flutter/material.dart';
-import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 import 'package:provider/provider.dart';
 
 import 'model_selection.dart';
@@ -20,7 +19,7 @@ class SelectionScreen extends StatelessWidget {
             color: ColorPalette.onSurface,
           ),
           onPressed: () {
-            showMaterialModalBottomSheet(
+            showModalBottomSheet(
               backgroundColor: ColorPalette.surface,
               context: context,
               builder: (context) {
