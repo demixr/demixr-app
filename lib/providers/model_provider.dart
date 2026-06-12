@@ -39,6 +39,27 @@ class ModelProvider extends ChangeNotifier {
 
     final path = p.join(directory, filename);
 
+    // Verify the directory is writable before starting the download
+    final dir = Directory(directory);
+    if (!await dir.exists()) {
+      try {
+        await dir.create(recursive: true);
+      } catch (e) {
+        _showDownloadError('Could not create models directory: $e');
+        return;
+      }
+    }
+
+    // Verify we can write to the directory
+    final testFile = File(p.join(directory, '.write_test'));
+    try {
+      await testFile.writeAsBytes([]);
+      await testFile.delete();
+    } catch (e) {
+      _showDownloadError('Models directory is not writable: $e');
+      return;
+    }
+
     final options = DownloaderUtils(
       progressCallback: (current, total) {
         progress = (current / total);
@@ -60,18 +81,20 @@ class ModelProvider extends ChangeNotifier {
     try {
       downloader = await Flowder.download(model.url, options);
     } catch (e) {
-      Get.snackbar(
-        'Download error',
-        'You must be connected in order to download the model. '
-            'Please check your connection and try again.',
-        backgroundColor: ColorPalette.errorContainer,
-        colorText: ColorPalette.onError,
-        duration: const Duration(seconds: 5),
-      );
-      await Future.delayed(const Duration(seconds: 2));
-      _clearDownload();
-      notifyListeners();
+      _showDownloadError('Could not download the model: $e');
     }
+  }
+
+  void _showDownloadError(String message) {
+    Get.snackbar(
+      'Download error',
+      message,
+      backgroundColor: ColorPalette.errorContainer,
+      colorText: ColorPalette.onError,
+      duration: const Duration(seconds: 5),
+    );
+    _clearDownload();
+    notifyListeners();
   }
 
   /// Cancels the current download registered in the [downloader].

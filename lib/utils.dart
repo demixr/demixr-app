@@ -101,6 +101,24 @@ Future<String> getAppExternalStorage() async {
   return directory?.path ?? await getAppInternalStorage();
 }
 
+/// Gets a platform-appropriate directory for storing large assets like ML models.
+///
+/// On mobile platforms, uses external storage (persisted across app reinstalls).
+/// On desktop platforms (macOS, Linux, Windows), uses application documents directory.
+Future<String> getAppModelsStorage() async {
+  Directory? directory;
+
+  try {
+    // On Android, use external storage so models persist across app reinstalls
+    directory = await getExternalStorageDirectory();
+  } on UnimplementedError {
+    // On desktop (macOS, Linux, Windows), use documents directory
+    directory = await getApplicationDocumentsDirectory();
+  }
+
+  return directory?.path ?? await getAppInternalStorage();
+}
+
 Future<String> getAppTemp() async {
   final directory = await getTemporaryDirectory();
   return directory.path;

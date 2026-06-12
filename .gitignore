@@ -100,8 +100,13 @@ unlinked_spec.ds
 **/ios/ServiceDefinitions.json
 **/ios/Runner/GeneratedPluginRegistrant.*
 
-# macOS
-macos/
+# macOS (ignore build outputs, keep Runner source)
+macos/Flutter/ephemeral/
+macos/.symlinks/
+macos/Pods/
+macos/Runner.xcworkspace/xcuserdata/
+macos/Runner/xcuserdata/
+macos/build/
 
 # Platform directories (linux, web, windows)
 linux/
