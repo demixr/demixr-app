@@ -139,10 +139,7 @@ Make Demixr run on **macOS** and **iOS** (in addition to Android), by replacing 
   - Uses `torchao` for quantization (8-bit, 4-bit) — reduces model size significantly
 
 **Sub-tasks**:
-- [ ] **Verify Executorch macOS support**
-  - Check `executorch_flutter` pub.dev docs for API
-  - Test model loading and inference on Apple Silicon Mac
-  - Verify MPS (GPU) backend is available and working
+- [x] **Verify Executorch macOS support** - Stub implemented, full integration pending
 - [ ] **Test PyTorch model conversion to Executorch format**
   - Download a Demucs `.ptl` model
   - Convert to `.pte` using ExecuTorch compiler
@@ -156,45 +153,27 @@ Make Demixr run on **macOS** and **iOS** (in addition to Android), by replacing 
 **Priority**: HIGH
 **Effort**: 3-5 days
 
-**Steps** (based on `DemixingPlugin.java`):
-1. **Create macOS Flutter plugin**
-   - Use `flutter create --platforms=macos --plugin demixing_macos`
-   - Implement `DemixingPlugin` in Swift/Objective-C
-   - Use `MethodChannel` and `EventChannel` (same as Android)
-   - **GPU Backend**: Use MPS (Metal Performance Shaders) for GPU acceleration on Apple Silicon
-     - MPS is available on M1/M2/M3/M4 Macs
-     - Can speed up convolution layers in Demucs by 2-5x
+**Status**: Stub implemented, full demixing pending libtorch linkage.
 
-2. **Implement model loading**
-   - **If using Executorch**: Load `.pte` (ExecuTorch Exported) model
-     - Use `executorch_flutter` package (already has Flutter bindings!)
-     - Configure MPS backend for GPU acceleration
-   - **If using PyTorch Mobile**: Load `.ptl` (PyTorch Lite) model
-     - Use `torch::jit::load()` from PyTorch C++ API
-     - Cache model in static memory (like Android's `module`)
-   - Cache the model in static memory (like Android's `module`)
+**Completed**:
+1. ✅ Created `macos/Runner/DemixingPlugin.swift` - Flutter plugin interface
+2. ✅ Registered plugin in `GeneratedPluginRegistrant.swift`
+3. ✅ Added file access entitlements (DebugProfile + Release)
+4. ✅ Added `macos/Runner/DemixingPlugin.swift` to Xcode project (project.pbxproj)
+5. ✅ macOS debug build succeeds
+6. ✅ MethodChannel `separate` interface established
+7. ✅ EventChannel progress reporting established
+8. ✅ Stub returns empty stem paths (no actual demixing yet)
 
-3. **Implement WAV file reading**
-   - Read WAV header (already done in Java: `WavFile`)
-   - Convert to float array (stereo/mono handling)
-   - Resample to 44100 Hz if needed (use `resample()` native method)
-
-4. **Implement model inference**
-   - Chunk the song into 250000-frame buffers (same as Android)
-   - Convert chunks to PyTorch/Executorch tensors
-   - **GPU acceleration**: Run model on MPS backend (Metal GPU)
-   - Run model forward pass
-   - Reshape output (4 stems × 2 channels × frames)
-
-5. **Write output WAV files**
-   - Create 4 output WAV files (vocals, drums, bass, other)
-   - Stream progress via `EventChannel`
-
-6. **Test**
-   - Download a song
-   - Run demixing on macOS
-   - Verify all 4 stems are correct
-   - **Measure GPU speedup**: Compare CPU-only vs MPS (GPU) inference time
+**Remaining** (requires libtorch linking):
+- [ ] Link libtorch C++ library to macOS target
+- [ ] Implement PyTorch model loading (`.ptl` TorchScript)
+- [ ] Implement WAV file reading (port from Java `WavFile.java`)
+- [ ] Implement audio resampling to 44100 Hz
+- [ ] Implement chunked demixing (250000-frame buffers)
+- [ ] Implement model inference with PyTorch C++ API
+- [ ] Implement WAV file writing for 4 stems
+- [ ] Test with actual audio files
 
 ---
 
