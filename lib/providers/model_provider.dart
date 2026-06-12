@@ -17,6 +17,7 @@ class ModelProvider extends ChangeNotifier {
   int currentDownloaded = 0;
   bool isDownloading = false;
   String? errorMessage;
+  String? currentUrl;
 
   CancelToken? _cancelToken;
 
@@ -29,15 +30,19 @@ class ModelProvider extends ChangeNotifier {
 
   /// Downloads the given [model] to the app storage directory.
   void downloadModel(Model model, {required VoidCallback onDone}) async {
+    debugPrint('=== ModelProvider.downloadModel START ===');
+    debugPrint('Model name: ${model.name}');
+    debugPrint('Model URL: ${model.url}');
+    debugPrint('File extension: ${Models.fileExtension}');
+
     Get.toNamed('/model/download');
 
     final filename = '${model.name}${Models.fileExtension}';
     final directory = await _preferences.repository.modelsPath;
     final path = p.join(directory, filename);
 
-    isDownloading = true;
-    errorMessage = null;
-    notifyListeners();
+    debugPrint('Models directory: $directory');
+    debugPrint('Full save path: $path');
 
     // Verify the directory is writable
     final dir = Directory(directory);
@@ -50,6 +55,7 @@ class ModelProvider extends ChangeNotifier {
       }
     }
 
+    // Verify we can write to the directory
     final testFile = File(p.join(directory, '.write_test'));
     try {
       await testFile.writeAsBytes([]);
@@ -60,29 +66,34 @@ class ModelProvider extends ChangeNotifier {
     }
 
     _cancelToken = CancelToken();
+    isDownloading = true;
+    errorMessage = null;
+    currentUrl = model.url;
+    notifyListeners();
 
     final dio = Dio(BaseOptions(
       receiveTimeout: const Duration(minutes: 30),
       sendTimeout: const Duration(minutes: 30),
+      followRedirects: true,
+      maxRedirects: 10,
     ));
 
     try {
+      debugPrint('Starting Dio download...');
       await dio.download(
         model.url,
         path,
         onReceiveProgress: (received, total) {
-          if (total > 0) {
-            progress = received / total;
-            currentDownloaded = received ~/ (1024 * 1024);
-            notifyListeners();
-          } else {
-            // Unknown total, show bytes downloaded
-            currentDownloaded = received ~/ (1024 * 1024);
-            notifyListeners();
-          }
+          final percent =
+              total > 0 ? (received / total * 100).toStringAsFixed(1) : '?';
+          final mb = received ~/ (1024 * 1024);
+          debugPrint('  Progress: $mb MB ($percent%)');
+          notifyListeners();
         },
         cancelToken: _cancelToken,
       );
+
+      debugPrint('Download completed successfully!');
 
       // Download completed successfully
       _preferences.repository.setModelPath(path, model.name);
@@ -90,8 +101,16 @@ class ModelProvider extends ChangeNotifier {
       _clearDownload();
       onDone();
     } on DioException catch (e) {
+      debugPrint('=== DioError ===');
+      debugPrint('Type: ${e.type}');
+      debugPrint('Message: ${e.message}');
+      debugPrint('Response status: ${e.response?.statusCode}');
+      debugPrint('Response headers: ${e.response?.headers}');
+      debugPrint('Response data: ${e.response?.data}');
+      debugPrint('Stack trace: ${e.stackTrace}');
+
       if (e.type == DioExceptionType.cancel) {
-        // User cancelled — remove the partial file
+        debugPrint('Download was cancelled by user');
         final file = File(path);
         if (await file.exists()) {
           await file.delete();
@@ -101,12 +120,17 @@ class ModelProvider extends ChangeNotifier {
       _showDownloadError(
         'Could not download the model: ${e.message ?? e.toString()}',
       );
-    } catch (e) {
+    } catch (e, stackTrace) {
+      debugPrint('=== Unexpected Error ===');
+      debugPrint('Type: ${e.runtimeType}');
+      debugPrint('Message: $e');
+      debugPrint('Stack trace: $stackTrace');
       _showDownloadError('Could not download the model: $e');
     }
   }
 
   void _showDownloadError(String message) {
+    debugPrint('=== SHOWING ERROR: $message ===');
     Get.snackbar(
       'Download error',
       message,
@@ -120,6 +144,7 @@ class ModelProvider extends ChangeNotifier {
 
   /// Cancels the current download.
   void cancelDownload() {
+    debugPrint('Cancel download called');
     _cancelToken?.cancel();
     _clearDownload();
     Get.back();
@@ -131,6 +156,7 @@ class ModelProvider extends ChangeNotifier {
     currentDownloaded = 0;
     isDownloading = false;
     errorMessage = null;
+    currentUrl = null;
     _cancelToken = null;
   }
 }
