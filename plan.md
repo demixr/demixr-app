@@ -64,57 +64,54 @@ Make Demixr run on **macOS** and **iOS** (in addition to Android), by replacing 
 ---
 
 ## Phase 1: Unblock macOS Compilation (Fastest Win)
+✅ **COMPLETED** - Commit: `499f0d6`
 
 ### Task 1.1: Replace `ffmpeg_kit_flutter` with `ffmpeg_kit_flutter_new_audio`
-**Priority**: HIGH — blocks macOS compilation entirely
-**Effort**: 15 minutes
-
-**Steps**:
-1. Swap `ffmpeg_kit_flutter: ^6.0.3` → `ffmpeg_kit_flutter_new_audio: ^2.0.0` in `pubspec.yaml`
-2. Update imports in `lib/helpers/song_helper.dart` (3 lines: `ffmpeg_kit`, `ffprobe_kit`, `return_code`)
-3. Run `flutter pub get` and verify no errors
-4. Test on macOS simulator — `convertToWav()` API is identical
-5. **Fallback**: If audio variant fails on any platform, change to `ffmpeg_kit_flutter_new: ^4.2.0` (full-gpl) — same API, just more libs
+✅ **DONE** - `ffmpeg_kit_flutter_new_audio: ^2.0.0` in `pubspec.yaml`, imports updated in `song_helper.dart`
 
 ### Task 1.2: Replace `modal_bottom_sheet`
-**Priority**: MEDIUM — UI-only, doesn't block compilation
-**Effort**: 1 day
-
-**Steps**:
-1. Replace `showMaterialModalBottomSheet` in `selection_screen.dart`
-2. Remove from `pubspec.yaml`
-3. Test on macOS and iOS
+✅ **DONE** - Replaced `showMaterialModalBottomSheet` with Flutter's built-in `showModalBottomSheet` in `selection_screen.dart`, removed from `pubspec.yaml`
 
 ---
 
 ## Phase 2: Generate macOS Target
+✅ **COMPLETED** - macOS target builds successfully
 
 ### Task 2.1: Generate macOS platform files
-**Priority**: HIGH
-**Effort**: 30 minutes
-
-**Steps**:
-1. Run `flutter create .` (or `flutter build macos`) to generate macOS target
-2. Verify `macos/` directory is created with `Runner/` project
-3. Add `macos/` to `.gitignore` (already done — see `gitignore` file)
-4. Test: `flutter run -d macos`
+✅ **DONE** - `macos/` directory exists with `Runner/` project, CocoaPods installed
 
 ### Task 2.2: Fix macOS-specific issues
-**Priority**: HIGH
-**Effort**: 1-2 days
+✅ **DONE** - Entitlements added (file picker + network client), macOS builds successfully
 
-**Sub-tasks**:
-- [ ] **Check for iOS-specific imports**
-  - Scan all `lib/` files for `#if os(iOS)` or `Platform.isIOS` guards
-  - Replace with `#if os(macOS)` or `default` case
-- [ ] **Check for iOS-only APIs**
-  - `GeneratedPluginRegistrant` (iOS-specific)
-  - `SceneDelegate.swift` (iOS 13+ lifecycle)
-  - `AppDelegate` (iOS-specific setup)
-- [ ] **Add macOS entitlements**
-  - `com.apple.security.files.user-selected.read-write` (file picker)
-  - `com.apple.security.network.client` (YouTube API)
-- [ ] **Test**: `flutter run -d macos` compiles and runs
+---
+
+## Phase 3: macOS Demixing Plugin
+🔶 **IN PROGRESS** - Commit: `6b6e6e1` (stub implemented)
+
+### Task 3.1: Research PyTorch Mobile vs Executorch for macOS
+🔶 **PARTIALLY DONE** - Stub created, full integration pending
+
+### Task 3.2: Write macOS Demixing Plugin (Native)
+🔶 **PARTIALLY DONE** - Plugin interface established, full demixing pending
+
+**Completed**:
+- ✅ `macos/Runner/DemixingPlugin.swift` - Flutter plugin interface
+- ✅ Plugin registered in `GeneratedPluginRegistrant.swift`
+- ✅ File access entitlements added (DebugProfile + Release)
+- ✅ macOS debug build succeeds
+- ✅ MethodChannel `separate` interface established
+- ✅ EventChannel progress reporting established
+- ✅ Stub returns empty stem paths (no actual demixing yet)
+
+**Remaining** (requires libtorch linking):
+- [ ] Link libtorch C++ library to macOS target
+- [ ] Implement PyTorch model loading (`.ptl` TorchScript)
+- [ ] Implement WAV file reading (port from Java `WavFile.java`)
+- [ ] Implement audio resampling to 44100 Hz
+- [ ] Implement chunked demixing (250000-frame buffers)
+- [ ] Implement model inference with PyTorch C++ API
+- [ ] Implement WAV file writing for 4 stems
+- [ ] Test with actual audio files
 
 ---
 
@@ -335,14 +332,14 @@ Make Demixr run on **macOS** and **iOS** (in addition to Android), by replacing 
 
 | Phase | Effort | Cumulative |
 |-------|--------|-----------|
-| Phase 1: Unblock macOS | 2-3 days | 2-3 days |
-| Phase 2: Generate macOS target | 2-3 days | 4-6 days |
-| Phase 3: macOS Demixing Plugin | 5-8 days | 9-14 days |
-| Phase 4: iOS Demixing Plugin | 5-8 days | 14-22 days |
-| Phase 5: UI/UX Polish | 2-3 days | 16-25 days |
+| Phase 1: Unblock macOS | ✅ DONE | 0 days |
+| Phase 2: Generate macOS target | ✅ DONE | 0 days |
+| Phase 3: macOS Demixing Plugin | 3-5 days (libtorch) | 3-5 days |
+| Phase 4: iOS Demixing Plugin | 5-8 days | 8-13 days |
+| Phase 5: UI/UX Polish | 2-3 days | 10-16 days |
 
-**Total: ~2.5-4.5 weeks** (assuming 1 person, part-time)
-**Saved ~1-2 days** by using `ffmpeg_kit_flutter_new_audio` instead of building a Core Audio plugin
+**Remaining: ~10-16 days** (assuming 1 person, part-time, libtorch linking needed)
+**Saved ~2-3 days** by using `ffmpeg_kit_flutter_new_audio` and Flutter's built-in `showModalBottomSheet`
 
 ---
 
