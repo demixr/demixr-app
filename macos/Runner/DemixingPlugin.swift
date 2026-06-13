@@ -40,7 +40,7 @@ enum DemixingError: LocalizedError {
 
 /// Flutter plugin for music source separation (demixing) on macOS.
 /// Currently a stub - full demixing requires libtorch linkage.
-public class DemixingPlugin: NSObject, FlutterStreamHandler {
+public class DemixingPlugin: NSObject, FlutterPlugin, FlutterStreamHandler {
     // MARK: - Constants
     
     private static let channelName = "demixing"
@@ -55,7 +55,7 @@ public class DemixingPlugin: NSObject, FlutterStreamHandler {
     
     // MARK: - FlutterPlugin Registration
     
-    public static func register(with registrar: any FlutterPluginRegistrar) {
+    public static func register(with registrar: FlutterPluginRegistrar) {
         let instance = DemixingPlugin()
         let messenger = registrar.messenger
         
