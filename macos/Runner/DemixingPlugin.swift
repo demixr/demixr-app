@@ -17,11 +17,11 @@ enum DemixingError: LocalizedError {
     case modelLoadFailed(String)
     case inferenceFailed(String)
     case fileWriteFailed(String)
-    
+
     init(_ message: String) {
         self = .invalidWavFile(message)
     }
-    
+
     var errorDescription: String? {
         switch self {
         case .invalidWavFile(let msg):
@@ -42,56 +42,56 @@ enum DemixingError: LocalizedError {
 /// Currently a stub - full demixing requires libtorch linkage.
 public class DemixingPlugin: NSObject, FlutterPlugin, FlutterStreamHandler {
     // MARK: - Constants
-    
+
     private static let channelName = "demixing"
     private static let eventName = "demixing/progress"
     private static let separateMethod = "separate"
-    
+
     // MARK: - Properties
-    
+
     private var methodChannel: FlutterMethodChannel?
     private var eventChannel: FlutterEventChannel?
     private var progressSink: ((Any?) -> Void)?
-    
+
     // MARK: - FlutterPlugin Registration
-    
+
     public static func register(with registrar: FlutterPluginRegistrar) {
         let instance = DemixingPlugin()
         let messenger = registrar.messenger
-        
+
         instance.methodChannel = FlutterMethodChannel(
             name: channelName,
             binaryMessenger: messenger
         )
         instance.methodChannel?.setMethodCallHandler(instance.handle)
-        
+
         instance.eventChannel = FlutterEventChannel(
             name: eventName,
             binaryMessenger: messenger
         )
         instance.eventChannel?.setStreamHandler(instance)
     }
-    
+
     // MARK: - FlutterStreamHandler
-    
+
     public func onListen(withArguments arguments: Any?, eventSink: @escaping (Any?) -> Void) -> FlutterError? {
         progressSink = eventSink
         return nil
     }
-    
+
     public func onCancel(withArguments arguments: Any?) -> FlutterError? {
         progressSink = nil
         return nil
     }
-    
+
     // MARK: - Method Handler
-    
+
     public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
         guard call.method == DemixingPlugin.separateMethod else {
             result(FlutterMethodNotImplemented)
             return
         }
-        
+
         guard let args = call.arguments as? [String: Any],
               let _ = args["songPath"] as? String,
               let _ = args["modelPath"] as? String,
@@ -99,11 +99,11 @@ public class DemixingPlugin: NSObject, FlutterPlugin, FlutterStreamHandler {
             result(FlutterError(code: "InvalidArguments", message: "Missing required arguments", details: nil))
             return
         }
-        
+
         // TODO: Implement full demixing with PyTorch libtorch
         // For now, report 100% progress and return empty stems
         // This is a stub until libtorch is linked
-        
+
         DispatchQueue.global(qos: .userInitiated).async {
             // Report 100% progress
             if let sink = self.progressSink {
@@ -111,7 +111,7 @@ public class DemixingPlugin: NSObject, FlutterPlugin, FlutterStreamHandler {
                     sink(1.0)
                 }
             }
-            
+
             // Return empty stem paths (no actual demixing yet)
             let stemNames = ["vocals", "drums", "bass", "other"]
             var stemFiles: [String: String] = [:]
@@ -119,7 +119,7 @@ public class DemixingPlugin: NSObject, FlutterPlugin, FlutterStreamHandler {
                 let stemPath = (outputDir as NSString).appendingPathComponent("\(stemName).wav")
                 stemFiles[stemName] = stemPath
             }
-            
+
             DispatchQueue.main.async {
                 result(stemFiles)
             }
