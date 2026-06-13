@@ -111,7 +111,7 @@ Future<String> getAppModelsStorage() async {
   try {
     // On Android, use external storage so models persist across app reinstalls
     directory = await getExternalStorageDirectory();
-  } on UnimplementedError {
+  } on UnsupportedError {
     // On desktop (macOS, Linux, Windows), use documents directory
     directory = await getApplicationDocumentsDirectory();
   }

@@ -13,12 +13,9 @@ class PlayerScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        height: double.maxFinite,
-        width: double.maxFinite,
-        margin: const EdgeInsets.only(left: 10, top: 10, right: 10),
+      body: Padding(
+        padding: const EdgeInsets.only(left: 10, top: 10, right: 10),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             NavBar(
               extra: [
@@ -33,8 +30,16 @@ class PlayerScreen extends StatelessWidget {
                 ),
               ],
             ),
-            const PlayerSong(),
-            const Controller(),
+            const Expanded(
+              child: SingleChildScrollView(
+                child: Column(
+                  children: [
+                    PlayerSong(),
+                    Controller(),
+                  ],
+                ),
+              ),
+            ),
           ],
         ),
       ),

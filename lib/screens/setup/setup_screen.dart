@@ -10,7 +10,8 @@ class SetupScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Padding(
-        padding: const EdgeInsets.only(left: 20, top: 70, right: 20, bottom: 30),
+        padding:
+            const EdgeInsets.only(left: 20, top: 70, right: 20, bottom: 30),
         child: SingleChildScrollView(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,

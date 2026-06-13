@@ -32,10 +32,8 @@ class SelectionScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      height: double.maxFinite,
-      width: double.maxFinite,
-      margin: const EdgeInsets.all(10),
+    return Padding(
+      padding: const EdgeInsets.all(10),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.start,
         children: [
@@ -44,17 +42,20 @@ class SelectionScreen extends StatelessWidget {
           Expanded(
             child: ChangeNotifierProvider(
               create: (context) => SongProvider(),
-              child: const Column(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  const PageTitle('Demixing'),
-                  const SongSelection(),
-                  const FractionallySizedBox(
-                    widthFactor: 0.7,
-                    child: UnmixButton(),
-                  ),
-                ],
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: const [
+                    PageTitle('Demixing'),
+                    SongSelection(),
+                    SizedBox(height: 20),
+                    FractionallySizedBox(
+                      widthFactor: 0.7,
+                      child: UnmixButton(),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),

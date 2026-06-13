@@ -14,40 +14,32 @@ class HomeScreen extends StatelessWidget {
 
   Widget buildHomeScreen() {
     return Scaffold(
-      body: Container(
-        margin: const EdgeInsets.only(top: 20, left: 20, right: 20, bottom: 20),
-        height: double.maxFinite,
-        width: double.maxFinite,
+      body: Padding(
+        padding:
+            const EdgeInsets.only(top: 20, left: 20, right: 20, bottom: 20),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
-            const Spacer(),
+            const HomeTitle(),
+            const SizedBox(height: 60),
             Expanded(
-              flex: 6,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const HomeTitle(),
-                  const SizedBox(height: 60),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        const Library(),
-                        Button(
-                          'Unmix a new song',
-                          icon: const Icon(
-                            Icons.add,
-                            color: ColorPalette.onPrimary,
-                          ),
-                          textSize: 18,
-                          onPressed: () => Get.toNamed('/demixing'),
-                        )
-                      ],
+              child: SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    const Library(),
+                    const SizedBox(height: 20),
+                    Button(
+                      'Unmix a new song',
+                      icon: const Icon(
+                        Icons.add,
+                        color: ColorPalette.onPrimary,
+                      ),
+                      textSize: 18,
+                      onPressed: () => Get.toNamed('/demixing'),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ],
