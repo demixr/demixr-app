@@ -45,14 +45,14 @@ class BoxesNames {
 class Models {
   static const openUnmixInfosUrl = 'https://sigsep.github.io/open-unmix/';
 
-  static const fileExtension = '.plt';
+  static const fileExtension = '.pte';
 
   static const umxhq = Model(
     name: 'umxhq',
     description:
         'Model trained on the MUSDB18-HQ dataset.\nFaster separation (~ length of the song).\n(140 MB)',
     url:
-        'https://github.com/demixr/openunmix-torchscript/releases/download/v1.2/umxhq.ptl',
+        'https://github.com/demixr/openunmix-executorch/releases/download/v1.2/umxhq.pte',
     isDefault: true,
   );
   static const umxl = Model(
@@ -60,7 +60,7 @@ class Models {
     description:
         'Model trained on extra data. Longer separation, but improved performance.\n(290 MB)',
     url:
-        'https://github.com/demixr/openunmix-torchscript/releases/download/v1.2/umxl.ptl',
+        'https://github.com/demixr/openunmix-executorch/releases/download/v1.2/umxl.pte',
   );
 
   static Model fromName(String name) {

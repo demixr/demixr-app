@@ -33,23 +33,16 @@ android {
     }
 
     defaultConfig {
-        // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
         applicationId "com.demixr.demixr_app"
         minSdkVersion 24
         targetSdkVersion flutter.targetSdkVersion
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
-        externalNativeBuild {
-            cmake {
-                cppFlags ''
-            }
-        }
     }
 
     buildTypes {
         release {
             minifyEnabled false
-            shrinkResources false
             signingConfig signingConfigs.debug
             applicationVariants.all { variant ->
                 variant.outputs.all { output ->
@@ -59,16 +52,10 @@ android {
             }
         }
     }
-    externalNativeBuild {
-        cmake {
-            path file('src/main/cpp/CMakeLists.txt')
-            version '3.10.2'
-        }
-    }
 }
 
 dependencies {
-    implementation 'org.pytorch:pytorch_android_lite:1.10.0'
+    implementation 'org.pytorch:pytorch_android_executorch:0.1.0'
 }
 
 flutter {
