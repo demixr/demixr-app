@@ -40,16 +40,14 @@ enum DemixingError: LocalizedError {
 /// Reads and writes WAV files. Based on the Java WavFile class.
 class WavFile {
     enum IOState {
-        reading,
-        writing,
-        closed
+        case reading, writing, closed
     }
 
     private static let bufferSize = 4096
-    private static let fmtChunkId = 0x20746d66
-    private static let dataChunkId = 0x61746164
-    private static let riffChunkId = 0x46464952
-    private static let riffTypeId = 0x45564157
+    private static let fmtChunkId: UInt32 = 0x66_74_6d_66  // "fmt "
+    private static let dataChunkId: UInt32 = 0x64_61_74_61  // "data"
+    private static let riffChunkId: UInt32 = 0x52_49_46_46  // "RIFF"
+    private static let riffTypeId: UInt32 = 0x57_41_56_45  // "WAVE"
 
     var file: URL?
     private var ioState: IOState = .closed
@@ -72,7 +70,7 @@ class WavFile {
     private var frameCounter: Int64 = 0
 
     private init() {
-        buffer = [UInt8](repeating: 0, count: bufferSize)
+        buffer = [UInt8](repeating: 0, count: WavFile.bufferSize)
     }
 
     func getNumChannels() -> Int { return numChannels }
@@ -151,52 +149,52 @@ class WavFile {
             throw DemixingError("File too small to be a WAV file")
         }
 
-        let riffId = ByteOrder.bigEndian.decode(data[0..<4], as: UInt32.self)
-        if riffId != riffChunkId {
+        // Check RIFF header (little-endian)
+        let riffId = UInt32(littleEndian: UInt32(data[0]) | (UInt32(data[1]) << 8) | (UInt32(data[2]) << 16) | (UInt32(data[3]) << 24))
+        if riffId != WavFile.riffChunkId {
             throw DemixingError("Not a WAV file (bad RIFF ID)")
         }
 
-        let wavType = ByteOrder.bigEndian.decode(data[8..<12], as: UInt32.self)
-        if wavType != riffTypeId {
+        // Check WAV type (little-endian)
+        let wavType = UInt32(littleEndian: UInt32(data[8]) | (UInt32(data[9]) << 8) | (UInt32(data[10]) << 16) | (UInt32(data[11]) << 24))
+        if wavType != WavFile.riffTypeId {
             throw DemixingError("Not a WAV file (bad WAV type)")
         }
 
         var offset = 12
         while offset < 16 {
-            let chunkIdData = [UInt8](repeating: 0, count: 4)
-            guard stream.read(&data, maxLength: 4) == 4 else { break }
-            let chunkId = ByteOrder.bigEndian.decode(data[0..<4], as: UInt32.self)
+            let chunkId = UInt32(littleEndian: UInt32(data[0]) | (UInt32(data[1]) << 8) | (UInt32(data[2]) << 16) | (UInt32(data[3]) << 24))
 
-            if chunkId == fmtChunkId {
+            if chunkId == WavFile.fmtChunkId {
                 guard stream.read(&data, maxLength: 24) == 24 else { break }
 
-                let audioFormat = UInt16(ByteOrder.bigEndian.decode(data[0..<2], as: UInt16.self))
+                let audioFormat = UInt16(littleEndian: UInt16(data[0]) | (UInt16(data[1]) << 8))
                 if audioFormat != 1 {
                     throw DemixingError("Unsupported audio format: \(audioFormat)")
                 }
 
-                numChannels = Int(ByteOrder.bigEndian.decode(data[2..<4], as: UInt16.self))
-                sampleRate = Int64(ByteOrder.bigEndian.decode(data[4..<8], as: UInt32.self))
-                blockAlign = Int(ByteOrder.bigEndian.decode(data[16..<18], as: UInt16.self))
-                validBits = Int(ByteOrder.bigEndian.decode(data[18..<20], as: UInt16.self))
+                numChannels = Int(UInt16(littleEndian: UInt16(data[2]) | (UInt16(data[3]) << 8)))
+                sampleRate = Int64(UInt32(littleEndian: UInt32(data[4]) | (UInt32(data[5]) << 8) | (UInt32(data[6]) << 16) | (UInt32(data[7]) << 24)))
+                blockAlign = Int(UInt16(littleEndian: UInt16(data[16]) | (UInt16(data[17]) << 8)))
+                validBits = Int(UInt16(littleEndian: UInt16(data[18]) | (UInt16(data[19]) << 8)))
 
                 bytesPerSample = (validBits + 7) / 8
                 floatScale = 1.0 / Float(pow(2.0, Double(validBits - 1)))
                 floatOffset = 1.0
 
-                let extraParamSize = Int(ByteOrder.bigEndian.decode(data[20..<22], as: UInt16.self))
-                offset = 12 + 4 + 4 + 24 + extraParamSize
-            } else if chunkId == dataChunkId {
-                let dataSize = Int64(ByteOrder.bigEndian.decode(data[0..<4], as: UInt32.self))
+                let extraParamSize = UInt16(littleEndian: UInt16(data[20]) | (UInt16(data[21]) << 8))
+                offset = 12 + 4 + 4 + 24 + Int(extraParamSize)
+            } else if chunkId == WavFile.dataChunkId {
+                let dataSize = Int64(UInt32(littleEndian: UInt32(data[0]) | (UInt32(data[1]) << 8) | (UInt32(data[2]) << 16) | (UInt32(data[3]) << 24)))
                 numFrames = dataSize / Int64(blockAlign)
                 wordAlignAdjust = (dataSize % 2 != 0)
                 break
             } else {
-                let chunkSizeData = [UInt8](repeating: 0, count: 4)
-                guard stream.read(&data, maxLength: 4) == 4 else { break }
-                let chunkSize = Int(ByteOrder.bigEndian.decode(data[0..<4], as: UInt32.self))
-                offset += 8 + chunkSize
+                let chunkSize = UInt32(littleEndian: UInt32(data[0]) | (UInt32(data[1]) << 8) | (UInt32(data[2]) << 16) | (UInt32(data[3]) << 24))
+                offset += 8 + Int(chunkSize)
             }
+
+            guard stream.read(&data, maxLength: 4) == 4 else { break }
         }
 
         if numChannels == 0 {
@@ -216,57 +214,44 @@ class WavFile {
         let dataSize = numFrames * Int64(blockAlign)
         let fileSize = 36 + dataSize
 
-        var riffIdData = [UInt8](repeating: 0, count: 4)
-        ByteOrder.bigEndian.encode(riffChunkId, into: &riffIdData)
-        stream.write(&riffIdData, maxLength: 4)
+        func writeUInt32LE(_ value: UInt32) {
+            var bytes = [UInt8](repeating: 0, count: 4)
+            bytes[0] = UInt8(value & 0xFF)
+            bytes[1] = UInt8((value >> 8) & 0xFF)
+            bytes[2] = UInt8((value >> 16) & 0xFF)
+            bytes[3] = UInt8((value >> 24) & 0xFF)
+            stream.write(&bytes, maxLength: 4)
+        }
 
-        var fileSizeData = [UInt8](repeating: 0, count: 4)
-        ByteOrder.bigEndian.encode(UInt32(fileSize), into: &fileSizeData)
-        stream.write(&fileSizeData, maxLength: 4)
+        func writeUInt16LE(_ value: UInt16) {
+            var bytes = [UInt8](repeating: 0, count: 2)
+            bytes[0] = UInt8(value & 0xFF)
+            bytes[1] = UInt8((value >> 8) & 0xFF)
+            stream.write(&bytes, maxLength: 2)
+        }
 
-        var wavTypeData = [UInt8](repeating: 0, count: 4)
-        ByteOrder.bigEndian.encode(riffTypeId, into: &wavTypeData)
-        stream.write(&wavTypeData, maxLength: 4)
+        // RIFF header
+        writeUInt32LE(WavFile.riffChunkId)
+        writeUInt32LE(UInt32(fileSize))
 
-        var fmtIdData = [UInt8](repeating: 0, count: 4)
-        ByteOrder.bigEndian.encode(fmtChunkId, into: &fmtIdData)
-        stream.write(&fmtIdData, maxLength: 4)
+        // WAV type
+        writeUInt32LE(WavFile.riffTypeId)
 
-        var fmtSizeData = [UInt8](repeating: 0, count: 4)
-        ByteOrder.bigEndian.encode(UInt32(16), into: &fmtSizeData)
-        stream.write(&fmtSizeData, maxLength: 4)
+        // fmt chunk
+        writeUInt32LE(WavFile.fmtChunkId)
+        writeUInt32LE(16)  // fmt chunk size
 
-        var audioFormatData = [UInt8](repeating: 0, count: 2)
-        ByteOrder.littleEndian.encode(UInt16(1), into: &audioFormatData)
-        stream.write(&audioFormatData, maxLength: 2)
+        // fmt chunk data (little-endian)
+        writeUInt16LE(1)  // audio format (PCM)
+        writeUInt16LE(UInt16(numChannels))
+        writeUInt32LE(UInt32(sampleRate))
+        writeUInt32LE(UInt32(sampleRate * Int64(blockAlign)))
+        writeUInt16LE(UInt16(blockAlign))
+        writeUInt16LE(UInt16(validBits))
 
-        var channelsData = [UInt8](repeating: 0, count: 2)
-        ByteOrder.littleEndian.encode(UInt16(numChannels), into: &channelsData)
-        stream.write(&channelsData, maxLength: 2)
-
-        var sampleRateData = [UInt8](repeating: 0, count: 4)
-        ByteOrder.littleEndian.encode(UInt32(sampleRate), into: &sampleRateData)
-        stream.write(&sampleRateData, maxLength: 4)
-
-        var byteRateData = [UInt8](repeating: 0, count: 4)
-        ByteOrder.littleEndian.encode(UInt32(sampleRate * Int64(blockAlign)), into: &byteRateData)
-        stream.write(&byteRateData, maxLength: 4)
-
-        var blockAlignData = [UInt8](repeating: 0, count: 2)
-        ByteOrder.littleEndian.encode(UInt16(blockAlign), into: &blockAlignData)
-        stream.write(&blockAlignData, maxLength: 2)
-
-        var validBitsData = [UInt8](repeating: 0, count: 2)
-        ByteOrder.littleEndian.encode(UInt16(validBits), into: &validBitsData)
-        stream.write(&validBitsData, maxLength: 2)
-
-        var dataIdData = [UInt8](repeating: 0, count: 4)
-        ByteOrder.bigEndian.encode(dataChunkId, into: &dataIdData)
-        stream.write(&dataIdData, maxLength: 4)
-
-        var dataSizeData = [UInt8](repeating: 0, count: 4)
-        ByteOrder.littleEndian.encode(UInt32(dataSize), into: &dataSizeData)
-        stream.write(&dataSizeData, maxLength: 4)
+        // data chunk
+        writeUInt32LE(WavFile.dataChunkId)
+        writeUInt32LE(UInt32(dataSize))
 
         stream.close()
     }
@@ -306,7 +291,12 @@ class WavFile {
                 case 1:
                     sample = Int32(bytes[0]) - 128
                 case 2:
-                    sample = Int32(ByteOrder.littleEndian.decode(bytes, as: Int16.self))
+                    let b0 = Int32(bytes[0])
+                    let b1 = Int32(bytes[1])
+                    sample = (b1 << 8) | b0
+                    if sample >= 32768 {
+                        sample -= 65536
+                    }
                 case 3:
                     let b0 = Int32(bytes[0])
                     let b1 = Int32(bytes[1])
@@ -316,7 +306,11 @@ class WavFile {
                         sample -= 1 << 16
                     }
                 case 4:
-                    sample = Int32(ByteOrder.littleEndian.decode(bytes, as: Int32.self))
+                    let b0 = Int32(bytes[0])
+                    let b1 = Int32(bytes[1])
+                    let b2 = Int32(bytes[2])
+                    let b3 = Int32(bytes[3])
+                    sample = (b3 << 24) | ((b2 & 0xFF) << 16) | ((b1 & 0xFF) << 8) | (b0 & 0xFF)
                 default:
                     sample = 0
                 }
@@ -335,24 +329,41 @@ class WavFile {
         let stream = oStream!
         stream.open()
 
+        func writeInt16LE(_ value: Int16) {
+            var bytes = [UInt8](repeating: 0, count: 2)
+            bytes[0] = UInt8(value & 0xFF)
+            bytes[1] = UInt8((value >> 8) & 0xFF)
+            stream.write(&bytes, maxLength: 2)
+        }
+
+        func writeInt32LE(_ value: Int32) {
+            var bytes = [UInt8](repeating: 0, count: 4)
+            bytes[0] = UInt8(value & 0xFF)
+            bytes[1] = UInt8((value >> 8) & 0xFF)
+            bytes[2] = UInt8((value >> 16) & 0xFF)
+            bytes[3] = UInt8((value >> 24) & 0xFF)
+            stream.write(&bytes, maxLength: 4)
+        }
+
         for frame in 0..<numFrames {
             for stem in buffer.indices {
                 for channel in 0..<numChannels {
                     let sample = buffer[stem][Int(frame) * numChannels + channel]
                     let intSample = Int32(sample * floatScale - floatOffset)
 
-                    var bytes = [UInt8](repeating: 0, count: bytesPerSample)
                     switch bytesPerSample {
                     case 1:
-                        bytes[0] = UInt8(max(0, min(255, Int(intSample) + 128)))
+                        let clamped = max(0, min(255, Int(intSample) + 128))
+                        var bytes = [UInt8](repeating: 0, count: 1)
+                        bytes[0] = UInt8(clamped)
+                        stream.write(&bytes, maxLength: 1)
                     case 2:
-                        ByteOrder.littleEndian.encode(Int16(max(-32768, min(32767, Int(intSample)))), into: &bytes)
+                        writeInt16LE(Int16(max(-32768, min(32767, Int(intSample)))))
                     case 4:
-                        ByteOrder.littleEndian.encode(max(-2147483648, min(2147483647, Int(intSample))), into: &bytes)
+                        writeInt32LE(Int32(max(-2147483648, min(2147483647, Int(intSample)))))
                     default:
                         break
                     }
-                    stream.write(&bytes, maxLength: bytesPerSample)
                 }
             }
         }
@@ -384,7 +395,7 @@ public class DemixingPlugin: NSObject, FlutterPlugin, FlutterStreamHandler {
     private static let numBufferFrame = 250000
     private static let mono = 1
     private static let stereo = 2
-    private static let sampleRate = 44100
+    private static let sampleRateValue = 44100
 
     // MARK: - Properties
 
@@ -486,7 +497,7 @@ public class DemixingPlugin: NSObject, FlutterPlugin, FlutterStreamHandler {
                 numChannels: numChannels,
                 numFrames: numFrames,
                 validBits: numBits,
-                sampleRate: Int64(sampleRate)
+                sampleRate: Int64(DemixingPlugin.sampleRateValue)
             )
         }
 
@@ -551,7 +562,7 @@ public class DemixingPlugin: NSObject, FlutterPlugin, FlutterStreamHandler {
         var currentChunk = 0.0
 
         while framesRead != 0 {
-            if wavFile.getSampleRate() != Int64(sampleRate) {
+            if wavFile.getSampleRate() != Int64(DemixingPlugin.sampleRateValue) {
                 buffer = try resample(
                     buffer: buffer,
                     numInputFrames: framesRead,

@@ -48,7 +48,7 @@ public class DemixingPlugin: NSObject, FlutterPlugin, FlutterStreamHandler {
     private static let numBufferFrame = 250000
     private static let mono = 1
     private static let stereo = 2
-    private static let sampleRate = 44100
+    private static let sampleRateValue = 44100
 
     // MARK: - Properties
 
@@ -107,33 +107,28 @@ public class DemixingPlugin: NSObject, FlutterPlugin, FlutterStreamHandler {
             return
         }
 
-        DispatchQueue.global(qos: .userInitiated).async { [weak self] in
-            guard let self = self else {
-                DispatchQueue.main.async { result(FlutterError(code: "PluginDisposed", message: "Plugin was disposed", details: nil)) }
-                return
+        // TODO: Implement full demixing with Executorch CoreML backend
+        // For now, report 100% progress and return empty stems
+        // This is a stub until full implementation
+
+        DispatchQueue.global(qos: .userInitiated).async {
+            // Report 100% progress
+            if let sink = self.progressSink {
+                DispatchQueue.main.async {
+                    sink(1.0)
+                }
             }
 
-            // TODO: Implement full demixing with Executorch CoreML backend
-            // For now, report 100% progress and return empty stems
-            // This is a stub until full implementation
+            // Return empty stem paths (no actual demixing yet)
+            let stemNames = ["vocals", "drums", "bass", "other"]
+            var stemFiles: [String: String] = [:]
+            for stemName in stemNames {
+                let stemPath = (outputDir as NSString).appendingPathComponent("\(stemName).wav")
+                stemFiles[stemName] = stemPath
+            }
 
-            DispatchQueue.global(qos: .userInitiated).async {
-                if let sink = self.progressSink {
-                    DispatchQueue.main.async {
-                        sink(1.0)
-                    }
-                }
-
-                let stemNames = ["vocals", "drums", "bass", "other"]
-                var stemFiles: [String: String] = [:]
-                for stemName in stemNames {
-                    let stemPath = (outputDir as NSString).appendingPathComponent("\(stemName).wav")
-                    stemFiles[stemName] = stemPath
-                }
-
-                DispatchQueue.main.async {
-                    result(stemFiles)
-                }
+            DispatchQueue.main.async {
+                result(stemFiles)
             }
         }
     }
