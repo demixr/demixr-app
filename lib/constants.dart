@@ -104,7 +104,4 @@ class Preferences {
   static const model = 'model';
 }
 
-class PlatformChannels {
-  static const demixing = 'demixing';
-  static const demixingProgress = 'demixing/progress';
-}
+

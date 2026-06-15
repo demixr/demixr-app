@@ -5,7 +5,6 @@ import 'package:demixr_app/components/cancel_button.dart';
 import 'package:demixr_app/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:get/route_manager.dart';
-import 'package:percent_indicator/linear_percent_indicator.dart';
 
 class ProcessingScreen extends StatelessWidget {
   const ProcessingScreen({Key? key}) : super(key: key);
@@ -44,21 +43,12 @@ class ProcessingScreen extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 20),
-            StreamBuilder<double>(
-              stream: demixingProvider.progressStream,
-              builder: (context, snapshot) {
-                double progress = 0;
-                if (snapshot.hasData) progress = snapshot.data!;
-                return LinearPercentIndicator(
-                  percent: progress,
-                  backgroundColor: ColorPalette.surfaceVariant,
-                  progressColor: ColorPalette.primary,
-                  barRadius: const Radius.circular(10),
-                  animation: true,
-                  animationDuration: 1000,
-                  animateFromLastPercent: true,
-                );
-              },
+            // Indeterminate progress bar (0.4.1 doesn't expose progress callbacks)
+            LinearProgressIndicator(
+              minHeight: 20,
+              backgroundColor: ColorPalette.surfaceVariant,
+              valueColor: const AlwaysStoppedAnimation<Color>(ColorPalette.primary),
+              borderRadius: const BorderRadius.all(Radius.circular(10)),
             ),
             const SizedBox(height: 20),
             CancelButton(onPressed: () {

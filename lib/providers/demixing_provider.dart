@@ -17,13 +17,9 @@ import '../utils.dart';
 class DemixingProvider extends ChangeNotifier {
   final _helper = DemixingHelper();
   final PreferencesProvider preferences;
-  late Stream<double> _progressStream;
   CancelableOperation<UnmixedSong>? _operation;
 
   DemixingProvider(this.preferences);
-
-  /// The stream of the demixing progress
-  Stream<double> get progressStream => _progressStream;
 
   /// Starts the demixing for the provided [song] if a model is available.
   ///
@@ -34,9 +30,6 @@ class DemixingProvider extends ChangeNotifier {
           'The selected model is not available, download it to continue.');
       return;
     }
-
-    _progressStream =
-        _helper.progressStream.receiveBroadcastStream().cast<double>();
 
     separate(song)
         ?.then((unmixed) => library.saveSong(unmixed))

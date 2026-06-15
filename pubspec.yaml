@@ -15,10 +15,10 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # In iOS, build-name is used as CFBundleShortVersionString while build-number used as CFBundleVersion.
 # Read more about iOS versioning at
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
-version: 0.4.1+1
+version: 0.4.1+2
 
 environment:
-  sdk: ">=2.15.1 <4.0.0"
+  sdk: ^3.8.0
 
 # Dependencies specify other packages that your package needs in order to work.
 # To automatically upgrade your package dependencies to the latest versions
@@ -32,34 +32,42 @@ dependencies:
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
-  cupertino_icons: ^1.0.2
-  equatable: ^2.0.3
+  cupertino_icons: ^1.0.9
+  equatable: ^2.0.8
   flutter_svg: ^2.3.0
   intersperse: ^2.0.0
   file_picker: ^11.0.2
   flutter_media_metadata: ^1.0.0+1
   dartz: ^0.10.1
-  dio: ^5.0.0
+  dio: ^5.9.2
   http: ^1.6.0
-  provider: ^6.0.1
-  path: ^1.8.0
-  hive: ^2.0.5
+  provider: ^6.1.5+1
+  path: ^1.9.1
+  hive: ^2.2.3
   hive_flutter: ^1.1.0
-  path_provider: ^2.0.8
-  get: ^4.6.1
-  async: ^2.8.2
+  path_provider: ^2.1.5
+  get: ^4.7.3
+  async: ^2.13.1
   audioplayers: ^6.7.1
   audio_video_progress_bar: ^2.0.3
-  url_launcher: ^6.0.18
+  url_launcher: ^6.3.2
   percent_indicator: ^4.2.5
   ffmpeg_kit_flutter_new_audio: ^2.0.0
   youtube_explode_dart: ^3.1.0
   fluttertoast: ^9.1.0
   image: ^4.8.0
   loadmore: ^2.1.0
-  loading_indicator: ^3.0.2
+  loading_indicator: ^3.1.1
   auto_size_text: ^3.0.0
-  executorch_flutter: ^0.0.3
+  executorch_flutter: ^0.4.1
+
+# Native assets build configuration for executorch_flutter
+hooks:
+  user_defines:
+    executorch_flutter:
+      backends:
+        - xnnpack
+        - coreml
 
 dev_dependencies:
   flutter_test:
@@ -68,7 +76,7 @@ dev_dependencies:
   # The following line ensures that the Material Icons font is
   # included with your application.
   # Use with the CupertinoIcons class for iOS style icons.
-  flutter_lints: ^4.0.0
+  flutter_lints: ^6.0.0
   hive_generator: ^2.0.1
   build_runner: ^2.4.13
   flutter_launcher_icons: ^0.14.4
