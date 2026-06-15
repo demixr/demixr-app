@@ -12,9 +12,9 @@ class ModelSelection extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.start,
       children: [
         ModelGroup(
-          title: 'Open-Unmix',
-          models: const [Models.umxhq, Models.umxl],
-          infosUrl: Models.openUnmixInfosUrl,
+          title: 'Demucs v4',
+          models: const [Models.htdemucs, Models.htdemucsFt, Models.htdemucs6s],
+          infosUrl: Models.demucsExecutorchRepoUrl,
           imagePath: getAssetPath('open_unmix', AssetType.image),
         ),
       ],

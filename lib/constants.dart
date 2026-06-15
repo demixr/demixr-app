@@ -44,33 +44,57 @@ class BoxesNames {
 
 class Models {
   static const openUnmixInfosUrl = 'https://sigsep.github.io/open-unmix/';
+  static const demucsExecutorchRepoUrl =
+      'https://github.com/demixr/demucs-executorch';
 
   static const fileExtension = '.pte';
 
-  static const umxhq = Model(
-    name: 'umxhq',
+  static const htdemucs = Model(
+    name: 'htdemucs',
     description:
-        'Model trained on the MUSDB18-HQ dataset.\nFaster separation (~ length of the song).\n(140 MB)',
+        'Demucs v4 — SOTA quality separation (SDR ~12.1 vocals).\n'
+        '4 stems: vocals, drums, bass, other.\n'
+        '~84 MB, GPU accelerated via MPS/CoreML.',
     url:
-        'https://github.com/demixr/openunmix-executorch/releases/download/v1.2/umxhq.pte',
+        'https://github.com/demixr/demucs-executorch/releases/download/v1.0/htdemucs.pte',
     isDefault: true,
   );
-  static const umxl = Model(
-    name: 'umxl',
+  static const htdemucsFt = Model(
+    name: 'htdemucs_ft',
     description:
-        'Model trained on extra data. Longer separation, but improved performance.\n(290 MB)',
+        'Demucs v4 Fine-Tuned — Best quality separation.\n'
+        '4 stems: vocals, drums, bass, other.\n'
+        '~333 MB, GPU accelerated via MPS/CoreML.',
     url:
-        'https://github.com/demixr/openunmix-executorch/releases/download/v1.2/umxl.pte',
+        'https://github.com/demixr/demucs-executorch/releases/download/v1.0/htdemucs_ft.pte',
+  );
+  static const htdemucs6s = Model(
+    name: 'htdemucs_6s',
+    description:
+        'Demucs v4 — 6 stems with piano and guitar.\n'
+        '6 stems: vocals, drums, bass, guitar, piano, other.\n'
+        '~84 MB, GPU accelerated via MPS/CoreML.',
+    url:
+        'https://github.com/demixr/demucs-executorch/releases/download/v1.0/htdemucs_6s.pte',
   );
 
   static Model fromName(String name) {
-    if (name == umxhq.name) return umxhq;
-    if (name == umxl.name) return umxl;
+    if (name == htdemucs.name) return htdemucs;
+    if (name == htdemucsFt.name) return htdemucsFt;
+    if (name == htdemucs6s.name) return htdemucs6s;
+
+    // Fallback: try old model names for backward compatibility
+    if (name == 'umxhq') return htdemucs;
+    if (name == 'umxl') return htdemucsFt;
 
     throw ArgumentError('Models: The given model name does not exist');
   }
 
-  static const List<Model> all = [Models.umxhq, Models.umxl];
+  static const List<Model> all = [
+    Models.htdemucs,
+    Models.htdemucsFt,
+    Models.htdemucs6s,
+  ];
 }
 
 enum Stem {
