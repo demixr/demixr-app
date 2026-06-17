@@ -27,6 +27,7 @@ class OnnxDemixingEngine {
     required String modelPath,
     required String inputPath,
     required String outputDir,
+    required List<String> sources,
     void Function(double progress)? onProgress,
     List<OrtProvider>? providerOverride,
   }) async {
@@ -48,6 +49,7 @@ class OnnxDemixingEngine {
         input: channels,
         totalFrames: totalFrames,
         outputDir: outputDir,
+        sources: sources,
         onProgress: onProgress,
       );
     } finally {
@@ -88,12 +90,12 @@ class OnnxDemixingEngine {
     required List<Float32List> input,
     required int totalFrames,
     required String outputDir,
+    required List<String> sources,
     void Function(double progress)? onProgress,
   }) async {
     const segment = DemucsConfig.segment;
     const stride = DemucsConfig.stride;
     const nChannels = DemucsConfig.channels;
-    const sources = DemucsConfig.sources;
     final window = DemucsConfig.buildTransitionWindow();
     final nChunks = ((totalFrames + stride - 1) ~/ stride).clamp(1, 1 << 30);
 

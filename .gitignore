@@ -157,3 +157,5 @@ app.*.symbols
 /tools/onnx_export/*.wav
 /tools/onnx_export/*.pcm
 /tools/onnx_export/ref_out/
+/tools/onnx_export/ref_out*/
+/tools/onnx_export/**/*.wav

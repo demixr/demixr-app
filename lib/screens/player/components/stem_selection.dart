@@ -11,27 +11,34 @@ class StemSelection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     const radius = Radius.circular(35);
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        borderRadius: const BorderRadius.all(radius),
-        border: Border.all(width: 2, color: ColorPalette.surfaceVariant),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.only(
-          left: 20,
-          top: 10,
-          right: 20,
-          bottom: 10,
-        ),
-        child: const Column(
-          children: [
-            StemButton(Stem.vocals),
-            StemButton(Stem.bass),
-            StemButton(Stem.drums),
-            StemButton(Stem.other),
-          ],
-        ),
-      ),
+    return Consumer<PlayerProvider>(
+      builder: (context, player, child) {
+        final stems = player.stems;
+        // 4 stems fit in one column; 6 lay out as two columns so the player
+        // stays compact and scroll-free.
+        final twoColumns = stems.length > 4;
+        return DecoratedBox(
+          decoration: BoxDecoration(
+            borderRadius: const BorderRadius.all(radius),
+            border: Border.all(width: 2, color: ColorPalette.surfaceVariant),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+            child: Wrap(
+              alignment: WrapAlignment.center,
+              spacing: 10,
+              runSpacing: 4,
+              children: [
+                for (final stem in stems)
+                  SizedBox(
+                    width: twoColumns ? 150 : double.infinity,
+                    child: StemButton(stem),
+                  ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 }

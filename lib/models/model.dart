@@ -19,6 +19,10 @@ class Model {
   /// Inference engine this model runs on.
   final ModelEngine engine;
 
+  /// Ordered stem names this model produces. The order must match the rows of
+  /// the model's output tensor (for ONNX models). Defaults to the standard 4.
+  final List<String> stems;
+
   const Model({
     required this.name,
     required this.description,
@@ -26,6 +30,7 @@ class Model {
     this.isDefault = false,
     this.fileExtension = '.plt',
     this.engine = ModelEngine.openUnmix,
+    this.stems = const ['vocals', 'drums', 'bass', 'other'],
   });
 
   bool get isOnnx => engine == ModelEngine.onnx;

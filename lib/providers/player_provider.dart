@@ -31,6 +31,10 @@ class PlayerProvider extends ChangeNotifier {
   Duration get songDuration =>
       _song.fold((failure) => Duration.zero, (song) => song.duration);
 
+  /// The stems of the current song (4 or 6 depending on the model used).
+  List<Stem> get stems =>
+      _song.fold((failure) => const [], (song) => song.stems);
+
   /// Checks if a [stem] is muted or not.
   bool isStemMute(Stem stem) => _player.getStemState(stem) == StemState.mute;
 

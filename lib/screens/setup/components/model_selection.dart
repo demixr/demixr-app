@@ -15,7 +15,7 @@ class ModelSelection extends StatelessWidget {
       children: [
         ModelGroup(
           title: 'Demucs',
-          models: const [Models.htdemucs],
+          models: const [Models.htdemucs, Models.htdemucs6s],
           imagePath: getAssetPath('open_unmix', AssetType.image),
         ),
         // The OpenUnmix engine is native Android-only.

@@ -4,9 +4,11 @@ import 'dart:io' show Platform;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
+import '../models/model.dart';
 import '../models/song.dart';
 import '../models/unmixed_song.dart';
 import '../models/exceptions/demixing_exception.dart';
+import 'onnx/demucs_config.dart';
 import 'onnx/onnx_demixing_engine.dart';
 import '../utils.dart';
 import '../constants.dart';
@@ -39,28 +41,26 @@ class DemixingHelper {
   ) async {
     final model = Models.fromName(modelName);
     final separated = model.isOnnx
-        ? await _separateOnnx(song, modelPath)
+        ? await _separateOnnx(song, modelPath, model)
         : await _separateNative(song, modelPath);
 
-    checkResult(separated);
+    checkResult(separated, model);
 
-    return UnmixedSong.fromSong(
-      song,
-      vocals: separated[Stem.vocals.value]!,
-      bass: separated[Stem.bass.value]!,
-      drums: separated[Stem.drums.value]!,
-      other: separated[Stem.other.value]!,
-      modelName: modelName,
-    );
+    return UnmixedSong.fromSeparation(song, separated, modelName: modelName);
   }
 
   /// Runs the cross-platform ONNX engine.
-  Future<Map<String, String>> _separateOnnx(Song song, String modelPath) async {
+  Future<Map<String, String>> _separateOnnx(
+    Song song,
+    String modelPath,
+    Model model,
+  ) async {
     try {
       return await _engine.separate(
         modelPath: modelPath,
         inputPath: song.path,
         outputDir: await getAppTemp(),
+        sources: DemucsConfig.sourcesForCount(model.stems.length),
         onProgress: (p) {
           if (!_progressController.isClosed) _progressController.add(p);
         },
@@ -105,16 +105,10 @@ class DemixingHelper {
     }
   }
 
-  /// Check the [separated] result to make sure all stems are present.
-  void checkResult(Map<String, String> separated) {
-    final stems = [
-      Stem.bass.value,
-      Stem.drums.value,
-      Stem.other.value,
-      Stem.vocals.value,
-    ];
-
-    if (!listEquals(separated.keys.toList()..sort(), stems..sort())) {
+  /// Check the [separated] result contains exactly the stems [model] produces.
+  void checkResult(Map<String, String> separated, Model model) {
+    final expected = model.stems.toList()..sort();
+    if (!listEquals(separated.keys.toList()..sort(), expected)) {
       throw DemixingException('Invalid demixing result');
     }
   }

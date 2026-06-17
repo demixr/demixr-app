@@ -60,6 +60,18 @@ class Models {
     engine: ModelEngine.onnx,
   );
 
+  /// htdemucs_6s — same engine as [htdemucs] but 6 stems (adds guitar + piano).
+  static const htdemucs6s = Model(
+    name: 'htdemucs_6s',
+    description:
+        '6-stem Demucs v4: vocals, drums, bass, other, guitar, piano.\nRuns on all platforms, a bit slower than 4-stem.\n(130 MB)',
+    url:
+        'https://huggingface.co/StemSplitio/htdemucs-6s-onnx/resolve/main/htdemucs_6s_fp16weights.onnx',
+    fileExtension: '.onnx',
+    engine: ModelEngine.onnx,
+    stems: ['vocals', 'drums', 'bass', 'other', 'guitar', 'piano'],
+  );
+
   static const umxhq = Model(
     name: 'umxhq',
     description:
@@ -77,13 +89,19 @@ class Models {
 
   static Model fromName(String name) {
     if (name == htdemucs.name) return htdemucs;
+    if (name == htdemucs6s.name) return htdemucs6s;
     if (name == umxhq.name) return umxhq;
     if (name == umxl.name) return umxl;
 
     throw ArgumentError('Models: The given model name does not exist');
   }
 
-  static const List<Model> all = [Models.htdemucs, Models.umxhq, Models.umxl];
+  static const List<Model> all = [
+    Models.htdemucs,
+    Models.htdemucs6s,
+    Models.umxhq,
+    Models.umxl,
+  ];
 
   /// Models whose engine is usable on the current platform (ONNX everywhere,
   /// OpenUnmix only on Android).
@@ -91,7 +109,7 @@ class Models {
       all.where((model) => model.isSupportedOnCurrentPlatform).toList();
 }
 
-enum Stem { mixture, vocals, drums, bass, other }
+enum Stem { mixture, vocals, drums, bass, other, guitar, piano }
 
 extension StemsName on Stem {
   String get name {
@@ -106,11 +124,20 @@ extension StemsName on Stem {
         return 'Bass';
       case Stem.other:
         return 'Other';
+      case Stem.guitar:
+        return 'Guitar';
+      case Stem.piano:
+        return 'Piano';
     }
   }
 
   String get value => name.toLowerCase();
 }
+
+/// Resolves a [Stem] from its lowercase [value] (e.g. 'guitar'). Throws if
+/// the name is not a known stem.
+Stem stemFromValue(String value) =>
+    Stem.values.firstWhere((stem) => stem.value == value);
 
 class Preferences {
   static const model = 'model';

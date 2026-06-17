@@ -68,6 +68,15 @@ class LibraryRepository {
     song.drums = await _saveStem(song.drums, Stem.drums.value, songDirectory);
     song.other = await _saveStem(song.other, Stem.other.value, songDirectory);
 
+    final guitar = song.guitar;
+    if (guitar != null) {
+      song.guitar = await _saveStem(guitar, Stem.guitar.value, songDirectory);
+    }
+    final piano = song.piano;
+    if (piano != null) {
+      song.piano = await _saveStem(piano, Stem.piano.value, songDirectory);
+    }
+
     if (song.coverPath != null) {
       String newPath = p.join(songDirectory, p.basename(song.coverPath!));
       song.coverPath = (await File(song.coverPath!).move(newPath)).path;

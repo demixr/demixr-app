@@ -25,9 +25,23 @@ class DemucsConfig {
   /// Hop between consecutive segment starts.
   static const int stride = segment - overlap; // 257985
 
-  /// Model output stem order — the rows of the `[1, 4, 2, N]` output tensor.
-  /// This is Demucs' native ordering and must be mapped to the app's stems.
-  static const List<String> sources = ['drums', 'bass', 'other', 'vocals'];
+  /// Model output stem order — the rows of the `[1, S, 2, N]` output tensor,
+  /// in Demucs' native ordering, mapped by name to the app's stems.
+  static const List<String> sources4 = ['drums', 'bass', 'other', 'vocals'];
+
+  /// 6-stem (htdemucs_6s) output order: the 4 above plus guitar and piano.
+  static const List<String> sources6 = [
+    'drums',
+    'bass',
+    'other',
+    'vocals',
+    'guitar',
+    'piano',
+  ];
+
+  /// The ordered model output sources for a model producing [count] stems.
+  static List<String> sourcesForCount(int count) =>
+      count == 6 ? sources6 : sources4;
 
   /// ONNX graph input/output tensor names.
   static const String inputName = 'mix';
