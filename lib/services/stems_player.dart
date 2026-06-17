@@ -11,6 +11,22 @@ class StemsPlayer {
   bool mixtureOn = false;
   int duration = 0;
 
+  /// All stems play simultaneously, so the players must NOT request exclusive
+  /// audio focus (the default) — otherwise each one steals focus from the
+  /// others and they all get paused. `none` on Android and `mixWithOthers` on
+  /// iOS let the 5 players mix together.
+  static final AudioContext _audioContext = AudioContext(
+    android: const AudioContextAndroid(
+      contentType: AndroidContentType.music,
+      usageType: AndroidUsageType.media,
+      audioFocus: AndroidAudioFocus.none,
+    ),
+    iOS: AudioContextIOS(
+      category: AVAudioSessionCategory.playback,
+      options: const {AVAudioSessionOptions.mixWithOthers},
+    ),
+  );
+
   StemsPlayer() {
     players = {
       Stem.mixture: AudioPlayer()..mute(),
@@ -26,6 +42,10 @@ class StemsPlayer {
       Stem.bass: StemState.unmute,
       Stem.other: StemState.unmute,
     };
+
+    for (final player in players.values) {
+      player.setAudioContext(_audioContext);
+    }
 
     toggleStem(Stem.vocals);
   }
