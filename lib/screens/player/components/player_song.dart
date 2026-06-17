@@ -5,38 +5,29 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 class PlayerSong extends StatelessWidget {
-  const PlayerSong({Key? key}) : super(key: key);
+  const PlayerSong({super.key});
 
   @override
   Widget build(BuildContext context) {
-    const double? imageSize = 185;
+    const double imageSize = 185;
     return Consumer<LibraryProvider>(
       builder: (context, library, child) {
         final currentSong = library.currentSong;
         List<Widget> children = [];
 
-        currentSong.fold(
-          (failure) {},
-          (song) {
-            children = [
-              AlbumCover(
-                imagePath: song.albumCover,
-                size: imageSize,
-              ),
-              SongInfos(
-                title: song.title,
-                artists: song.artists,
-                alignCenter: true,
-                size: 18,
-              ),
-            ];
-          },
-        );
+        currentSong.fold((failure) {}, (song) {
+          children = [
+            AlbumCover(imagePath: song.albumCover, size: imageSize),
+            SongInfos(
+              title: song.title,
+              artists: song.artists,
+              alignCenter: true,
+              size: 18,
+            ),
+          ];
+        });
 
-        return SpacedColumn(
-          spacing: 25,
-          children: children,
-        );
+        return SpacedColumn(spacing: 25, children: children);
       },
     );
   }

@@ -15,16 +15,20 @@ class Button extends StatelessWidget {
 
   const Button(
     this.text, {
-    Key? key,
+    super.key,
     this.color = ColorPalette.primary,
     this.textColor = ColorPalette.onPrimary,
     this.textSize = 14,
     this.icon,
     this.radius = 100,
-    this.padding =
-        const EdgeInsets.only(left: 24, top: 10, right: 24, bottom: 10),
+    this.padding = const EdgeInsets.only(
+      left: 24,
+      top: 10,
+      right: 24,
+      bottom: 10,
+    ),
     this.onPressed,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

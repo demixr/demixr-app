@@ -8,17 +8,14 @@ import 'package:flutter_svg/svg.dart';
 import '../../utils.dart';
 
 class PlayerScreen extends StatelessWidget {
-  const PlayerScreen({Key? key}) : super(key: key);
+  const PlayerScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        height: double.maxFinite,
-        width: double.maxFinite,
-        margin: const EdgeInsets.only(left: 10, top: 10, right: 10),
+      body: Padding(
+        padding: const EdgeInsets.only(left: 10, top: 10, right: 10),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             NavBar(
               extra: [
@@ -27,14 +24,15 @@ class PlayerScreen extends StatelessWidget {
                     context: context,
                     builder: (context) => const InfosDialog(),
                   ),
-                  icon: SvgPicture.asset(
-                    getAssetPath('dots', AssetType.icon),
-                  ),
+                  icon: SvgPicture.asset(getAssetPath('dots', AssetType.icon)),
                 ),
               ],
             ),
-            const PlayerSong(),
-            const Controller(),
+            const Expanded(
+              child: SingleChildScrollView(
+                child: Column(children: [PlayerSong(), Controller()]),
+              ),
+            ),
           ],
         ),
       ),

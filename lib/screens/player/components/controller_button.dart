@@ -10,11 +10,11 @@ class ControllerButton extends StatelessWidget {
 
   const ControllerButton(
     this.icon, {
-    Key? key,
+    super.key,
     this.size = 60,
     this.gradient = ColorPalette.primaryGradient,
     this.onPressed,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -27,20 +27,21 @@ class ControllerButton extends StatelessWidget {
         ),
       ),
       child: Ink(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(20),
-            gradient: LinearGradient(
-              colors: gradient,
-              begin: const Alignment(-3, -3),
-              end: Alignment.bottomCenter,
-            ),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(20),
+          gradient: LinearGradient(
+            colors: gradient,
+            begin: const Alignment(-3, -3),
+            end: Alignment.bottomCenter,
           ),
-          child: Container(
-            width: size,
-            height: size,
-            alignment: Alignment.center,
-            child: icon,
-          )),
+        ),
+        child: Container(
+          width: size,
+          height: size,
+          alignment: Alignment.center,
+          child: icon,
+        ),
+      ),
     );
   }
 }

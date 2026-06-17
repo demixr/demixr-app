@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 class SongProgressBar extends StatelessWidget {
-  const SongProgressBar({Key? key}) : super(key: key);
+  const SongProgressBar({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -24,13 +24,15 @@ class SongProgressBar extends StatelessWidget {
               progress: progress,
               total: total,
               progressBarColor: ColorPalette.inverseSurface,
-              baseBarColor: Colors.white.withOpacity(0.2),
+              baseBarColor: Colors.white.withValues(alpha: 0.2),
               barHeight: 3,
               thumbRadius: 5,
               thumbColor: ColorPalette.inverseSurface,
               thumbGlowRadius: 12,
-              timeLabelTextStyle:
-                  const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+              timeLabelTextStyle: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+              ),
               onSeek: (duration) {
                 player.seek(duration);
               },

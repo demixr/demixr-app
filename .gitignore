@@ -100,8 +100,34 @@ unlinked_spec.ds
 **/ios/ServiceDefinitions.json
 **/ios/Runner/GeneratedPluginRegistrant.*
 
-# macOS
-**/macos/Flutter/GeneratedPluginRegistrant.swift
+# macOS (ignore build outputs, keep Runner source)
+macos/Flutter/ephemeral/
+macos/.symlinks/
+macos/Pods/
+macos/Runner.xcworkspace/xcuserdata/
+macos/Runner/xcuserdata/
+macos/build/
+
+# Platform directories (linux, web, windows)
+linux/
+web/
+windows/
+
+# Android build outputs
+**/android/app/build/
+**/android/build/
+**/android/.gradle/
+**/android/app/src/main/kotlin/
+**/android/app/build.gradle.kts
+**/android/build.gradle.kts
+**/android/settings.gradle.kts
+**/android/gradle/
+
+# iOS Runner tests
+**/ios/RunnerTests/
+
+# iOS SceneDelegate (iOS 13+)
+**/ios/Runner/SceneDelegate.swift
 
 # Coverage
 coverage/

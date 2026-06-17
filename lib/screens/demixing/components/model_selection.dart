@@ -11,7 +11,7 @@ import '../../../constants.dart';
 import '../../../utils.dart';
 
 class ModelSelection extends StatelessWidget {
-  const ModelSelection({Key? key}) : super(key: key);
+  const ModelSelection({super.key});
 
   Future<Widget> buildSelectButton(BuildContext context, Model model) async {
     final preferences = context.read<PreferencesProvider>();
@@ -20,10 +20,7 @@ class ModelSelection extends StatelessWidget {
     if (await preferences.isModelSelected(model)) {
       return const IconButton(
         onPressed: null,
-        icon: Icon(
-          Icons.check,
-          color: Colors.greenAccent,
-        ),
+        icon: Icon(Icons.check, color: Colors.greenAccent),
       );
     } else if (await preferences.isModelAvailable(model)) {
       return Button(
@@ -54,9 +51,7 @@ class ModelSelection extends StatelessWidget {
           CircleAvatar(
             backgroundColor: ColorPalette.surface,
             radius: 25,
-            backgroundImage: Image.asset(
-              imagePath,
-            ).image,
+            backgroundImage: Image.asset(imagePath).image,
           ),
           Expanded(
             flex: 7,
@@ -69,10 +64,7 @@ class ModelSelection extends StatelessWidget {
                       (model.isDefault ? ' (default)' : ''),
                   style: const TextStyle(fontSize: 16),
                 ),
-                Text(
-                  model.description,
-                  style: const TextStyle(fontSize: 14),
-                ),
+                Text(model.description, style: const TextStyle(fontSize: 14)),
               ],
             ),
           ),
@@ -85,7 +77,8 @@ class ModelSelection extends StatelessWidget {
                     return snapshot.data!;
                   } else {
                     return const CircularProgressIndicator(
-                        color: ColorPalette.primary);
+                      color: ColorPalette.primary,
+                    );
                   }
                 },
               );
@@ -109,7 +102,7 @@ class ModelSelection extends StatelessWidget {
           context,
           model,
           getAssetPath('open_unmix', AssetType.image),
-        )
+        ),
     ];
 
     return Padding(
@@ -120,11 +113,8 @@ class ModelSelection extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Padding(
-            padding: const EdgeInsets.all(10),
-            child: title,
-          ),
-          ...children
+          Padding(padding: const EdgeInsets.all(10), child: title),
+          ...children,
         ],
       ),
     );

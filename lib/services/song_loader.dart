@@ -5,8 +5,10 @@ import 'package:file_picker/file_picker.dart';
 
 class SongLoader {
   Future<Either<Failure, PlatformFile>> getFromDevice() async {
-    FilePickerResult? result = await FilePicker.platform
-        .pickFiles(type: FileType.custom, allowedExtensions: ['mp3', 'wav']);
+    FilePickerResult? result = await FilePicker.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['mp3', 'wav'],
+    );
 
     if (result == null) return Left(NoSongSelected());
 

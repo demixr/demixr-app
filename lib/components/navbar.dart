@@ -5,7 +5,7 @@ import 'package:get/get.dart';
 class NavBar extends StatelessWidget {
   final List<Widget> extra;
 
-  const NavBar({Key? key, this.extra = const []}) : super(key: key);
+  const NavBar({super.key, this.extra = const []});
 
   @override
   Widget build(BuildContext context) {
@@ -19,7 +19,7 @@ class NavBar extends StatelessWidget {
             color: ColorPalette.onSurface,
             onPressed: () => Get.back(),
           ),
-          ...extra
+          ...extra,
         ],
       ),
     );

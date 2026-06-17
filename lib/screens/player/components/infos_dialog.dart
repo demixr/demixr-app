@@ -7,16 +7,20 @@ import 'package:provider/provider.dart';
 import '../../../constants.dart';
 
 class InfosDialog extends StatelessWidget {
-  const InfosDialog({Key? key}) : super(key: key);
+  const InfosDialog({super.key});
 
   @override
   Widget build(BuildContext context) {
     final library = context.read<LibraryProvider>();
 
-    String songTitle =
-        library.currentSong.fold((l) => 'unknown', (r) => r.title);
-    String modelName =
-        library.currentSong.fold((l) => 'unknown', (r) => r.modelName);
+    String songTitle = library.currentSong.fold(
+      (l) => 'unknown',
+      (r) => r.title,
+    );
+    String modelName = library.currentSong.fold(
+      (l) => 'unknown',
+      (r) => r.modelName,
+    );
 
     return AlertDialog(
       title: Text(songTitle),
@@ -44,7 +48,7 @@ class InfosDialog extends StatelessWidget {
           color: Colors.transparent,
           textColor: ColorPalette.primary,
           onPressed: Get.back,
-        )
+        ),
       ],
     );
   }

@@ -19,21 +19,22 @@ class SongInfos extends StatelessWidget {
   final Color textColor;
 
   const SongInfos({
-    Key? key,
+    super.key,
     required this.title,
     required this.artists,
     this.size = 16,
     this.alignCenter = false,
     this.textColor = ColorPalette.onSurface,
     this.modelName,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
     return SpacedColumn(
       spacing: 5,
-      crossAxisAlignment:
-          alignCenter ? CrossAxisAlignment.center : CrossAxisAlignment.start,
+      crossAxisAlignment: alignCenter
+          ? CrossAxisAlignment.center
+          : CrossAxisAlignment.start,
       children: [
         AutoSizeText(
           title,
@@ -42,7 +43,10 @@ class SongInfos extends StatelessWidget {
           minFontSize: 10,
           overflow: TextOverflow.ellipsis,
           style: TextStyle(
-              fontSize: size, color: textColor, fontWeight: FontWeight.w600),
+            fontSize: size,
+            color: textColor,
+            fontWeight: FontWeight.w600,
+          ),
         ),
         AutoSizeText(
           artists.join(', ') + (modelName != null ? ' \u2027 $modelName' : ''),
@@ -64,8 +68,7 @@ class AlbumCover extends StatelessWidget {
   final Either<Failure, String> imagePath;
   final double? size;
 
-  const AlbumCover({Key? key, required this.imagePath, this.size = 65})
-      : super(key: key);
+  const AlbumCover({super.key, required this.imagePath, this.size = 65});
 
   @override
   Widget build(BuildContext context) {
@@ -96,7 +99,7 @@ class SongWidget extends StatelessWidget {
   final bool download;
 
   const SongWidget({
-    Key? key,
+    super.key,
     required this.title,
     required this.artists,
     required this.coverPath,
@@ -104,7 +107,7 @@ class SongWidget extends StatelessWidget {
     this.textColor = ColorPalette.onSurface,
     this.download = false,
     this.modelName,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -128,33 +131,31 @@ class SongWidget extends StatelessWidget {
     ];
 
     if (download) {
-      children.add(const Padding(
+      children.add(
+        const Padding(
           padding: EdgeInsets.all(10),
           child: CircularProgressIndicator(
             color: ColorPalette.primary,
             strokeWidth: 4,
-          )));
+          ),
+        ),
+      );
     } else {
       children.add(
         PopupMenuButton(
           padding: const EdgeInsets.all(0),
           color: ColorPalette.surfaceVariant,
-          icon: SvgPicture.asset(
-            getAssetPath('dots', AssetType.icon),
-          ),
+          icon: SvgPicture.asset(getAssetPath('dots', AssetType.icon)),
           itemBuilder: (context) => [
             PopupMenuItem(
+              onTap: onRemovePressed,
               child: SpacedRow(
                 spacing: 5,
                 children: const [
-                  Icon(
-                    Icons.delete,
-                    color: ColorPalette.onSurfaceVariant,
-                  ),
+                  Icon(Icons.delete, color: ColorPalette.onSurfaceVariant),
                   Text("Remove"),
                 ],
               ),
-              onTap: onRemovePressed,
             ),
           ],
         ),

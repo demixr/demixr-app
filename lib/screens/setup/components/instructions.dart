@@ -4,7 +4,7 @@ import 'package:demixr_app/constants.dart';
 import 'package:flutter/material.dart';
 
 class Instructions extends StatelessWidget {
-  const Instructions({Key? key}) : super(key: key);
+  const Instructions({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -25,11 +25,8 @@ class Instructions extends StatelessWidget {
         Text(
           'You can always change this later in the settings',
           textAlign: TextAlign.center,
-          style: TextStyle(
-            fontSize: 16,
-            color: ColorPalette.onSurfaceVariant,
-          ),
-        )
+          style: TextStyle(fontSize: 16, color: ColorPalette.onSurfaceVariant),
+        ),
       ],
     );
   }

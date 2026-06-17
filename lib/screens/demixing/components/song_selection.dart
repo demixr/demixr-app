@@ -13,75 +13,86 @@ import 'package:get/route_manager.dart';
 import 'package:provider/provider.dart';
 
 class SongSelection extends StatelessWidget {
-  const SongSelection({Key? key}) : super(key: key);
+  const SongSelection({super.key});
 
   Widget buildButtons(SongProvider provider, BuildContext context) => Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: [
-          FittedBox(
-            child: Button(
-              'Search Youtube',
-              icon: SvgPicture.asset(
-                getAssetPath('youtube', AssetType.icon),
-              ),
-              textSize: 14,
-              onPressed: () =>
-                  Get.toNamed('/demixing/youtube', arguments: provider),
-              padding: const EdgeInsets.only(
-                  left: 15, top: 10, right: 15, bottom: 10),
-            ),
-          ),
-          FittedBox(
-            child: Button(
-              'Browse files',
-              icon: const Icon(
-                Icons.file_upload,
-                color: ColorPalette.onPrimary,
-                size: 18,
-              ),
-              textSize: 14,
-              onPressed: provider.loadFromDevice,
-              padding: const EdgeInsets.only(
-                  left: 15, top: 10, right: 15, bottom: 10),
-            ),
-          ),
-        ],
-      );
-
-  Widget buildSelectionCard(SongProvider provider, BuildContext context) =>
-      Card(
-        color: ColorPalette.surfaceVariant,
-        clipBehavior: Clip.antiAlias,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        child: Padding(
-          padding: const EdgeInsets.only(top: 20, bottom: 20),
-          child: SpacedColumn(
-            spacing: 30,
-            children: [
-              const ListTile(
-                title: AutoSizeText(
-                  'Song selection',
-                  style: TextStyle(
-                      color: ColorPalette.primary,
-                      fontSize: 22,
-                      fontWeight: FontWeight.w600),
-                  textAlign: TextAlign.center,
-                  maxLines: 1,
-                ),
-              ),
-              const AutoSizeText(
-                'You can select a song from your device or directly from Youtube.',
-                style: TextStyle(
-                    color: ColorPalette.onSurfaceVariant, fontSize: 16),
-                textAlign: TextAlign.center,
-                maxLines: 2,
-                minFontSize: 10,
-              ),
-              buildButtons(provider, context),
-            ],
+    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+    children: [
+      FittedBox(
+        child: Button(
+          'Search Youtube',
+          icon: SvgPicture.asset(getAssetPath('youtube', AssetType.icon)),
+          textSize: 14,
+          onPressed: () =>
+              Get.toNamed('/demixing/youtube', arguments: provider),
+          padding: const EdgeInsets.only(
+            left: 15,
+            top: 10,
+            right: 15,
+            bottom: 10,
           ),
         ),
-      );
+      ),
+      FittedBox(
+        child: Button(
+          'Browse files',
+          icon: const Icon(
+            Icons.file_upload,
+            color: ColorPalette.onPrimary,
+            size: 18,
+          ),
+          textSize: 14,
+          onPressed: provider.loadFromDevice,
+          padding: const EdgeInsets.only(
+            left: 15,
+            top: 10,
+            right: 15,
+            bottom: 10,
+          ),
+        ),
+      ),
+    ],
+  );
+
+  Widget buildSelectionCard(
+    SongProvider provider,
+    BuildContext context,
+  ) => Card(
+    color: ColorPalette.surfaceVariant,
+    clipBehavior: Clip.antiAlias,
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+    child: Padding(
+      padding: const EdgeInsets.only(top: 20, bottom: 20),
+      child: SpacedColumn(
+        spacing: 30,
+        children: [
+          const ListTile(
+            title: AutoSizeText(
+              'Song selection',
+              style: TextStyle(
+                color: ColorPalette.primary,
+                fontSize: 22,
+                fontWeight: FontWeight.w600,
+              ),
+              textAlign: TextAlign.center,
+              maxLines: 1,
+            ),
+          ),
+          const AutoSizeText(
+            'You can select a song from your device or directly from Youtube.',
+            style: TextStyle(
+              color: ColorPalette.onSurfaceVariant,
+              fontSize: 16,
+            ),
+            textAlign: TextAlign.center,
+            maxLines: 2,
+            minFontSize: 10,
+          ),
+          buildButtons(provider, context),
+        ],
+      ),
+    ),
+  );
 
   Widget buildSelectedSongCard(Song song, {VoidCallback? onRemovePressed}) =>
       Card(
@@ -100,19 +111,19 @@ class SongSelection extends StatelessWidget {
       );
 
   Widget buildDownloadSongCard(SongDownload song) => Card(
-        color: ColorPalette.surfaceVariant,
-        clipBehavior: Clip.antiAlias,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        child: Padding(
-          padding: const EdgeInsets.all(10),
-          child: SongWidget(
-            title: song.title,
-            artists: song.artists,
-            coverPath: song.albumCover,
-            download: true,
-          ),
-        ),
-      );
+    color: ColorPalette.surfaceVariant,
+    clipBehavior: Clip.antiAlias,
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+    child: Padding(
+      padding: const EdgeInsets.all(10),
+      child: SongWidget(
+        title: song.title,
+        artists: song.artists,
+        coverPath: song.albumCover,
+        download: true,
+      ),
+    ),
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -137,9 +148,7 @@ class SongSelection extends StatelessWidget {
           ),
         );
 
-        return Column(
-          children: children,
-        );
+        return Column(children: children);
       },
     );
   }

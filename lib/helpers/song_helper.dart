@@ -1,11 +1,11 @@
 import 'dart:io';
 
 import 'package:dartz/dartz.dart';
-import 'package:ffmpeg_kit_flutter/ffmpeg_kit.dart';
-import 'package:ffmpeg_kit_flutter/ffprobe_kit.dart';
-import 'package:ffmpeg_kit_flutter/return_code.dart';
+import 'package:ffmpeg_kit_flutter_new_audio/ffmpeg_kit.dart';
+import 'package:ffmpeg_kit_flutter_new_audio/ffprobe_kit.dart';
+import 'package:ffmpeg_kit_flutter_new_audio/return_code.dart';
 import 'package:file_picker/file_picker.dart';
-import 'package:flutter_media_metadata/flutter_media_metadata.dart';
+import 'package:audio_metadata_reader/audio_metadata_reader.dart';
 import 'package:youtube_explode_dart/youtube_explode_dart.dart';
 import 'package:path/path.dart' as p;
 import 'package:http/http.dart' show get;
@@ -39,11 +39,11 @@ class SongHelper {
       if (file.path == null) return Left(SongLoadFailure());
 
       File path = File(file.path!);
-      var metadata = await MetadataRetriever.fromFile(path);
+      final metadata = _readMetadata(path, getImage: false);
 
       Tuple2<String, List<String>> songInfos = _getSongInfos(
-        metadata.trackName,
-        metadata.trackArtistNames,
+        metadata?.title,
+        metadata?.artist != null ? [metadata!.artist!] : null,
         p.basename(path.path).removeExtension(),
       );
 
@@ -62,16 +62,28 @@ class SongHelper {
           artists: songInfos.value2,
           path: newPath,
           coverPath: coverPath,
-          duration: Duration(milliseconds: metadata.trackDuration ?? 0),
+          duration: metadata?.duration ?? Duration.zero,
         ),
       );
     });
   }
 
+  /// Reads the audio metadata for the file at [path], returning `null` if the
+  /// file's tags can't be parsed (the caller falls back to the filename).
+  AudioMetadata? _readMetadata(File path, {required bool getImage}) {
+    try {
+      return readMetadata(path, getImage: getImage);
+    } catch (_) {
+      return null;
+    }
+  }
+
   /// Saves the song cover from the metadata to the app cache.
   Future<String?> _saveCover(String songPath, String title) async {
-    var metadata = await MetadataRetriever.fromFile(File(songPath));
-    final albumCover = metadata.albumArt;
+    final metadata = _readMetadata(File(songPath), getImage: true);
+    final albumCover = (metadata != null && metadata.pictures.isNotEmpty)
+        ? metadata.pictures.first.bytes
+        : null;
 
     if (albumCover == null) return null;
 
@@ -91,7 +103,8 @@ class SongHelper {
   ///
   /// Finds the song title, artists and download the thumbnail.
   Future<Either<Failure, SongDownload>> getSongInfosFromYoutube(
-      String url) async {
+    String url,
+  ) async {
     final yt = YoutubeExplode();
 
     Video video;
@@ -105,21 +118,25 @@ class SongHelper {
 
     String? coverPath;
     try {
-      coverPath =
-          await _downloadThumbnail(video.thumbnails.mediumResUrl, video.title);
+      coverPath = await _downloadThumbnail(
+        video.thumbnails.mediumResUrl,
+        video.title,
+      );
     } catch (e) {
       coverPath = null;
     }
 
     yt.close();
 
-    return Right(SongDownload(
-      title: video.title,
-      artists: [video.author],
-      url: url,
-      coverPath: coverPath,
-      duration: video.duration ?? Duration.zero,
-    ));
+    return Right(
+      SongDownload(
+        title: video.title,
+        artists: [video.author],
+        url: url,
+        coverPath: coverPath,
+        duration: video.duration ?? Duration.zero,
+      ),
+    );
   }
 
   /// Downloads the given [song] from Youtube with [YoutubeExplode].
@@ -201,7 +218,7 @@ Future<String> convertToWav(String path) async {
   final session = await FFprobeKit.getMediaInformation(path);
   final information = session.getMediaInformation();
 
-  String? format = information?.getProperties('format_name');
+  String? format = information?.getFormat();
 
   if (format == null) {
     throw ConversionException('SongLoader: Failed to get the file format');
@@ -209,15 +226,17 @@ Future<String> convertToWav(String path) async {
     final outputPath = '${p.withoutExtension(path)}.wav';
     File(outputPath).deleteIfExists();
 
-    final convertSession =
-        await FFmpegKit.execute('-i "$path" -acodec pcm_u8 "$outputPath"');
+    final convertSession = await FFmpegKit.execute(
+      '-i "$path" -acodec pcm_u8 "$outputPath"',
+    );
     final convertRc = await convertSession.getReturnCode();
 
     if (ReturnCode.isSuccess(convertRc)) {
       path = outputPath;
     } else {
       throw ConversionException(
-          'SongLoader: Failed to convert audio file to wav');
+        'SongLoader: Failed to convert audio file to wav',
+      );
     }
   }
 

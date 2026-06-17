@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 class StemSelection extends StatelessWidget {
-  const StemSelection({Key? key}) : super(key: key);
+  const StemSelection({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -17,10 +17,14 @@ class StemSelection extends StatelessWidget {
         border: Border.all(width: 2, color: ColorPalette.surfaceVariant),
       ),
       child: Padding(
-        padding:
-            const EdgeInsets.only(left: 20, top: 10, right: 20, bottom: 10),
-        child: Column(
-          children: const [
+        padding: const EdgeInsets.only(
+          left: 20,
+          top: 10,
+          right: 20,
+          bottom: 10,
+        ),
+        child: const Column(
+          children: [
             StemButton(Stem.vocals),
             StemButton(Stem.bass),
             StemButton(Stem.drums),
@@ -35,14 +39,15 @@ class StemSelection extends StatelessWidget {
 class StemButton extends StatelessWidget {
   final Stem stem;
 
-  const StemButton(this.stem, {Key? key}) : super(key: key);
+  const StemButton(this.stem, {super.key});
 
   @override
   Widget build(BuildContext context) {
     return Consumer<PlayerProvider>(
       builder: (context, player, child) {
-        final icon =
-            player.isStemMute(stem) ? Icons.headset_off : Icons.headset;
+        final icon = player.isStemMute(stem)
+            ? Icons.headset_off
+            : Icons.headset;
 
         return TextButton(
           style: TextButton.styleFrom(padding: const EdgeInsets.all(0)),
@@ -62,7 +67,11 @@ class StemButton extends StatelessWidget {
                   textSize: 16,
                   radius: 12,
                   padding: const EdgeInsets.only(
-                      left: 15, top: 5, right: 15, bottom: 5),
+                    left: 15,
+                    top: 5,
+                    right: 15,
+                    bottom: 5,
+                  ),
                 ),
               ),
             ],

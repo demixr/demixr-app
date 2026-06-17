@@ -10,21 +10,16 @@ import 'package:provider/provider.dart';
 import '../../../utils.dart';
 
 class Controller extends StatelessWidget {
-  const Controller({Key? key}) : super(key: key);
+  const Controller({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: const [
-        StemSelection(),
-        SongController(),
-      ],
-    );
+    return const Column(children: [StemSelection(), SongController()]);
   }
 }
 
 class SongController extends StatelessWidget {
-  const SongController({Key? key}) : super(key: key);
+  const SongController({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -55,13 +50,10 @@ class SongController extends StatelessWidget {
                 Consumer<PlayerProvider>(
                   builder: (context, player, child) {
                     final icon = player.isPlaying
-                        ? const Icon(
-                            Icons.pause,
-                            color: Colors.white,
-                            size: 35,
-                          )
+                        ? const Icon(Icons.pause, color: Colors.white, size: 35)
                         : SvgPicture.asset(
-                            getAssetPath('play', AssetType.icon));
+                            getAssetPath('play', AssetType.icon),
+                          );
 
                     return ControllerButton(
                       icon,

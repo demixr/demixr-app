@@ -5,11 +5,7 @@ import 'package:path_provider/path_provider.dart';
 
 import 'constants.dart';
 
-enum AssetType {
-  image,
-  icon,
-  animation,
-}
+enum AssetType { image, icon, animation }
 
 String getAssetPath(String name, AssetType assetType, {String? extension}) {
   String path;
@@ -29,8 +25,11 @@ String getAssetPath(String name, AssetType assetType, {String? extension}) {
   return path;
 }
 
-SnackbarController errorSnackbar(String title, String message,
-    {int seconds = 2}) {
+SnackbarController errorSnackbar(
+  String title,
+  String message, {
+  int seconds = 2,
+}) {
   return Get.snackbar(
     title,
     message,
@@ -53,7 +52,7 @@ extension MoveFile on File {
     }
   }
 
-  deleteIfExists() async {
+  Future<void> deleteIfExists() async {
     if (await exists()) await delete();
   }
 }
@@ -95,6 +94,24 @@ Future<String> getAppExternalStorage() async {
   try {
     directory = await getExternalStorageDirectory();
   } on UnimplementedError {
+    directory = await getApplicationDocumentsDirectory();
+  }
+
+  return directory?.path ?? await getAppInternalStorage();
+}
+
+/// Gets a platform-appropriate directory for storing large assets like ML models.
+///
+/// On mobile platforms, uses external storage (persisted across app reinstalls).
+/// On desktop platforms (macOS, Linux, Windows), uses application documents directory.
+Future<String> getAppModelsStorage() async {
+  Directory? directory;
+
+  try {
+    // On Android, use external storage so models persist across app reinstalls
+    directory = await getExternalStorageDirectory();
+  } on UnsupportedError {
+    // On desktop (macOS, Linux, Windows), use documents directory
     directory = await getApplicationDocumentsDirectory();
   }
 

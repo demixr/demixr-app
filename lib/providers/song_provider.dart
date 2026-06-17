@@ -26,14 +26,11 @@ class SongProvider extends ChangeNotifier {
   Future<void> loadFromDevice() async {
     _song = await _helper.loadFromDevice();
 
-    await _song.fold(
-      (failure) async {
-        if (failure != NoSongSelected()) {
-          errorSnackbar('Could not load the song', failure.message);
-        }
-      },
-      (song) => null,
-    );
+    await _song.fold((failure) async {
+      if (failure != NoSongSelected()) {
+        errorSnackbar('Could not load the song', failure.message);
+      }
+    }, (song) => null);
 
     notifyListeners();
   }
@@ -45,8 +42,10 @@ class SongProvider extends ChangeNotifier {
 
     await _songDownload.fold(
       (failure) async => errorSnackbar(
-          'Could not download the song', failure.message,
-          seconds: 5),
+        'Could not download the song',
+        failure.message,
+        seconds: 5,
+      ),
       (song) async {
         notifyListeners();
         _song = await _helper.downloadFromYoutube(song);
@@ -56,8 +55,11 @@ class SongProvider extends ChangeNotifier {
     _songDownload = Left(NoSongSelected());
 
     _song.leftMap(
-      (failure) => errorSnackbar('Could not download the song', failure.message,
-          seconds: 5),
+      (failure) => errorSnackbar(
+        'Could not download the song',
+        failure.message,
+        seconds: 5,
+      ),
     );
 
     notifyListeners();

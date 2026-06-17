@@ -73,13 +73,7 @@ class Models {
   static const List<Model> all = [Models.umxhq, Models.umxl];
 }
 
-enum Stem {
-  mixture,
-  vocals,
-  drums,
-  bass,
-  other,
-}
+enum Stem { mixture, vocals, drums, bass, other }
 
 extension StemsName on Stem {
   String get name {

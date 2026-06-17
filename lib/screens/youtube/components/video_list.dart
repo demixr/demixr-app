@@ -10,8 +10,10 @@ import '../../../utils.dart';
 
 class CustomLoadMoreDelegate extends LoadMoreDelegate {
   @override
-  Widget buildChild(LoadMoreStatus status,
-      {LoadMoreTextBuilder builder = DefaultLoadMoreTextBuilder.english}) {
+  Widget buildChild(
+    LoadMoreStatus status, {
+    LoadMoreTextBuilder builder = DefaultLoadMoreTextBuilder.english,
+  }) {
     if (status == LoadMoreStatus.loading) {
       return const SizedBox(
         height: 20,
@@ -29,7 +31,7 @@ class CustomLoadMoreDelegate extends LoadMoreDelegate {
 }
 
 class EmptySearch extends StatelessWidget {
-  const EmptySearch({Key? key}) : super(key: key);
+  const EmptySearch({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -52,10 +54,7 @@ class EmptySearch extends StatelessWidget {
             child: Text(
               'Type a song name to search Youtube',
               textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 18,
-                color: ColorPalette.onSurface,
-              ),
+              style: TextStyle(fontSize: 18, color: ColorPalette.onSurface),
             ),
           ),
         ],
@@ -65,7 +64,7 @@ class EmptySearch extends StatelessWidget {
 }
 
 class VideoList extends StatelessWidget {
-  const VideoList({Key? key}) : super(key: key);
+  const VideoList({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -77,8 +76,10 @@ class VideoList extends StatelessWidget {
           child: ListView.builder(
             shrinkWrap: true,
             padding: const EdgeInsets.all(0),
-            itemCount:
-                youtube.videos.fold((empty) => 0, (videos) => videos.length),
+            itemCount: youtube.videos.fold(
+              (empty) => 0,
+              (videos) => videos.length,
+            ),
             itemBuilder: (context, index) => youtube.videos.fold(
               (empty) => const SizedBox.shrink(),
               (videos) {

@@ -4,7 +4,7 @@ import 'package:demixr_app/utils.dart';
 import 'package:flutter/material.dart';
 
 class ModelSelection extends StatelessWidget {
-  const ModelSelection({Key? key}) : super(key: key);
+  const ModelSelection({super.key});
 
   @override
   Widget build(BuildContext context) {

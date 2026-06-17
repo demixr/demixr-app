@@ -21,18 +21,18 @@ class DemixingHelper {
   /// Invokes the `separate` method from the native platform code.
   /// Throws a [DemixingException] if an error occures on the platform side.
   Future<UnmixedSong> separate(
-      Song song, String modelPath, String modelName) async {
+    Song song,
+    String modelPath,
+    String modelName,
+  ) async {
     Map<dynamic, dynamic> result;
 
     try {
-      result = await _methodChannel.invokeMethod(
-        'separate',
-        <String, String>{
-          'songPath': song.path,
-          'modelPath': modelPath,
-          'outputPath': await getAppTemp()
-        },
-      );
+      result = await _methodChannel.invokeMethod('separate', <String, String>{
+        'songPath': song.path,
+        'modelPath': modelPath,
+        'outputPath': await getAppTemp(),
+      });
     } on PlatformException {
       throw DemixingException('An error occured while demixing');
     }
