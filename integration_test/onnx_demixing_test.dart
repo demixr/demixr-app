@@ -8,8 +8,10 @@ import 'package:integration_test/integration_test.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 
+import 'package:demixr_app/helpers/demixing_helper.dart';
 import 'package:demixr_app/helpers/onnx/demucs_config.dart';
 import 'package:demixr_app/helpers/onnx/onnx_demixing_engine.dart';
+import 'package:demixr_app/models/song.dart';
 
 /// End-to-end test of the cross-platform ONNX demixing engine.
 ///
@@ -26,14 +28,19 @@ import 'package:demixr_app/helpers/onnx/onnx_demixing_engine.dart';
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
-  final home = Platform.environment['HOME'] ?? '';
-  final fixtures = p.join(home, 'Downloads', 'demixr_test');
-  final modelPath = p.join(fixtures, 'htdemucs.onnx');
-  final inputPath = p.join(fixtures, 'test_clip.wav');
-  final refDir = p.join(fixtures, 'ref_out');
-
   testWidgets('htdemucs ONNX engine produces 4 parity-matching stems',
       (tester) async {
+    // Fixtures live under ~/Downloads/demixr_test on desktop, or the app's
+    // external files dir on Android (push there with `adb push`).
+    final fixtures = await _fixturesDir();
+    // The fp16 model is named differently; accept either.
+    var modelPath = p.join(fixtures, 'htdemucs.onnx');
+    if (!File(modelPath).existsSync()) {
+      modelPath = p.join(fixtures, 'htdemucs_fp16weights.onnx');
+    }
+    final inputPath = p.join(fixtures, 'test_clip.wav');
+    final refDir = p.join(fixtures, 'ref_out');
+
     if (!File(modelPath).existsSync() || !File(inputPath).existsSync()) {
       markTestSkipped('Fixtures missing under $fixtures');
       return;
@@ -90,6 +97,51 @@ void main() {
       expect(rms, lessThan(1.0), reason: '$stem rms diff too large');
     }
   }, timeout: const Timeout(Duration(minutes: 5)));
+
+  // Exercises the real dispatch path that broke on macOS: DemixingHelper must
+  // route the 'htdemucs' model to the ONNX engine (not the native channel).
+  testWidgets('DemixingHelper routes htdemucs to the ONNX engine',
+      (tester) async {
+    final fixtures = await _fixturesDir();
+    var modelPath = p.join(fixtures, 'htdemucs.onnx');
+    if (!File(modelPath).existsSync()) {
+      modelPath = p.join(fixtures, 'htdemucs_fp16weights.onnx');
+    }
+    final inputPath = p.join(fixtures, 'test_clip.wav');
+    if (!File(modelPath).existsSync() || !File(inputPath).existsSync()) {
+      markTestSkipped('Fixtures missing under $fixtures');
+      return;
+    }
+
+    final song = Song(
+      title: 'test',
+      artists: const ['test'],
+      path: inputPath,
+      duration: Duration.zero,
+    );
+    final unmixed =
+        await DemixingHelper().separate(song, modelPath, 'htdemucs');
+
+    for (final path in [
+      unmixed.vocals,
+      unmixed.drums,
+      unmixed.bass,
+      unmixed.other,
+    ]) {
+      expect(File(path).existsSync(), isTrue, reason: '$path missing');
+      expect(File(path).lengthSync(), greaterThan(44), reason: '$path empty');
+    }
+  }, timeout: const Timeout(Duration(minutes: 5)));
+}
+
+/// Resolves the directory holding the staged model + fixtures per platform.
+Future<String> _fixturesDir() async {
+  if (Platform.isAndroid) {
+    final dir = await getExternalStorageDirectory();
+    return p.join(dir!.path, 'demixr_test');
+  }
+  final home = Platform.environment['HOME'] ?? '';
+  return p.join(home, 'Downloads', 'demixr_test');
 }
 
 /// Reads a 16-bit PCM WAV (canonical 44-byte header) into interleaved samples.

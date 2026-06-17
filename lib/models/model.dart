@@ -1,3 +1,5 @@
+import 'dart:io' show Platform;
+
 /// The inference engine a [Model] runs on.
 ///
 /// - [openUnmix]: legacy OpenUnmix TorchScript (`.ptl`) via the native Android
@@ -27,4 +29,12 @@ class Model {
   });
 
   bool get isOnnx => engine == ModelEngine.onnx;
+
+  /// Whether this model's inference engine can run on the current platform.
+  ///
+  /// The OpenUnmix engine is a native Android-only plugin; the ONNX engine
+  /// runs on every platform. Used to hide unusable models in the UI and to
+  /// avoid dispatching to an engine that doesn't exist on the host.
+  bool get isSupportedOnCurrentPlatform =>
+      engine == ModelEngine.onnx || Platform.isAndroid;
 }

@@ -34,9 +34,18 @@ class PreferencesProvider extends ChangeNotifier {
   /// Loads the app preferences from the repository.
   void _loadPreferences() {
     String? modelName = _repository.getModel();
-    _model = modelName == null
-        ? Left(NoModelSelected())
-        : Right(Models.fromName(modelName));
+    if (modelName == null) {
+      _model = Left(NoModelSelected());
+      return;
+    }
+    // A previously-selected model whose engine isn't usable on this platform
+    // (e.g. an OpenUnmix model carried over to macOS/iOS) is treated as no
+    // selection, so the user is routed to pick a supported one instead of
+    // hitting a missing native engine at demix time.
+    final model = Models.fromName(modelName);
+    _model = model.isSupportedOnCurrentPlatform
+        ? Right(model)
+        : Left(NoModelSelected());
   }
 
   /// Sets the current model to the given one.
@@ -68,6 +77,8 @@ class PreferencesProvider extends ChangeNotifier {
   /// First checks if the model is registered in the [_repository]
   /// and then checks if the file is available in the file system.
   Future<bool> isModelAvailable(Model model) async {
+    if (!model.isSupportedOnCurrentPlatform) return false;
+
     final modelPath = _repository.getModelPath(model.name);
     if (modelPath == null) return false;
 

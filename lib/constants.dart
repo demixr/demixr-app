@@ -84,6 +84,11 @@ class Models {
   }
 
   static const List<Model> all = [Models.htdemucs, Models.umxhq, Models.umxl];
+
+  /// Models whose engine is usable on the current platform (ONNX everywhere,
+  /// OpenUnmix only on Android).
+  static List<Model> get available =>
+      all.where((model) => model.isSupportedOnCurrentPlatform).toList();
 }
 
 enum Stem { mixture, vocals, drums, bass, other }

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io' show Platform;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
@@ -78,6 +79,10 @@ class DemixingHelper {
     Song song,
     String modelPath,
   ) async {
+    if (!Platform.isAndroid) {
+      throw DemixingException('This model is only available on Android');
+    }
+
     final subscription = _eventChannel
         .receiveBroadcastStream()
         .cast<double>()

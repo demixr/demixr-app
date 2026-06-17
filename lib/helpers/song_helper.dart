@@ -262,8 +262,10 @@ Future<String> convertToWav(String path) async {
     final outputPath = '${p.withoutExtension(path)}.wav';
     File(outputPath).deleteIfExists();
 
+    // 16-bit PCM, not 8-bit (pcm_u8): the demixing models read this file as
+    // their input, and 8-bit quantization audibly degrades the separation.
     final convertSession = await FFmpegKit.execute(
-      '-i "$path" -acodec pcm_u8 "$outputPath"',
+      '-i "$path" -acodec pcm_s16le "$outputPath"',
     );
     final convertRc = await convertSession.getReturnCode();
 
