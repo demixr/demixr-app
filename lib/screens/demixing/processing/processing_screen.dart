@@ -18,6 +18,7 @@ class ProcessingScreen extends StatelessWidget {
       body: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
             const Spacer(flex: 2),
             Image.asset(getAssetPath('demixing', AssetType.animation)),
@@ -96,6 +97,7 @@ class ProcessingScreen extends StatelessWidget {
                 );
               },
             ),
+            const Spacer(flex: 3),
           ],
         ),
       ),

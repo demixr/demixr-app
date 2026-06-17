@@ -16,23 +16,27 @@ class Library extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.start,
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        const AutoSizeText(
-          'Library',
-          style: TextStyle(color: ColorPalette.onSurface, fontSize: 36),
-          maxLines: 1,
-        ),
-        Consumer<LibraryProvider>(
-          builder: (context, library, child) {
-            return library.isEmpty
-                ? const EmptyLibrary()
-                : const LibrarySongs();
-          },
-        ),
-      ],
+    return Expanded(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const AutoSizeText(
+            'Library',
+            style: TextStyle(color: ColorPalette.onSurface, fontSize: 36),
+            maxLines: 1,
+          ),
+          Expanded(
+            child: Consumer<LibraryProvider>(
+              builder: (context, library, child) {
+                return library.isEmpty
+                    ? const EmptyLibrary()
+                    : const LibrarySongs();
+              },
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

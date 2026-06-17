@@ -16,6 +16,7 @@ class PlayerScreen extends StatelessWidget {
       body: Padding(
         padding: const EdgeInsets.only(left: 10, top: 10, right: 10),
         child: Column(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             NavBar(
               extra: [
@@ -28,11 +29,8 @@ class PlayerScreen extends StatelessWidget {
                 ),
               ],
             ),
-            const Expanded(
-              child: SingleChildScrollView(
-                child: Column(children: [PlayerSong(), Controller()]),
-              ),
-            ),
+            const PlayerSong(),
+            const Controller(),
           ],
         ),
       ),

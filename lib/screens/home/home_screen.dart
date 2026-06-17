@@ -26,25 +26,15 @@ class HomeScreen extends StatelessWidget {
           children: <Widget>[
             const HomeTitle(),
             const SizedBox(height: 60),
-            Expanded(
-              child: SingleChildScrollView(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    const Library(),
-                    const SizedBox(height: 20),
-                    Button(
-                      'Unmix a new song',
-                      icon: const Icon(
-                        Icons.add,
-                        color: ColorPalette.onPrimary,
-                      ),
-                      textSize: 18,
-                      onPressed: () => Get.toNamed('/demixing'),
-                    ),
-                  ],
-                ),
-              ),
+            // Library returns an Expanded, so it fills the remaining height and
+            // its song list scrolls internally; the button stays pinned below.
+            const Library(),
+            const SizedBox(height: 20),
+            Button(
+              'Unmix a new song',
+              icon: const Icon(Icons.add, color: ColorPalette.onPrimary),
+              textSize: 18,
+              onPressed: () => Get.toNamed('/demixing'),
             ),
           ],
         ),

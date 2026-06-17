@@ -154,19 +154,23 @@ class SongHelper {
 
     File file;
     try {
-      // Use explicit API clients and skip the watch page: the default client
-      // fails on some videos, and the watch page is the most fragile endpoint.
+      // The androidVr client, combined with the watch page (the default, which
+      // deciphers YouTube's throttling "n" parameter), reliably returns fast,
+      // un-throttled audio streams. The default/other clients hand back
+      // throttled URLs that download at a few KB/s or stall entirely.
       final manifest = await yt.videos.streamsClient.getManifest(
         song.url,
-        ytClients: [
-          YoutubeApiClient.androidVr,
-          YoutubeApiClient.ios,
-          YoutubeApiClient.android,
-        ],
-        requireWatchPage: false,
+        ytClients: [YoutubeApiClient.androidVr],
       );
       final streamInfo = manifest.audioOnly.withHighestBitrate();
-      final totalBytes = streamInfo.size.totalBytes;
+      // Some streams don't report a content length; fall back to estimating it
+      // from bitrate x duration so the progress bar still advances.
+      var totalBytes = streamInfo.size.totalBytes;
+      if (totalBytes <= 0) {
+        totalBytes =
+            (streamInfo.bitrate.bitsPerSecond / 8 * song.duration.inSeconds)
+                .round();
+      }
 
       final stream = yt.videos.streamsClient.get(streamInfo);
 
@@ -174,9 +178,10 @@ class SongHelper {
       final fileStream = file.openWrite();
 
       // Write the stream chunk by chunk, reporting progress (throttled to ~1%).
+      // An idle timeout guards against a stalled stream hanging forever.
       var received = 0;
       var lastReported = 0.0;
-      await for (final chunk in stream) {
+      await for (final chunk in stream.timeout(const Duration(seconds: 30))) {
         fileStream.add(chunk);
         received += chunk.length;
         if (totalBytes > 0) {

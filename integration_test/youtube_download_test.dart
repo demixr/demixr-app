@@ -25,10 +25,11 @@ void main() {
     () async {
       final helper = SongHelper();
 
-      // A short (~11s) countdown-timer clip: ~77 KB of audio, so the whole
-      // download + WAV conversion finishes in a couple of seconds. If it ever
-      // disappears, the test skips (see below) rather than failing.
-      const url = 'https://www.youtube.com/watch?v=FUKmyRLOlAA';
+      // A real music video (Despacito — the most-viewed video on YouTube, so a
+      // very stable fixture). Crucially it exercises the throttled-stream path:
+      // with the wrong API client the download stalls, so this guards that
+      // regression. If it ever disappears, the test skips (see below).
+      const url = 'https://www.youtube.com/watch?v=kJQP7kiw5Fk';
 
       final infos = await helper.getSongInfosFromYoutube(url);
       late SongDownload download;
@@ -65,6 +66,6 @@ void main() {
       expect(String.fromCharCodes(header.sublist(0, 4)), 'RIFF');
       expect(String.fromCharCodes(header.sublist(8, 12)), 'WAVE');
     },
-    timeout: const Timeout(Duration(minutes: 2)),
+    timeout: const Timeout(Duration(minutes: 3)),
   );
 }
