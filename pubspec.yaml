@@ -73,11 +73,14 @@ dev_dependencies:
   flutter_launcher_icons: ^0.14.4
   flutter_native_splash: ^2.4.8
 
-flutter_icons:
+flutter_launcher_icons:
   android: true
   ios: true
   image_path_android: "assets/images/logo_android.png"
   image_path_ios: "assets/images/logo_ios.png"
+  macos:
+    generate: true
+    image_path: "assets/images/logo_ios.png"
 
 flutter_native_splash:
   android: true
