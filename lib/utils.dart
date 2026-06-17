@@ -89,15 +89,15 @@ Future<String> getAppInternalStorage() async {
 }
 
 Future<String> getAppExternalStorage() async {
-  Directory? directory;
-
   try {
-    directory = await getExternalStorageDirectory();
-  } on UnimplementedError {
-    directory = await getApplicationDocumentsDirectory();
+    final directory = await getExternalStorageDirectory();
+    if (directory != null) return directory.path;
+  } on UnsupportedError {
+    // Desktop (macOS/Linux/Windows): no external storage (covers
+    // UnimplementedError too, its subtype) — fall back to documents.
   }
 
-  return directory?.path ?? await getAppInternalStorage();
+  return getAppInternalStorage();
 }
 
 /// Gets a platform-appropriate directory for storing large assets like ML models.
