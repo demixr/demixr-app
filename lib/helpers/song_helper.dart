@@ -110,10 +110,13 @@ class SongHelper {
     Video video;
     try {
       video = await yt.videos.get(url);
-    } on ArgumentError {
-      return Left(SongNotFoundOnYoutube());
     } on SocketException {
       return Left(NoInternetConnection());
+    } catch (_) {
+      // ArgumentError (bad URL), VideoUnavailableException, VideoUnplayable,
+      // or any other youtube_explode error: treat as "not found" so the flow
+      // surfaces a failure instead of throwing into a fire-and-forget call.
+      return Left(SongNotFoundOnYoutube());
     }
 
     String? coverPath;
@@ -140,24 +143,52 @@ class SongHelper {
   }
 
   /// Downloads the given [song] from Youtube with [YoutubeExplode].
-  Future<Either<Failure, Song>> downloadFromYoutube(SongDownload song) async {
+  ///
+  /// [onProgress] is called with the download completion ratio (0.0 to 1.0)
+  /// as bytes are received, so the UI can show real progress.
+  Future<Either<Failure, Song>> downloadFromYoutube(
+    SongDownload song, {
+    void Function(double progress)? onProgress,
+  }) async {
     final yt = YoutubeExplode();
 
     File file;
     try {
-      final manifest = await yt.videos.streamsClient.getManifest(song.url);
+      // Use explicit API clients and skip the watch page: the default client
+      // fails on some videos, and the watch page is the most fragile endpoint.
+      final manifest = await yt.videos.streamsClient.getManifest(
+        song.url,
+        ytClients: [
+          YoutubeApiClient.androidVr,
+          YoutubeApiClient.ios,
+          YoutubeApiClient.android,
+        ],
+        requireWatchPage: false,
+      );
       final streamInfo = manifest.audioOnly.withHighestBitrate();
+      final totalBytes = streamInfo.size.totalBytes;
 
-      // Get the actual stream
       final stream = yt.videos.streamsClient.get(streamInfo);
 
       file = File(p.join(await getAppTemp(), song.title));
       final fileStream = file.openWrite();
 
-      // Pipe all the content of the stream into the file.
-      await stream.pipe(fileStream);
+      // Write the stream chunk by chunk, reporting progress (throttled to ~1%).
+      var received = 0;
+      var lastReported = 0.0;
+      await for (final chunk in stream) {
+        fileStream.add(chunk);
+        received += chunk.length;
+        if (totalBytes > 0) {
+          final progress = received / totalBytes;
+          if (progress - lastReported >= 0.01) {
+            lastReported = progress;
+            onProgress?.call(progress);
+          }
+        }
+      }
+      onProgress?.call(1);
 
-      // Close the file.
       await fileStream.flush();
       await fileStream.close();
     } catch (_) {

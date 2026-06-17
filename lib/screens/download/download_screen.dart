@@ -21,17 +21,15 @@ class DownloadScreen extends StatelessWidget {
           right: 20,
           bottom: 30,
         ),
-        child: SingleChildScrollView(
-          child: SpacedColumn(
-            spacing: 50,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Consumer<ModelProvider>(
-                builder: (context, modelProvider, child) {
-                  return SizedBox(
-                    width: 300,
-                    height: 300,
-                    child: CircularPercentIndicator(
+        child: SpacedColumn(
+          spacing: 50,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Expanded(
+              child: Center(
+                child: Consumer<ModelProvider>(
+                  builder: (context, modelProvider, child) {
+                    return CircularPercentIndicator(
                       radius: 130.0,
                       lineWidth: 15.0,
                       percent: modelProvider.progress,
@@ -59,32 +57,32 @@ class DownloadScreen extends StatelessWidget {
                           ),
                         ],
                       ),
-                    ),
-                  );
-                },
-              ),
-              const AutoSizeText(
-                'The model is being downloaded',
-                textAlign: TextAlign.center,
-                maxLines: 2,
-                style: TextStyle(
-                  fontSize: 20,
-                  color: ColorPalette.onSurfaceVariant,
+                    );
+                  },
                 ),
               ),
-              CancelButton(
-                onPressed: () {
-                  context.read<ModelProvider>().cancelDownload();
-                  Get.snackbar(
-                    'Model',
-                    'Download canceled',
-                    backgroundColor: ColorPalette.primary,
-                    colorText: ColorPalette.onPrimary,
-                  );
-                },
+            ),
+            const AutoSizeText(
+              'The model is being downloaded',
+              textAlign: TextAlign.center,
+              maxLines: 2,
+              style: TextStyle(
+                fontSize: 20,
+                color: ColorPalette.onSurfaceVariant,
               ),
-            ],
-          ),
+            ),
+            CancelButton(
+              onPressed: () {
+                context.read<ModelProvider>().cancelDownload();
+                Get.snackbar(
+                  'Model',
+                  'Download canceled',
+                  backgroundColor: ColorPalette.primary,
+                  colorText: ColorPalette.onPrimary,
+                );
+              },
+            ),
+          ],
         ),
       ),
     );

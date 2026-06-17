@@ -16,12 +16,10 @@ class SetupScreen extends StatelessWidget {
           right: 20,
           bottom: 30,
         ),
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: const [SetupTitle(), Instructions(), ModelSelection()],
-          ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: const [SetupTitle(), Instructions(), ModelSelection()],
         ),
       ),
     );

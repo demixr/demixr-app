@@ -110,7 +110,7 @@ class SongSelection extends StatelessWidget {
         ),
       );
 
-  Widget buildDownloadSongCard(SongDownload song) => Card(
+  Widget buildDownloadSongCard(SongDownload song, double progress) => Card(
     color: ColorPalette.surfaceVariant,
     clipBehavior: Clip.antiAlias,
     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -121,6 +121,7 @@ class SongSelection extends StatelessWidget {
         artists: song.artists,
         coverPath: song.albumCover,
         download: true,
+        downloadProgress: progress,
       ),
     ),
   );
@@ -134,7 +135,9 @@ class SongSelection extends StatelessWidget {
         // Add the download song card if a download is in progress
         songProvider.songDownload.fold(
           (failure) => null,
-          (song) => children.add(buildDownloadSongCard(song)),
+          (song) => children.add(
+            buildDownloadSongCard(song, songProvider.downloadProgress),
+          ),
         );
 
         // Add the song card if a song is selected

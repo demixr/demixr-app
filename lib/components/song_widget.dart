@@ -98,6 +98,10 @@ class SongWidget extends StatelessWidget {
   final Color textColor;
   final bool download;
 
+  /// Download completion ratio (0.0 to 1.0); `null` shows an indeterminate
+  /// spinner. Only used when [download] is true.
+  final double? downloadProgress;
+
   const SongWidget({
     super.key,
     required this.title,
@@ -106,6 +110,7 @@ class SongWidget extends StatelessWidget {
     this.onRemovePressed,
     this.textColor = ColorPalette.onSurface,
     this.download = false,
+    this.downloadProgress,
     this.modelName,
   });
 
@@ -132,9 +137,11 @@ class SongWidget extends StatelessWidget {
 
     if (download) {
       children.add(
-        const Padding(
-          padding: EdgeInsets.all(10),
+        Padding(
+          padding: const EdgeInsets.all(10),
           child: CircularProgressIndicator(
+            // null => indeterminate (e.g. while converting to WAV).
+            value: (downloadProgress ?? 0) > 0 ? downloadProgress : null,
             color: ColorPalette.primary,
             strokeWidth: 4,
           ),

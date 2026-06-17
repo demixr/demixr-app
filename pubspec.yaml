@@ -63,6 +63,8 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  integration_test:
+    sdk: flutter
 
   # The following line ensures that the Material Icons font is
   # included with your application.

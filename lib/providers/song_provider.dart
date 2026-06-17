@@ -15,12 +15,16 @@ class SongProvider extends ChangeNotifier {
   final _helper = SongHelper();
   Either<Failure, Song> _song = Left(NoSongSelected());
   Either<Failure, SongDownload> _songDownload = Left(NoSongSelected());
+  double _downloadProgress = 0;
 
   /// The selected song.
   Either<Failure, Song> get song => _song;
 
   /// The song currently being downloaded.
   Either<Failure, SongDownload> get songDownload => _songDownload;
+
+  /// The download completion ratio (0.0 to 1.0) of the song being downloaded.
+  double get downloadProgress => _downloadProgress;
 
   /// Loads a song from the device, using the [SongHelper].
   Future<void> loadFromDevice() async {
@@ -38,6 +42,7 @@ class SongProvider extends ChangeNotifier {
   /// Downloads a song from youtube with the given [url] using the [SongHelper].
   Future<void> downloadFromYoutube(String url) async {
     _song = Left(NoSongSelected());
+    _downloadProgress = 0;
     _songDownload = await _helper.getSongInfosFromYoutube(url);
 
     await _songDownload.fold(
@@ -48,7 +53,13 @@ class SongProvider extends ChangeNotifier {
       ),
       (song) async {
         notifyListeners();
-        _song = await _helper.downloadFromYoutube(song);
+        _song = await _helper.downloadFromYoutube(
+          song,
+          onProgress: (progress) {
+            _downloadProgress = progress;
+            notifyListeners();
+          },
+        );
       },
     );
 
