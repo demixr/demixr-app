@@ -31,7 +31,9 @@ class LibraryRepository {
     String libraryDirectory,
     UnmixedSong song,
   ) async {
-    var directory = Directory(p.join(libraryDirectory, song.toString()));
+    var directory = Directory(
+      p.join(libraryDirectory, sanitizeFilename(song.toString())),
+    );
     directory = await directory.createUnique();
     return directory.path;
   }

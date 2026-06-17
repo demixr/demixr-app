@@ -57,6 +57,14 @@ extension MoveFile on File {
   }
 }
 
+/// Makes [name] safe to use as a single filesystem path segment by replacing
+/// characters that are illegal or act as separators (notably `/` and `:`,
+/// which appear in YouTube titles and break path joins on macOS).
+String sanitizeFilename(String name) {
+  final cleaned = name.replaceAll(RegExp(r'[/\\:*?"<>|\x00-\x1f]'), '_').trim();
+  return cleaned.isEmpty ? 'song' : cleaned;
+}
+
 extension RemoveExtension on String {
   String removeExtension() {
     replaceAll(RegExp('.wav|.mp3'), '');
