@@ -112,13 +112,21 @@ class EmptyLibrary extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Column(
-      mainAxisAlignment: MainAxisAlignment.start,
+      mainAxisAlignment: MainAxisAlignment.center,
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        FractionallySizedBox(
-          widthFactor: 0.6,
-          child: Image.asset(getAssetPath('astronaut', AssetType.image)),
+        // Flexible + BoxFit.contain so the illustration scales down to fit the
+        // available height instead of overflowing on short/wide windows.
+        Flexible(
+          child: FractionallySizedBox(
+            widthFactor: 0.6,
+            child: Image.asset(
+              getAssetPath('astronaut', AssetType.image),
+              fit: BoxFit.contain,
+            ),
+          ),
         ),
+        const SizedBox(height: 16),
         const FractionallySizedBox(
           widthFactor: 0.6,
           child: AutoSizeText(
