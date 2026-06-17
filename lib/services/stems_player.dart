@@ -6,13 +6,10 @@ import '../constants.dart';
 enum StemState { mute, unmute }
 
 class StemsPlayer {
-  /// One player per possible stem (plus the mixture). Players are created once
-  /// and reused across songs so the position/completion streams stay stable;
-  /// [setUrls] picks which ones are active for the current song.
-  final Map<Stem, AudioPlayer> players = {
-    for (final stem in [Stem.mixture, ...Stem.values.where((s) => s != Stem.mixture)])
-      stem: AudioPlayer(),
-  };
+  /// Players, created lazily per stem and reused across songs so the
+  /// position/completion streams stay stable. [setUrls] picks which ones are
+  /// active for the current song.
+  final Map<Stem, AudioPlayer> players = {};
 
   /// The stems present in the current song (excludes the mixture).
   List<Stem> activeStems = const [];
@@ -37,13 +34,18 @@ class StemsPlayer {
   );
 
   StemsPlayer() {
-    players[Stem.mixture]!.mute();
-    for (final player in players.values) {
-      player.setAudioContext(_audioContext);
-    }
+    _player(Stem.mixture).mute();
   }
 
-  AudioPlayer get aPlayer => players[Stem.vocals]!;
+  /// Returns the [AudioPlayer] for [stem], creating and configuring it on
+  /// first use. Lazy creation keeps the player robust to the set of stems a
+  /// song actually has (4 or 6) without pre-allocating every possible player.
+  AudioPlayer _player(Stem stem) => players.putIfAbsent(
+        stem,
+        () => AudioPlayer()..setAudioContext(_audioContext),
+      );
+
+  AudioPlayer get aPlayer => _player(Stem.vocals);
 
   Stream<Duration> get onAudioPositionChanged => aPlayer.onPositionChanged;
 
@@ -55,7 +57,7 @@ class StemsPlayer {
 
   /// The players in use for the current song: the active stems plus mixture.
   Iterable<AudioPlayer> get _activePlayers =>
-      [Stem.mixture, ...activeStems].map((stem) => players[stem]!);
+      [Stem.mixture, ...activeStems].map(_player);
 
   bool get allStemsUnmute {
     return activeStems.every((stem) => getStemState(stem) == StemState.unmute);
@@ -66,11 +68,11 @@ class StemsPlayer {
     stemStates = {for (final stem in activeStems) stem: StemState.unmute};
     mixtureOn = false;
 
-    players[Stem.mixture]!
+    _player(Stem.mixture)
       ..setSource(DeviceFileSource(song.mixture))
       ..mute();
     for (final stem in activeStems) {
-      players[stem]!
+      _player(stem)
         ..setSource(DeviceFileSource(song.getStem(stem)))
         ..unMute();
     }
@@ -105,13 +107,13 @@ class StemsPlayer {
 
   void muteAll() {
     for (final stem in activeStems) {
-      players[stem]!.mute();
+      _player(stem).mute();
     }
   }
 
   void unmuteAll() {
     for (final stem in activeStems) {
-      players[stem]!.unMute();
+      _player(stem).unMute();
     }
   }
 
