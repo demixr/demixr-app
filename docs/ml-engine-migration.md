@@ -1,9 +1,46 @@
 # ML Engine Migration — Handoff Plan
 
 > **Audience**: the next agent/developer taking over the demixing engine.
-> **Status**: NOT STARTED. The `modernization` branch (PR #54) deliberately
-> kept the *existing* engine working and deferred this. Read this before touching
-> anything.
+> **Status**: IN PROGRESS on branch `ml-engine-onnx` (off `modernization`). The
+> cross-platform ONNX engine is built and **validated on macOS**; the old Android
+> engine is intentionally still in place. Read this before touching anything.
+
+## Progress (branch `ml-engine-onnx`)
+
+**Done & validated:**
+- **Runtime**: `flutter_onnxruntime` ^1.8.0 (ONNX Runtime 1.24.x). Builds on
+  **macOS** (full), **Android** (debug APK under AGP 8.13), and **iOS** (pods +
+  Xcode compile; device run needs an installed iOS SDK). Adopting it bumped
+  deployment targets to **macOS 14.0 / iOS 16.0** + static pod linkage, added an
+  Android `proguard-rules.pro`, and fixed a stale `RunnerTests` ref in the iOS
+  Podfile. It's another AGP-9 blocker (KGP), same as `audioplayers`.
+- **Model**: single **htdemucs** (Demucs v4, 4-stem, opset 17, in-graph
+  STFT/iSTFT), pre-exported + parity-verified. Shipping the `fp16weights`
+  variant (158 MB). Input `mix [1,2,343980]`, output `stems [1,4,2,343980]` in
+  order drums/bass/other/vocals. Hosted on HuggingFace (`StemSplitio/htdemucs-onnx`);
+  **re-host on a demixr GitHub release as a follow-up**.
+- **Engine** (`lib/helpers/onnx/`): pure-Dart orchestration — FFmpeg decode →
+  ONNX inference → triangular-window overlap-add (streaming to disk, ~one-segment
+  RAM) → 16-bit/44.1k/stereo WAVs. Numerically matches the `demucs-onnx` Python
+  reference: **maxDiff 1 LSB, rms 0.71 LSB** (`integration_test/onnx_demixing_test.dart`).
+  Public `DemixingHelper.separate(...)` contract unchanged; progress is now a
+  plain `Stream<double>`.
+- **Acceleration (measured, not assumed)**: on macOS M-series, CPU = 3.9 s vs
+  CoreML = 20 s for a 12 s clip — CoreML's ~16 s transformer graph-compile isn't
+  amortized in a one-shot separation. Default EP is **XNNPACK→CPU** everywhere;
+  CoreML/NNAPI are opt-in via `providerOverride` (benchmark:
+  `integration_test/onnx_benchmark_test.dart`).
+
+**Remaining before the old engine can be removed (Phase 3):**
+- Run the ONNX path on a **real Android device** and an **iOS device** (peak RAM,
+  wall-clock, correctness; test the 16 KB-page emulator). Only then delete
+  `DemixingPlugin.java`, `WavFile*.java`, `android/app/src/main/cpp/**`, the
+  CMake/`externalNativeBuild` block, and `pytorch_android_lite`. **Do not remove
+  the working Android native engine based on the macOS validation alone.**
+- Seam test on real music; confirm player playback/cancellation with ONNX stems.
+
+---
+
 
 ## TL;DR
 

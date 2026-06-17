@@ -37,9 +37,7 @@ class DemixingProvider extends ChangeNotifier {
       return;
     }
 
-    _progressStream = _helper.progressStream
-        .receiveBroadcastStream()
-        .cast<double>();
+    _progressStream = _helper.progressStream;
 
     separate(song)
         ?.then((unmixed) => library.saveSong(unmixed))

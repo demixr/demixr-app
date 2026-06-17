@@ -148,3 +148,12 @@ app.*.symbols
 
 # cpp files
 *.cxx
+
+# ONNX model export workspace (venv + multi-hundred-MB artifacts)
+/tools/onnx_export/.venv/
+/tools/onnx_export/*.onnx
+/tools/onnx_export/*.pt
+/tools/onnx_export/audio/
+/tools/onnx_export/*.wav
+/tools/onnx_export/*.pcm
+/tools/onnx_export/ref_out/

@@ -53,6 +53,7 @@ dependencies:
   url_launcher: ^6.3.2
   percent_indicator: ^4.2.5
   ffmpeg_kit_flutter_new_audio: ^2.0.0
+  flutter_onnxruntime: ^1.8.0
   youtube_explode_dart: ^3.1.0
   fluttertoast: ^9.1.0
   image: ^4.8.0

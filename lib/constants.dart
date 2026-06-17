@@ -45,7 +45,20 @@ class BoxesNames {
 class Models {
   static const openUnmixInfosUrl = 'https://sigsep.github.io/open-unmix/';
 
-  static const fileExtension = '.plt';
+  /// htdemucs (Demucs v4), 4-stem, exported to a self-contained ONNX graph.
+  /// Cross-platform (Android/iOS/macOS) via ONNX Runtime. The `fp16weights`
+  /// variant is ~half the download of fp32 and numerically identical at
+  /// runtime (max abs diff ~6e-5).
+  static const htdemucs = Model(
+    name: 'htdemucs',
+    description:
+        'Hybrid Transformer Demucs (Demucs v4).\nState-of-the-art quality, runs on all platforms.\n(158 MB)',
+    url:
+        'https://huggingface.co/StemSplitio/htdemucs-onnx/resolve/main/htdemucs_fp16weights.onnx',
+    isDefault: true,
+    fileExtension: '.onnx',
+    engine: ModelEngine.onnx,
+  );
 
   static const umxhq = Model(
     name: 'umxhq',
@@ -53,7 +66,6 @@ class Models {
         'Model trained on the MUSDB18-HQ dataset.\nFaster separation (~ length of the song).\n(140 MB)',
     url:
         'https://github.com/demixr/openunmix-torchscript/releases/latest/download/umxhq.ptl',
-    isDefault: true,
   );
   static const umxl = Model(
     name: 'umxl',
@@ -64,13 +76,14 @@ class Models {
   );
 
   static Model fromName(String name) {
+    if (name == htdemucs.name) return htdemucs;
     if (name == umxhq.name) return umxhq;
     if (name == umxl.name) return umxl;
 
     throw ArgumentError('Models: The given model name does not exist');
   }
 
-  static const List<Model> all = [Models.umxhq, Models.umxl];
+  static const List<Model> all = [Models.htdemucs, Models.umxhq, Models.umxl];
 }
 
 enum Stem { mixture, vocals, drums, bass, other }

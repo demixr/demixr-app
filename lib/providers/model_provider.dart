@@ -32,7 +32,7 @@ class ModelProvider extends ChangeNotifier {
   void downloadModel(Model model, {required VoidCallback onDone}) async {
     Get.toNamed('/model/download');
 
-    final filename = '${model.name}${Models.fileExtension}';
+    final filename = '${model.name}${model.fileExtension}';
     final directory = await _preferences.repository.modelsPath;
     final path = p.join(directory, filename);
 
