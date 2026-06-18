@@ -65,7 +65,7 @@ class _CheckAppState extends State<_CheckApp> {
       _log('model ready: ${File(modelPath).lengthSync()} bytes');
 
       final inputPath = p.join(dir, 'tone.wav');
-      await _writeTone(inputPath, seconds: 6);
+      await _writeTone(inputPath, seconds: 30); // a few chunks; bump to stress-test memory
 
       final outDir = p.join(dir, 'out');
       await Directory(outDir).create(recursive: true);

@@ -82,9 +82,19 @@ now PASSES** — full 2-chunk run, 4 stems, no OOM (`tool/device_check.dart`); m
 parity still 1 LSB (optimization is semantics-preserving), inference 3968→6654 ms
 (the memory/speed tradeoff). Peak should now be ~2.2 GB.
 
-**iOS validated on a real iPhone (iOS 26.5).** `tool/device_check.dart` showed
-**PASS** on-device (model loaded, inference ran, 4 valid stems) with the memory
-fix in place — so ~2.2 GB fits the iPhone's per-app limit (no jetsam kill).
+**iOS validated on a real iPhone (iOS 26.5, iPhone 17 Pro Max).** Took two
+iOS-specific memory fixes on top of the engine work, both needed:
+1. **Increased Memory Limit entitlement** (`ios/Runner/Runner.entitlements`,
+   wired via the Flutter xcconfigs) — raises the per-app cap so ~2.2 GB is
+   allowed at all.
+2. **`useArena: false`** in the engine — ORT's CPU arena *grew* across the
+   many per-chunk runs (measured 2096→2920 MB over 12 runs) and crept past even
+   the raised cap, jetsam-killing the app mid-song; off, peak is flat at
+   ~2217 MB across 1..15 runs.
+With both, a full demix runs to completion on-device (`device_check` showed
+**PASS**, no signal-9). Caveat: it's **slow on iPhone** (RTF > 3 with
+`disableAll`) — a follow-up should tune the optimization level (try `basic`)
+now that the entitlement gives memory headroom.
 Toolchain notes for next time: a *debug* build can't be launched standalone
 (tap-to-run insta-crashes with "Cannot create a FlutterEngine in debug mode…");
 drive it with `flutter run`, or use a **profile** build. The iOS *simulator*
