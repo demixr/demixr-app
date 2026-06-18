@@ -160,3 +160,6 @@ app.*.symbols
 /tools/onnx_export/ref_out*/
 /tools/onnx_export/**/*.wav
 /tools/onnx_export/*.mlpackage/
+
+# Local-only on-device test model (158MB) — never commit
+/assets/test_fixtures/

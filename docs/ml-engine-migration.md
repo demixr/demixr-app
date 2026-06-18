@@ -55,13 +55,31 @@ single cross-platform runtime. **Decision: ship multi-threaded CPU (XNNPACK)**
 future native-Metal opportunity, out of scope here. (Spike scripts:
 `tools/onnx_export/{coreml_spike,coreml_core_spike,onnx_core_spike,pytorch_mps_bench,executorch_spike}.py`.)
 
-**Remaining before the old engine can be removed (Phase 3):**
-- Run the ONNX path on a **real Android device** and an **iOS device** (peak RAM,
-  wall-clock, correctness; test the 16 KB-page emulator). Only then delete
-  `DemixingPlugin.java`, `WavFile*.java`, `android/app/src/main/cpp/**`, the
-  CMake/`externalNativeBuild` block, and `pytorch_android_lite`. **Do not remove
-  the working Android native engine based on the macOS validation alone.**
-- Seam test on real music; confirm player playback/cancellation with ONNX stems.
+**On-device validation (done) — BLOCKER FOUND: memory.**
+- **Android emulator**: the engine *runs* — ONNX Runtime AAR loads, FFmpeg
+  decodes, htdemucs inference executes (completed chunks). **But it OOM-kills**:
+  peak RSS ~**5 GB** with ONNX Runtime's default graph optimization, killed by
+  lowmemorykiller even on a 6 GB emulator (2 GB AVD never stood a chance). Root
+  cause: ORT's `ORT_ENABLE_ALL` constant-folds the **in-graph STFT**'s huge DFT
+  matrices. Measured levers (`tools/onnx_export/mem_probe.py`, Mac ORT-CPU):
+  fp16+ALL = 4958 MB, fp16+DISABLE = **2225 MB**, STFT-free core+ALL = 3506 MB.
+  So disabling graph optimization ~halves peak to ~2.2 GB — still high, borderline
+  on 4 GB phones, but survivable on 6 GB+. **`flutter_onnxruntime` does not expose
+  `graphOptimizationLevel`** (its native session setup only sets threads/arena/
+  providers), so this needs a small **patch/fork of the plugin** on all 3 native
+  sides. Lower still requires moving the STFT out of the graph (the DSP-split).
+- **iOS**: not validatable here — the **simulator can't build** because
+  `ffmpeg_kit_flutter_new_audio` ships no arm64-simulator slice (pre-existing
+  ffmpeg-kit limitation, unrelated to ONNX); a real iPhone needs the iOS SDK
+  installed + cabling/provisioning. iOS *device* would build; the same ~2.2 GB
+  memory concern applies (iPhones 4–8 GB).
+
+**=> Do NOT remove the old Android engine yet.** First make the ONNX path
+mobile-viable: (1) patch `flutter_onnxruntime` to set a lower graph-optimization
+level (→ ~2.2 GB), and/or (2) DSP-split (STFT in Dart) to shrink the graph; then
+re-validate peak RAM on a real Android device + the 16 KB-page emulator, seam-test
+on real music, and confirm player playback/cancellation. Tooling for an on-device
+smoke run: `tool/device_check.dart` (`flutter run -t tool/device_check.dart`).
 
 ---
 
