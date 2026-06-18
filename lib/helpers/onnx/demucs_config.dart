@@ -25,6 +25,18 @@ class DemucsConfig {
   /// Hop between consecutive segment starts.
   static const int stride = segment - overlap; // 257985
 
+  /// STFT parameters baked into htdemucs (`nfft=4096`, `hop=nfft/4`). The
+  /// Dart iSTFT in [Istft] reverses the in-graph forward STFT using these.
+  static const int nFft = 4096;
+  static const int hop = nFft ~/ 4; // 1024
+
+  /// Number of frequency bins the core `.pte` emits per frame: `nfft/2` (the
+  /// Nyquist bin is dropped on export and re-added as zero on inversion).
+  static const int specBins = nFft ~/ 2; // 2048
+
+  /// Number of STFT frames per segment: `ceil(segment / hop)`.
+  static const int specFrames = (segment + hop - 1) ~/ hop; // 336
+
   /// Model output stem order — the rows of the `[1, S, 2, N]` output tensor,
   /// in Demucs' native ordering, mapped by name to the app's stems.
   static const List<String> sources4 = ['drums', 'bass', 'other', 'vocals'];

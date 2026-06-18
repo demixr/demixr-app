@@ -13,63 +13,68 @@ import 'package:demixr_app/helpers/onnx/executorch_demixing_engine.dart';
 /// End-to-end test of the ExecuTorch (GPU) engine via executorch_flutter.
 ///
 /// Stage under ~/Downloads/demixr_test/:
-///   core_coreml.pte, post_xnnpack.pte, test_clip.wav, ref_out/{4 stems}.wav
+///   core_coreml.pte, test_clip.wav, ref_out/{4 stems}.wav
 /// Run: flutter test integration_test/executorch_demixing_test.dart -d macos
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
-  testWidgets('ExecuTorch engine produces 4 stems matching the reference',
-      (tester) async {
-    final home = Platform.environment['HOME'] ?? '';
-    final fix = p.join(home, 'Downloads', 'demixr_test');
-    final corePath = p.join(fix, 'core_coreml.pte');
-    final postPath = p.join(fix, 'post_xnnpack.pte');
-    final inputPath = p.join(fix, 'test_clip.wav');
-    if (![corePath, postPath, inputPath].every((f) => File(f).existsSync())) {
-      markTestSkipped('ExecuTorch fixtures missing under $fix');
-      return;
-    }
+  testWidgets(
+    'ExecuTorch engine produces 4 stems matching the reference',
+    (tester) async {
+      final home = Platform.environment['HOME'] ?? '';
+      final fix = p.join(home, 'Downloads', 'demixr_test');
+      final corePath = p.join(fix, 'core_coreml.pte');
+      final inputPath = p.join(fix, 'test_clip.wav');
+      if (![corePath, inputPath].every((f) => File(f).existsSync())) {
+        markTestSkipped('ExecuTorch fixtures missing under $fix');
+        return;
+      }
 
-    final outDir = p.join((await getTemporaryDirectory()).path, 'et_out');
-    await Directory(outDir).create(recursive: true);
+      final outDir = p.join((await getTemporaryDirectory()).path, 'et_out');
+      await Directory(outDir).create(recursive: true);
 
-    final sw = Stopwatch()..start();
-    final stems = await ExecuTorchDemixingEngine().separate(
-      corePath: corePath,
-      postPath: postPath,
-      inputPath: inputPath,
-      outputDir: outDir,
-      sources: DemucsConfig.sources4,
-    );
-    sw.stop();
-    // ignore: avoid_print
-    print('ExecuTorch demix took ${sw.elapsedMilliseconds} ms');
-
-    expect(stems.keys.toSet(), {'vocals', 'drums', 'bass', 'other'});
-
-    // Compare all stems (concatenated) to the demucs-onnx reference. ExecuTorch
-    // runs CoreML fp16 vs the fp32 reference, so expect high correlation, not
-    // bit-exactness.
-    final refDir = p.join(fix, 'ref_out');
-    final mine = <int>[];
-    final ref = <int>[];
-    for (final stem in ['drums', 'bass', 'other', 'vocals']) {
-      final samples = _readWav16(stems[stem]!);
-      expect(samples.isNotEmpty, isTrue, reason: '$stem empty');
-      final refFile = File(p.join(refDir, '$stem.wav'));
-      if (!refFile.existsSync()) continue;
-      final r = _readWav16(refFile.path);
-      final n = min(samples.length, r.length);
-      mine.addAll(samples.sublist(0, n));
-      ref.addAll(r.sublist(0, n));
-    }
-    if (ref.isNotEmpty) {
-      final corr = _corr(mine, ref);
+      final sw = Stopwatch()..start();
+      final stems = await ExecuTorchDemixingEngine().separate(
+        corePath: corePath,
+        inputPath: inputPath,
+        outputDir: outDir,
+        sources: DemucsConfig.sources4,
+      );
+      sw.stop();
       // ignore: avoid_print
-      print('ExecuTorch vs reference corr=${corr.toStringAsFixed(4)}');
-      expect(corr, greaterThan(0.97), reason: 'output diverges from reference');
-    }
-  }, timeout: const Timeout(Duration(minutes: 10)));
+      print('ExecuTorch demix took ${sw.elapsedMilliseconds} ms');
+
+      expect(stems.keys.toSet(), {'vocals', 'drums', 'bass', 'other'});
+
+      // Compare all stems (concatenated) to the demucs-onnx reference. ExecuTorch
+      // runs CoreML fp16 vs the fp32 reference, so expect high correlation, not
+      // bit-exactness.
+      final refDir = p.join(fix, 'ref_out');
+      final mine = <int>[];
+      final ref = <int>[];
+      for (final stem in ['drums', 'bass', 'other', 'vocals']) {
+        final samples = _readWav16(stems[stem]!);
+        expect(samples.isNotEmpty, isTrue, reason: '$stem empty');
+        final refFile = File(p.join(refDir, '$stem.wav'));
+        if (!refFile.existsSync()) continue;
+        final r = _readWav16(refFile.path);
+        final n = min(samples.length, r.length);
+        mine.addAll(samples.sublist(0, n));
+        ref.addAll(r.sublist(0, n));
+      }
+      if (ref.isNotEmpty) {
+        final corr = _corr(mine, ref);
+        // ignore: avoid_print
+        print('ExecuTorch vs reference corr=${corr.toStringAsFixed(4)}');
+        expect(
+          corr,
+          greaterThan(0.97),
+          reason: 'output diverges from reference',
+        );
+      }
+    },
+    timeout: const Timeout(Duration(minutes: 10)),
+  );
 }
 
 double _corr(List<int> a, List<int> b) {

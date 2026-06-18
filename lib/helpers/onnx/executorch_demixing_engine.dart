@@ -5,33 +5,36 @@ import 'package:path/path.dart' as p;
 import '../../models/exceptions/demixing_exception.dart';
 import 'audio_io.dart';
 import 'demucs_config.dart';
+import 'istft.dart';
 
 /// GPU-accelerated demixing engine backed by ExecuTorch.
 ///
-/// htdemucs is split into two ExecuTorch programs (the CoreML delegate caps
-/// tensors at rank 5, so the rank-6 mask + iSTFT can't live in the GPU graph):
+/// The htdemucs network proper runs in one ExecuTorch program (the CoreML
+/// delegate caps tensors at rank 5, so the rank-6 mask + iSTFT can't live in
+/// the GPU graph):
 ///  - **core** `.pte` — `mix [1,2,N] -> (pre-mask spec, time)`, includes the
 ///    in-graph conv STFT. Lowered to CoreML on Apple / Vulkan or XNNPACK on
 ///    Android (the backend is baked into the `.pte` at export time).
-///  - **post** `.pte` — `(spec, time) -> stems [1,S,2,N]` (mask + iSTFT),
-///    XNNPACK/CPU on every platform.
+///  - the mask + inverse STFT run in Dart via [Istft] (an O(N log N) FFT). An
+///    earlier XNNPACK post `.pte` did this with a dense-DFT `ConvTranspose1d`
+///    and was the ~1.75 s/chunk bottleneck; the FFT cuts it ~50-100×.
 ///
 /// Reuses the same FFmpeg decode, streaming 16-bit WAV writer, and chunked
 /// triangular-window overlap-add as [OnnxDemixingEngine], so output is the
 /// same 4 (or 6) stem WAVs the rest of the app expects.
 class ExecuTorchDemixingEngine {
-  /// Runs separation of [inputPath] using the [corePath] + [postPath] `.pte`s,
-  /// writing `<stem>.wav` into [outputDir]. Returns stem name -> path.
+  final Istft _istft = Istft();
+
+  /// Runs separation of [inputPath] using the core [corePath] `.pte`, writing
+  /// `<stem>.wav` into [outputDir]. Returns stem name -> path.
   Future<Map<String, String>> separate({
     required String corePath,
-    required String postPath,
     required String inputPath,
     required String outputDir,
     required List<String> sources,
     void Function(double progress)? onProgress,
   }) async {
     final core = await ExecuTorchModel.load(corePath);
-    final post = await ExecuTorchModel.load(postPath);
 
     try {
       final channels = await decodeToFloatPcm(
@@ -45,7 +48,6 @@ class ExecuTorchDemixingEngine {
       }
       return await _runOverlapAdd(
         core: core,
-        post: post,
         input: channels,
         totalFrames: totalFrames,
         outputDir: outputDir,
@@ -54,20 +56,18 @@ class ExecuTorchDemixingEngine {
       );
     } finally {
       await core.dispose();
-      await post.dispose();
     }
   }
 
   // Per-run timing accumulators (ms), for profiling.
-  double _coreMs = 0, _postMs = 0, _marshalMs = 0;
+  double _coreMs = 0, _istftMs = 0, _marshalMs = 0;
 
-  /// Runs one fixed-length segment through core -> post and returns the
-  /// flattened `[1, S, 2, segment]` stems as a [Float32List] (zero-copy view
-  /// onto the output tensor's bytes — no boxing/extra copy).
+  /// Runs one fixed-length segment through core -> Dart iSTFT and returns the
+  /// flattened `[1, S, 2, segment]` stems as a [Float32List].
   Future<Float32List> _infer(
     ExecuTorchModel core,
-    ExecuTorchModel post,
     Float32List mixBuf,
+    int sources,
   ) async {
     const segment = DemucsConfig.segment;
     const nChannels = DemucsConfig.channels;
@@ -84,16 +84,26 @@ class ExecuTorchDemixingEngine {
     _coreMs += sw.elapsedMicroseconds / 1000;
     sw.reset();
 
-    final stems = await post.forward(coreOut);
-    _postMs += sw.elapsedMicroseconds / 1000;
-
-    final d = stems.first.data;
-    return Float32List.view(d.buffer, d.offsetInBytes, d.lengthInBytes ~/ 4);
+    // core emits (spec, time); spec is rank 5, time rank 4.
+    final specT = coreOut.firstWhere((t) => t.shape.length == 5);
+    final timeT = coreOut.firstWhere((t) => t.shape.length == 4);
+    final spec = Float32List.view(
+      specT.data.buffer,
+      specT.data.offsetInBytes,
+      specT.data.lengthInBytes ~/ 4,
+    );
+    final time = Float32List.view(
+      timeT.data.buffer,
+      timeT.data.offsetInBytes,
+      timeT.data.lengthInBytes ~/ 4,
+    );
+    final stems = _istft.run(spec, time, sources);
+    _istftMs += sw.elapsedMicroseconds / 1000;
+    return stems;
   }
 
   Future<Map<String, String>> _runOverlapAdd({
     required ExecuTorchModel core,
-    required ExecuTorchModel post,
     required List<Float32List> input,
     required int totalFrames,
     required String outputDir,
@@ -130,8 +140,9 @@ class ExecuTorchDemixingEngine {
     try {
       for (var i = 0; i < nChunks; i++) {
         final start = i * stride;
-        final end =
-            (start + segment) < totalFrames ? start + segment : totalFrames;
+        final end = (start + segment) < totalFrames
+            ? start + segment
+            : totalFrames;
         final chunkLen = end - start;
 
         for (var c = 0; c < nChannels; c++) {
@@ -142,7 +153,7 @@ class ExecuTorchDemixingEngine {
           }
         }
 
-        final stems = await _infer(core, post, inputBuf);
+        final stems = await _infer(core, inputBuf, sources.length);
 
         for (var row = 0; row < sources.length; row++) {
           final stemAcc = acc[sources[row]]!;
@@ -195,8 +206,10 @@ class ExecuTorchDemixingEngine {
       for (final writer in writers.values) {
         await writer.close();
       }
-      debugPrint('ExecuTorch timing/$nChunks chunks: core=${_coreMs.round()}ms '
-          'post=${_postMs.round()}ms marshalIn=${_marshalMs.round()}ms');
+      debugPrint(
+        'ExecuTorch timing/$nChunks chunks: core=${_coreMs.round()}ms '
+        'istft=${_istftMs.round()}ms marshalIn=${_marshalMs.round()}ms',
+      );
     }
 
     return paths;
