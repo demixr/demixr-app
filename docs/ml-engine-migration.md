@@ -40,11 +40,20 @@ reusing demucs-onnx's MHA/pos-embed patches, the conv+transformer **core** did
 run on CoreML — and was **2.4× slower than CPU** (0.588s vs 1.441s per 7.8s
 chunk on an M-series Mac): CoreML accepted 1209/1426 nodes but fragmented them
 into 112 GPU↔CPU partitions, and the workload doesn't favor ANE/GPU at this
-size. Conclusion: **multi-threaded CPU (XNNPACK) is the fastest on-device path
-for this model**; the GPU makes it worse. (Spike scripts: `tools/onnx_export/
-{coreml_spike,coreml_core_spike,onnx_core_spike}.py`.) On-device GPU would only
-pay off with a different, GPU-friendly model or a native per-platform engine —
-out of scope.
+size. But note: the GPU *itself* is genuinely fast for this model — **eager PyTorch
+MPS (Metal) is 12.6× faster than PyTorch CPU** (0.111s vs 1.392s/chunk). The
+problem is purely that no mature, cross-platform, on-device runtime captures
+that: ONNX-RT CoreML fragments (above); `coremltools` won't convert; ExecuTorch's
+MPS backend (which could) is **deprecated** (removed in 1.4) in favour of its
+CoreML backend, which routes through the same fragmenting CoreML; and
+`torch.export` (ExecuTorch's required path) fails on demucs (`aten.equal`,
+data-dependent) beyond what the demucs-onnx patches cover. Capturing the GPU win
+would require a **native MPSGraph/Metal engine (Apple-only: Mac+iPhone)** with
+Android on CPU/Vulkan — a dedicated multi-week native project, abandoning the
+single cross-platform runtime. **Decision: ship multi-threaded CPU (XNNPACK)**
+— fastest *available* on-device path, all 3 platforms, maintainable. GPU is a
+future native-Metal opportunity, out of scope here. (Spike scripts:
+`tools/onnx_export/{coreml_spike,coreml_core_spike,onnx_core_spike,pytorch_mps_bench,executorch_spike}.py`.)
 
 **Remaining before the old engine can be removed (Phase 3):**
 - Run the ONNX path on a **real Android device** and an **iOS device** (peak RAM,
