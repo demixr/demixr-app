@@ -31,6 +31,21 @@
   CoreML/NNAPI are opt-in via `providerOverride` (benchmark:
   `integration_test/onnx_benchmark_test.dart`).
 
+**GPU acceleration — investigated and rejected (with data).** We tried hard to
+run htdemucs on the on-device GPU/ANE. Every model→GPU path needed major surgery
+because htdemucs bakes STFT + dynamic-shape ops into the graph: ONNX Runtime's
+CoreML EP fails to compile the full model (`Espresso generic_general_slice`),
+and `coremltools` fails on dynamic int-casts. After splitting the STFT out and
+reusing demucs-onnx's MHA/pos-embed patches, the conv+transformer **core** did
+run on CoreML — and was **2.4× slower than CPU** (0.588s vs 1.441s per 7.8s
+chunk on an M-series Mac): CoreML accepted 1209/1426 nodes but fragmented them
+into 112 GPU↔CPU partitions, and the workload doesn't favor ANE/GPU at this
+size. Conclusion: **multi-threaded CPU (XNNPACK) is the fastest on-device path
+for this model**; the GPU makes it worse. (Spike scripts: `tools/onnx_export/
+{coreml_spike,coreml_core_spike,onnx_core_spike}.py`.) On-device GPU would only
+pay off with a different, GPU-friendly model or a native per-platform engine —
+out of scope.
+
 **Remaining before the old engine can be removed (Phase 3):**
 - Run the ONNX path on a **real Android device** and an **iOS device** (peak RAM,
   wall-clock, correctness; test the 16 KB-page emulator). Only then delete
