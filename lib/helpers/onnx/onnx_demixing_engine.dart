@@ -73,12 +73,16 @@ class OnnxDemixingEngine {
     // in-graph STFT into huge tensors, peaking ~5GB and OOM-killing mobile.
     // Disabling it roughly halves peak RSS (~2.2GB) for a small speed cost.
     const optLevel = OrtGraphOptimizationLevel.disableAll;
+    // Disable the CPU memory arena: it retains and grows allocations across the
+    // many per-chunk runs, creeping past iOS's (even raised) memory cap and
+    // triggering a jetsam kill mid-song. Off, peak stays ~flat per chunk.
     try {
       return await ort.createSession(
         modelPath,
         options: OrtSessionOptions(
           providers: providers,
           graphOptimizationLevel: optLevel,
+          useArena: false,
         ),
       );
     } catch (e) {
@@ -88,6 +92,7 @@ class OnnxDemixingEngine {
         options: OrtSessionOptions(
           providers: [OrtProvider.CPU],
           graphOptimizationLevel: optLevel,
+          useArena: false,
         ),
       );
     }
