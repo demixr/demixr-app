@@ -168,3 +168,5 @@ app.*.symbols
 third_party/**/.build/
 third_party/**/build/
 third_party/flutter_onnxruntime/example/
+/tools/onnx_export/*.pte
+/tools/onnx_export/*.mlpackage
