@@ -129,7 +129,9 @@ class Float16Utils {
 }
 
 /** FlutterOnnxruntimePlugin */
-class FlutterOnnxruntimePlugin : FlutterPlugin, MethodCallHandler {
+class FlutterOnnxruntimePlugin :
+    FlutterPlugin,
+    MethodCallHandler {
     /** The MethodChannel that will the communication between Flutter and native Android
 
      This local reference serves to register the plugin with the Flutter Engine and unregister it
@@ -145,29 +147,39 @@ class FlutterOnnxruntimePlugin : FlutterPlugin, MethodCallHandler {
     // Lock to serialize method handler and cleanup to prevent use-after-close races
     private val lock = Any()
 
-    private fun ortTypeToString(type: OnnxJavaType): String {
-        return when (type.toString()) {
+    private fun ortTypeToString(type: OnnxJavaType): String =
+        when (type.toString()) {
             "FLOAT" -> "float32"
+
             "FLOAT16" -> "float16"
+
             "INT32" -> "int32"
+
             "INT64" -> "int64"
+
             "UINT8" -> "uint8"
+
             "INT8" -> "int8"
+
             "BOOL" -> "bool"
+
             "UINT16" -> "uint16"
+
             "INT16" -> "int16"
+
             "DOUBLE" -> "float64"
+
             "STRING" -> "string"
+
             // Add other types as needed
             else -> type.toString().lowercase()
         }
-    }
 
     /**
      * Map provider name to enum name
      */
-    private fun mapProviderNameToEnumName(providerName: String): String {
-        return when (providerName) {
+    private fun mapProviderNameToEnumName(providerName: String): String =
+        when (providerName) {
             "ACL" -> "ACL"
             "ARM_NN" -> "ARM_NN"
             "CORE_ML" -> "CORE_ML"
@@ -183,7 +195,6 @@ class FlutterOnnxruntimePlugin : FlutterPlugin, MethodCallHandler {
             "XNNPACK" -> "XNNPACK"
             else -> providerName
         }
-    }
 
     override fun onAttachedToEngine(
         @NonNull flutterPluginBinding: FlutterPlugin.FlutterPluginBinding,
@@ -208,6 +219,7 @@ class FlutterOnnxruntimePlugin : FlutterPlugin, MethodCallHandler {
             "getPlatformVersion" -> {
                 result.success("Android ${android.os.Build.VERSION.RELEASE}")
             }
+
             "createSession" -> {
                 try {
                     val modelPath = call.argument<String>("modelPath")
@@ -233,12 +245,13 @@ class FlutterOnnxruntimePlugin : FlutterPlugin, MethodCallHandler {
                     // dramatically less memory for models with large folded
                     // constants (e.g. in-graph STFT), at a small speed cost.
                     if (sessionOptions.containsKey("graphOptimizationLevel")) {
-                        val optLevel = when (sessionOptions["graphOptimizationLevel"] as String) {
-                            "disableAll" -> OrtSession.SessionOptions.OptLevel.NO_OPT
-                            "basic" -> OrtSession.SessionOptions.OptLevel.BASIC_OPT
-                            "extended" -> OrtSession.SessionOptions.OptLevel.EXTENDED_OPT
-                            else -> OrtSession.SessionOptions.OptLevel.ALL_OPT
-                        }
+                        val optLevel =
+                            when (sessionOptions["graphOptimizationLevel"] as String) {
+                                "disableAll" -> OrtSession.SessionOptions.OptLevel.NO_OPT
+                                "basic" -> OrtSession.SessionOptions.OptLevel.BASIC_OPT
+                                "extended" -> OrtSession.SessionOptions.OptLevel.EXTENDED_OPT
+                                else -> OrtSession.SessionOptions.OptLevel.ALL_OPT
+                            }
                         ortSessionOptions.setOptimizationLevel(optLevel)
                     }
 
@@ -267,43 +280,56 @@ class FlutterOnnxruntimePlugin : FlutterPlugin, MethodCallHandler {
                             "ACL" -> {
                                 ortSessionOptions.addACL(true)
                             }
+
                             "ARM_NN" -> {
                                 ortSessionOptions.addArmNN(useArena)
                             }
+
                             "CORE_ML" -> {
                                 ortSessionOptions.addCoreML()
                             }
+
                             "CPU" -> {
                                 ortSessionOptions.addCPU(useArena)
                             }
+
                             "CUDA" -> {
                                 ortSessionOptions.addCUDA(deviceId)
                             }
+
                             "DIRECT_ML" -> {
                                 ortSessionOptions.addDirectML(deviceId)
                             }
+
                             "DNNL" -> {
                                 ortSessionOptions.addDnnl(useArena)
                             }
+
                             "NNAPI" -> {
                                 ortSessionOptions.addNnapi()
                             }
+
                             "OPEN_VINO" -> {
                                 ortSessionOptions.addOpenVINO(deviceId.toString())
                             }
+
                             "QNN" -> {
                                 ortSessionOptions.addQnn(mapOf())
                             }
+
                             "ROCM" -> {
                                 ortSessionOptions.addROCM(deviceId)
                             }
+
                             "TENSOR_RT" -> {
                                 ortSessionOptions.addTensorrt(OrtTensorRTProviderOptions(deviceId))
                             }
+
                             "XNNPACK" -> {
                                 // use an empty map as the parameter
                                 ortSessionOptions.addXnnpack(mapOf())
                             }
+
                             else -> {
                                 result.error("INVALID_PROVIDER", "Provider $provider is not supported", null)
                                 return
@@ -339,11 +365,13 @@ class FlutterOnnxruntimePlugin : FlutterPlugin, MethodCallHandler {
                     result.error("PLUGIN_ERROR", e.message, e.stackTraceToString())
                 }
             }
+
             "getAvailableProviders" -> {
                 val providers = OrtEnvironment.getAvailableProviders()
                 val providerList = providers.map { mapProviderNameToEnumName(it.toString()) }.toList()
                 result.success(providerList)
             }
+
             "runInference" -> {
                 try {
                     val sessionId = call.argument<String>("sessionId")
@@ -409,10 +437,15 @@ class FlutterOnnxruntimePlugin : FlutterPlugin, MethodCallHandler {
                                     val logLevel =
                                         when (level) {
                                             0 -> OrtLoggingLevel.ORT_LOGGING_LEVEL_VERBOSE
+
                                             1 -> OrtLoggingLevel.ORT_LOGGING_LEVEL_INFO
+
                                             2 -> OrtLoggingLevel.ORT_LOGGING_LEVEL_WARNING
+
                                             3 -> OrtLoggingLevel.ORT_LOGGING_LEVEL_ERROR
+
                                             4 -> OrtLoggingLevel.ORT_LOGGING_LEVEL_FATAL
+
                                             // Handle unexpected levels
                                             else -> OrtLoggingLevel.ORT_LOGGING_LEVEL_WARNING // default to warning
                                         }
@@ -474,8 +507,14 @@ class FlutterOnnxruntimePlugin : FlutterPlugin, MethodCallHandler {
                                             }
                                         }
                                     }
-                                    outputValue is OnnxTensor -> outputValue
-                                    else -> null
+
+                                    outputValue is OnnxTensor -> {
+                                        outputValue
+                                    }
+
+                                    else -> {
+                                        null
+                                    }
                                 }
 
                             if (outputTensor != null) {
@@ -506,6 +545,7 @@ class FlutterOnnxruntimePlugin : FlutterPlugin, MethodCallHandler {
                     result.error("PLUGIN_ERROR", e.message, e.stackTraceToString())
                 }
             }
+
             "closeSession" -> {
                 try {
                     val sessionId = call.argument<String>("sessionId")
@@ -526,6 +566,7 @@ class FlutterOnnxruntimePlugin : FlutterPlugin, MethodCallHandler {
                     result.error("PLUGIN_ERROR", e.message, e.stackTraceToString())
                 }
             }
+
             /** Get metadata about the model
 
              Returns metadata about the model such as producer name, graph name, domain, description, version, and custom metadata.
@@ -564,6 +605,7 @@ class FlutterOnnxruntimePlugin : FlutterPlugin, MethodCallHandler {
                     result.error("PLUGIN_ERROR", e.message, e.stackTraceToString())
                 }
             }
+
             /** Get input info about the model
 
              Returns information about the model's inputs such as name, type, and shape.
@@ -613,6 +655,7 @@ class FlutterOnnxruntimePlugin : FlutterPlugin, MethodCallHandler {
                     result.error("PLUGIN_ERROR", e.message, e.stackTraceToString())
                 }
             }
+
             /** Get output info about the model
 
              Returns information about the model's outputs such as name, type, and shape.
@@ -662,6 +705,7 @@ class FlutterOnnxruntimePlugin : FlutterPlugin, MethodCallHandler {
                     result.error("PLUGIN_ERROR", e.message, e.stackTraceToString())
                 }
             }
+
             // OrtValue methods
             "createOrtValue" -> {
                 try {
@@ -683,8 +727,14 @@ class FlutterOnnxruntimePlugin : FlutterPlugin, MethodCallHandler {
                             "float32" -> {
                                 val floatData =
                                     when (data) {
-                                        is List<*> -> data.map { (it as Number).toFloat() }.toFloatArray()
-                                        is FloatArray -> data
+                                        is List<*> -> {
+                                            data.map { (it as Number).toFloat() }.toFloatArray()
+                                        }
+
+                                        is FloatArray -> {
+                                            data
+                                        }
+
                                         else -> {
                                             result.error("INVALID_DATA", "Data must be a list of numbers for float32 type", null)
                                             return
@@ -692,6 +742,7 @@ class FlutterOnnxruntimePlugin : FlutterPlugin, MethodCallHandler {
                                     }
                                 OnnxTensor.createTensor(ortEnvironment, FloatBuffer.wrap(floatData), longShape)
                             }
+
                             "float16" -> {
                                 when (data) {
                                     is List<*> -> {
@@ -710,6 +761,7 @@ class FlutterOnnxruntimePlugin : FlutterPlugin, MethodCallHandler {
                                                     shortData[i] = Float16Utils.floatToFloat16(floatValue)
                                                 }
                                             }
+
                                             else -> {
                                                 result.error("INVALID_DATA", "Data must be a list of numbers for float16 type", null)
                                                 return
@@ -724,17 +776,25 @@ class FlutterOnnxruntimePlugin : FlutterPlugin, MethodCallHandler {
                                             OnnxJavaType.FLOAT16,
                                         )
                                     }
+
                                     else -> {
                                         result.error("INVALID_DATA", "Data must be a list of numbers for float16 type", null)
                                         return
                                     }
                                 }
                             }
+
                             "int32" -> {
                                 val intData =
                                     when (data) {
-                                        is List<*> -> data.map { (it as Number).toInt() }.toIntArray()
-                                        is IntArray -> data
+                                        is List<*> -> {
+                                            data.map { (it as Number).toInt() }.toIntArray()
+                                        }
+
+                                        is IntArray -> {
+                                            data
+                                        }
+
                                         else -> {
                                             result.error("INVALID_DATA", "Data must be a list of numbers for int32 type", null)
                                             return
@@ -742,11 +802,18 @@ class FlutterOnnxruntimePlugin : FlutterPlugin, MethodCallHandler {
                                     }
                                 OnnxTensor.createTensor(ortEnvironment, IntBuffer.wrap(intData), longShape)
                             }
+
                             "int64" -> {
                                 val longData =
                                     when (data) {
-                                        is List<*> -> data.map { (it as Number).toLong() }.toLongArray()
-                                        is LongArray -> data
+                                        is List<*> -> {
+                                            data.map { (it as Number).toLong() }.toLongArray()
+                                        }
+
+                                        is LongArray -> {
+                                            data
+                                        }
+
                                         else -> {
                                             result.error("INVALID_DATA", "Data must be a list of numbers for int64 type", null)
                                             return
@@ -754,6 +821,7 @@ class FlutterOnnxruntimePlugin : FlutterPlugin, MethodCallHandler {
                                     }
                                 OnnxTensor.createTensor(ortEnvironment, LongBuffer.wrap(longData), longShape)
                             }
+
                             "uint8" -> {
                                 val byteData =
                                     when (data) {
@@ -764,7 +832,11 @@ class FlutterOnnxruntimePlugin : FlutterPlugin, MethodCallHandler {
                                             }
                                             bytes
                                         }
-                                        is ByteArray -> data
+
+                                        is ByteArray -> {
+                                            data
+                                        }
+
                                         else -> {
                                             result.error("INVALID_DATA", "Data must be a list of numbers for uint8 type", null)
                                             return
@@ -772,6 +844,7 @@ class FlutterOnnxruntimePlugin : FlutterPlugin, MethodCallHandler {
                                     }
                                 OnnxTensor.createTensor(ortEnvironment, ByteBuffer.wrap(byteData), longShape, OnnxJavaType.UINT8)
                             }
+
                             "bool" -> {
                                 val boolData =
                                     when (data) {
@@ -782,6 +855,7 @@ class FlutterOnnxruntimePlugin : FlutterPlugin, MethodCallHandler {
                                             }
                                             bytes
                                         }
+
                                         else -> {
                                             result.error("INVALID_DATA", "Data must be a list of booleans for bool type", null)
                                             return
@@ -790,12 +864,14 @@ class FlutterOnnxruntimePlugin : FlutterPlugin, MethodCallHandler {
                                 // Boolean tensors are stored as bytes in ONNX Runtime
                                 OnnxTensor.createTensor(ortEnvironment, ByteBuffer.wrap(boolData), longShape, OnnxJavaType.BOOL)
                             }
+
                             "string" -> {
                                 val stringData =
                                     when (data) {
                                         is List<*> -> {
                                             data.map { it as String }.toTypedArray()
                                         }
+
                                         else -> {
                                             result.error("INVALID_DATA", "Data must be a list of strings for string type", null)
                                             return
@@ -803,6 +879,7 @@ class FlutterOnnxruntimePlugin : FlutterPlugin, MethodCallHandler {
                                     }
                                 OnnxTensor.createTensor(ortEnvironment, stringData, longShape)
                             }
+
                             else -> {
                                 result.error("UNSUPPORTED_TYPE", "Unsupported source data type: $sourceType", null)
                                 return
@@ -826,6 +903,7 @@ class FlutterOnnxruntimePlugin : FlutterPlugin, MethodCallHandler {
                     result.error("TENSOR_CREATION_ERROR", e.message, e.stackTraceToString())
                 }
             }
+
             "convertOrtValue" -> {
                 try {
                     val valueId = call.argument<String>("valueId")
@@ -875,6 +953,7 @@ class FlutterOnnxruntimePlugin : FlutterPlugin, MethodCallHandler {
                                 // Use OnnxTensor.createTensor with the appropriate float16 type
                                 OnnxTensor.createTensor(ortEnvironment, shortBuffer, shape, OnnxJavaType.FLOAT16)
                             }
+
                             // Float16 to float32
                             dataType == "float16" && targetType == "float32" -> {
                                 val shortBuffer = tensor.shortBuffer
@@ -884,6 +963,7 @@ class FlutterOnnxruntimePlugin : FlutterPlugin, MethodCallHandler {
                                 val floatArray = FloatArray(shortArray.size) { Float16Utils.float16ToFloat(shortArray[it]) }
                                 OnnxTensor.createTensor(ortEnvironment, FloatBuffer.wrap(floatArray), shape)
                             }
+
                             // Int32 to Float32
                             dataType == "int32" && targetType == "float32" -> {
                                 val intBuffer = tensor.intBuffer
@@ -893,6 +973,7 @@ class FlutterOnnxruntimePlugin : FlutterPlugin, MethodCallHandler {
                                 val floatArray = FloatArray(intArray.size) { intArray[it].toFloat() }
                                 OnnxTensor.createTensor(ortEnvironment, FloatBuffer.wrap(floatArray), shape)
                             }
+
                             // Int64 to Float32
                             dataType == "int64" && targetType == "float32" -> {
                                 val longBuffer = tensor.longBuffer
@@ -902,6 +983,7 @@ class FlutterOnnxruntimePlugin : FlutterPlugin, MethodCallHandler {
                                 val floatArray = FloatArray(longArray.size) { longArray[it].toFloat() }
                                 OnnxTensor.createTensor(ortEnvironment, FloatBuffer.wrap(floatArray), shape)
                             }
+
                             // Uint8 to Float32
                             dataType == "uint8" && targetType == "float32" -> {
                                 val byteBuffer = tensor.byteBuffer
@@ -911,6 +993,7 @@ class FlutterOnnxruntimePlugin : FlutterPlugin, MethodCallHandler {
                                 val floatArray = FloatArray(byteArray.size) { (byteArray[it].toInt() and 0xFF).toFloat() }
                                 OnnxTensor.createTensor(ortEnvironment, FloatBuffer.wrap(floatArray), shape)
                             }
+
                             // Uint8 to Int32
                             dataType == "uint8" && targetType == "int32" -> {
                                 val byteBuffer = tensor.byteBuffer
@@ -920,6 +1003,7 @@ class FlutterOnnxruntimePlugin : FlutterPlugin, MethodCallHandler {
                                 val intArray = IntArray(byteArray.size) { byteArray[it].toInt() and 0xFF }
                                 OnnxTensor.createTensor(ortEnvironment, IntBuffer.wrap(intArray), shape)
                             }
+
                             // Uint8 to Int64
                             dataType == "uint8" && targetType == "int64" -> {
                                 val byteBuffer = tensor.byteBuffer
@@ -929,6 +1013,7 @@ class FlutterOnnxruntimePlugin : FlutterPlugin, MethodCallHandler {
                                 val longArray = LongArray(byteArray.size) { (byteArray[it].toInt() and 0xFF).toLong() }
                                 OnnxTensor.createTensor(ortEnvironment, LongBuffer.wrap(longArray), shape)
                             }
+
                             // Float32 to Int32
                             dataType == "float32" && targetType == "int32" -> {
                                 val floatBuffer = tensor.floatBuffer
@@ -938,6 +1023,7 @@ class FlutterOnnxruntimePlugin : FlutterPlugin, MethodCallHandler {
                                 val intArray = IntArray(floatArray.size) { floatArray[it].toInt() }
                                 OnnxTensor.createTensor(ortEnvironment, IntBuffer.wrap(intArray), shape)
                             }
+
                             // Float32 to Int64
                             dataType == "float32" && targetType == "int64" -> {
                                 val floatBuffer = tensor.floatBuffer
@@ -947,6 +1033,7 @@ class FlutterOnnxruntimePlugin : FlutterPlugin, MethodCallHandler {
                                 val longArray = LongArray(floatArray.size) { floatArray[it].toLong() }
                                 OnnxTensor.createTensor(ortEnvironment, LongBuffer.wrap(longArray), shape)
                             }
+
                             // Int32 to Int64
                             dataType == "int32" && targetType == "int64" -> {
                                 val intBuffer = tensor.intBuffer
@@ -956,6 +1043,7 @@ class FlutterOnnxruntimePlugin : FlutterPlugin, MethodCallHandler {
                                 val longArray = LongArray(intArray.size) { intArray[it].toLong() }
                                 OnnxTensor.createTensor(ortEnvironment, LongBuffer.wrap(longArray), shape)
                             }
+
                             // Int64 to Int32 (with potential loss of precision)
                             dataType == "int64" && targetType == "int32" -> {
                                 val longBuffer = tensor.longBuffer
@@ -971,6 +1059,7 @@ class FlutterOnnxruntimePlugin : FlutterPlugin, MethodCallHandler {
                                 val intArray = IntArray(longArray.size) { longArray[it].toInt() }
                                 OnnxTensor.createTensor(ortEnvironment, IntBuffer.wrap(intArray), shape)
                             }
+
                             // Float32 to Uint8
                             dataType == "float32" && targetType == "uint8" -> {
                                 val floatBuffer = tensor.floatBuffer
@@ -981,6 +1070,7 @@ class FlutterOnnxruntimePlugin : FlutterPlugin, MethodCallHandler {
                                 val byteData = ByteArray(floatArray.size) { floatArray[it].toInt().coerceIn(0, 255).toByte() }
                                 OnnxTensor.createTensor(ortEnvironment, ByteBuffer.wrap(byteData), shape, OnnxJavaType.UINT8)
                             }
+
                             // Int32 to Uint8
                             dataType == "int32" && targetType == "uint8" -> {
                                 val intBuffer = tensor.intBuffer
@@ -991,6 +1081,7 @@ class FlutterOnnxruntimePlugin : FlutterPlugin, MethodCallHandler {
                                 val byteData = ByteArray(intArray.size) { intArray[it].coerceIn(0, 255).toByte() }
                                 OnnxTensor.createTensor(ortEnvironment, ByteBuffer.wrap(byteData), shape, OnnxJavaType.UINT8)
                             }
+
                             // Int64 to Uint8
                             dataType == "int64" && targetType == "uint8" -> {
                                 val longBuffer = tensor.longBuffer
@@ -1001,6 +1092,7 @@ class FlutterOnnxruntimePlugin : FlutterPlugin, MethodCallHandler {
                                 val byteData = ByteArray(longArray.size) { longArray[it].coerceIn(0, 255).toByte() }
                                 OnnxTensor.createTensor(ortEnvironment, ByteBuffer.wrap(byteData), shape, OnnxJavaType.UINT8)
                             }
+
                             // Boolean to Float32
                             dataType == "bool" && targetType == "float32" -> {
                                 val byteBuffer = tensor.byteBuffer
@@ -1010,6 +1102,7 @@ class FlutterOnnxruntimePlugin : FlutterPlugin, MethodCallHandler {
                                 val floatArray = FloatArray(byteArray.size) { if (byteArray[it] != 0.toByte()) 1.0f else 0.0f }
                                 OnnxTensor.createTensor(ortEnvironment, FloatBuffer.wrap(floatArray), shape)
                             }
+
                             // Boolean to Int32
                             dataType == "bool" && targetType == "int32" -> {
                                 val byteBuffer = tensor.byteBuffer
@@ -1019,6 +1112,7 @@ class FlutterOnnxruntimePlugin : FlutterPlugin, MethodCallHandler {
                                 val intArray = IntArray(byteArray.size) { if (byteArray[it] != 0.toByte()) 1 else 0 }
                                 OnnxTensor.createTensor(ortEnvironment, IntBuffer.wrap(intArray), shape)
                             }
+
                             // Boolean to Int64
                             dataType == "bool" && targetType == "int64" -> {
                                 val byteBuffer = tensor.byteBuffer
@@ -1028,6 +1122,7 @@ class FlutterOnnxruntimePlugin : FlutterPlugin, MethodCallHandler {
                                 val longArray = LongArray(byteArray.size) { if (byteArray[it] != 0.toByte()) 1L else 0L }
                                 OnnxTensor.createTensor(ortEnvironment, LongBuffer.wrap(longArray), shape)
                             }
+
                             // Boolean to Int8/Uint8
                             dataType == "bool" && (targetType == "int8" || targetType == "uint8") -> {
                                 val byteBuffer = tensor.byteBuffer
@@ -1038,6 +1133,7 @@ class FlutterOnnxruntimePlugin : FlutterPlugin, MethodCallHandler {
                                 val javaType = if (targetType == "uint8") OnnxJavaType.UINT8 else OnnxJavaType.INT8
                                 OnnxTensor.createTensor(ortEnvironment, ByteBuffer.wrap(byteArray), shape, javaType)
                             }
+
                             // Int8/Uint8 to Boolean
                             (dataType == "int8" || dataType == "uint8") && targetType == "bool" -> {
                                 val byteBuffer = tensor.byteBuffer
@@ -1048,6 +1144,7 @@ class FlutterOnnxruntimePlugin : FlutterPlugin, MethodCallHandler {
                                 val boolArray = ByteArray(byteArray.size) { if (byteArray[it] != 0.toByte()) 1.toByte() else 0.toByte() }
                                 OnnxTensor.createTensor(ortEnvironment, ByteBuffer.wrap(boolArray), shape, OnnxJavaType.BOOL)
                             }
+
                             // Same type conversion (no-op)
                             (dataType == "float32" && targetType == "float32") ||
                                 (dataType == "float16" && targetType == "float16") ||
@@ -1060,6 +1157,7 @@ class FlutterOnnxruntimePlugin : FlutterPlugin, MethodCallHandler {
                                 // clone the original tensor to a new tensor
                                 OnnxTensor.createTensor(ortEnvironment, tensor.getValue())
                             }
+
                             else -> {
                                 // Unsupported conversion
                                 result.error(
@@ -1089,6 +1187,7 @@ class FlutterOnnxruntimePlugin : FlutterPlugin, MethodCallHandler {
                     result.error("CONVERSION_ERROR", e.message, e.stackTraceToString())
                 }
             }
+
             "getOrtValueData" -> {
                 try {
                     val valueId = call.argument<String>("valueId")
@@ -1121,48 +1220,55 @@ class FlutterOnnxruntimePlugin : FlutterPlugin, MethodCallHandler {
                                 tensor.floatBuffer.get(floatArray)
                                 floatArray
                             }
+
                             "float16" -> {
                                 // For float16, convert to float32 for easier use in Dart
                                 val shortArray = ShortArray(flatSize)
                                 tensor.shortBuffer.get(shortArray)
                                 shortArray.map { Float16Utils.float16ToFloat(it) }
                             }
+
                             "int32" -> {
                                 val intArray = IntArray(flatSize)
                                 tensor.intBuffer.get(intArray)
                                 intArray
                             }
+
                             "int64" -> {
                                 val longArray = LongArray(flatSize)
                                 tensor.longBuffer.get(longArray)
                                 longArray
                             }
+
                             "int16", "uint16" -> {
                                 val shortArray = ShortArray(flatSize)
                                 tensor.shortBuffer.get(shortArray)
                                 shortArray.map { it.toInt() }
                             }
+
                             "int8", "uint8" -> {
                                 val byteArray = ByteArray(flatSize)
                                 tensor.byteBuffer.get(byteArray)
                                 byteArray
                             }
+
                             "bool" -> {
                                 val byteArray = ByteArray(flatSize)
                                 tensor.byteBuffer.get(byteArray)
                                 byteArray.map { it != 0.toByte() }
                             }
+
                             "string" -> {
                                 // flatten multi-dim string array to 1D list
-                                fun flattenStringArray(arr: Any): List<String> {
-                                    return when (arr) {
+                                fun flattenStringArray(arr: Any): List<String> =
+                                    when (arr) {
                                         is String -> listOf(arr)
                                         is Array<*> -> arr.flatMap { flattenStringArray(it!!) }
                                         else -> throw IllegalArgumentException("Unexpected type in string tensor: ${arr::class.java}")
                                     }
-                                }
                                 flattenStringArray(tensor.value)
                             }
+
                             else -> {
                                 result.error("UNSUPPORTED_NATIVE_TYPE", "Unsupported native data type: ${tensor.info.type}", null)
                                 return
@@ -1180,6 +1286,7 @@ class FlutterOnnxruntimePlugin : FlutterPlugin, MethodCallHandler {
                     result.error("DATA_EXTRACTION_ERROR", e.message, e.stackTraceToString())
                 }
             }
+
             "releaseOrtValue" -> {
                 try {
                     val valueId = call.argument<String>("valueId")
@@ -1204,6 +1311,7 @@ class FlutterOnnxruntimePlugin : FlutterPlugin, MethodCallHandler {
                     result.error("RELEASE_ERROR", e.message, e.stackTraceToString())
                 }
             }
+
             else -> {
                 result.notImplemented()
             }
