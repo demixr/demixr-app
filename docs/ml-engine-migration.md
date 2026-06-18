@@ -82,13 +82,20 @@ now PASSES** — full 2-chunk run, 4 stems, no OOM (`tool/device_check.dart`); m
 parity still 1 LSB (optimization is semantics-preserving), inference 3968→6654 ms
 (the memory/speed tradeoff). Peak should now be ~2.2 GB.
 
+**iOS validated on a real iPhone (iOS 26.5).** `tool/device_check.dart` showed
+**PASS** on-device (model loaded, inference ran, 4 valid stems) with the memory
+fix in place — so ~2.2 GB fits the iPhone's per-app limit (no jetsam kill).
+Toolchain notes for next time: a *debug* build can't be launched standalone
+(tap-to-run insta-crashes with "Cannot create a FlutterEngine in debug mode…");
+drive it with `flutter run`, or use a **profile** build. The iOS *simulator*
+can't build at all (`ffmpeg_kit_flutter_new_audio` has no arm64-sim slice).
+Engine now validated on **macOS + Android emulator + real iPhone**.
+
 **Still remaining before removing the old Android engine:**
 - Validate on a **real Android device** (true peak RAM; 2.2 GB is still borderline
   on 4 GB phones) and the **16 KB-page emulator**; consider the DSP-split (STFT in
   Dart) if low-end devices still OOM.
-- Validate on a **real iPhone** (simulator can't build — `ffmpeg_kit_flutter_new_audio`
-  has no arm64-sim slice).
-- Seam-test on real music; confirm player playback/cancellation.
+- Seam-test on real music; confirm player playback/cancellation with ONNX stems.
 
 ---
 
