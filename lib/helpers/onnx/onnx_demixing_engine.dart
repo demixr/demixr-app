@@ -66,21 +66,29 @@ class OnnxDemixingEngine {
   ) async {
     final ort = OnnxRuntime();
     final available = await ort.getAvailableProviders();
-    final providers = providerOverride ??
-        DemucsConfig.preferredProviders(
-          Platform.operatingSystem,
-          available,
-        );
+    final providers =
+        providerOverride ??
+        DemucsConfig.preferredProviders(Platform.operatingSystem, available);
+    // Disable graph optimization: ORT's default (ALL) constant-folds htdemucs's
+    // in-graph STFT into huge tensors, peaking ~5GB and OOM-killing mobile.
+    // Disabling it roughly halves peak RSS (~2.2GB) for a small speed cost.
+    const optLevel = OrtGraphOptimizationLevel.disableAll;
     try {
       return await ort.createSession(
         modelPath,
-        options: OrtSessionOptions(providers: providers),
+        options: OrtSessionOptions(
+          providers: providers,
+          graphOptimizationLevel: optLevel,
+        ),
       );
     } catch (e) {
       debugPrint('ONNX: provider $providers failed ($e); falling back to CPU');
       return await ort.createSession(
         modelPath,
-        options: OrtSessionOptions(providers: [OrtProvider.CPU]),
+        options: OrtSessionOptions(
+          providers: [OrtProvider.CPU],
+          graphOptimizationLevel: optLevel,
+        ),
       );
     }
   }
@@ -117,7 +125,7 @@ class OnnxDemixingEngine {
     // index of element 0; by construction it always equals the chunk start.
     final acc = {
       for (final stem in sources)
-        stem: List.generate(nChannels, (_) => Float32List(segment))
+        stem: List.generate(nChannels, (_) => Float32List(segment)),
     };
     final weight = Float32List(segment);
     final inputBuf = Float32List(nChannels * segment);
@@ -126,7 +134,9 @@ class OnnxDemixingEngine {
     try {
       for (var i = 0; i < nChunks; i++) {
         final start = i * stride;
-        final end = (start + segment) < totalFrames ? start + segment : totalFrames;
+        final end = (start + segment) < totalFrames
+            ? start + segment
+            : totalFrames;
         final chunkLen = end - start;
 
         // Build the [1, 2, segment] input tensor (channel-major), zero-padded.
@@ -138,10 +148,11 @@ class OnnxDemixingEngine {
           }
         }
 
-        final inputValue = await OrtValue.fromList(
-          inputBuf,
-          [1, nChannels, segment],
-        );
+        final inputValue = await OrtValue.fromList(inputBuf, [
+          1,
+          nChannels,
+          segment,
+        ]);
         final stems = await _infer(session, inputValue);
         await inputValue.dispose();
 

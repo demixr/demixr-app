@@ -25,7 +25,10 @@ class UnmixButton extends StatelessWidget {
           textSize: 18,
           onPressed: songProvider.song.fold(
             (failure) => () {
-              errorSnackbar('No song selected', 'You need to select a song first');
+              errorSnackbar(
+                'No song selected',
+                'You need to select a song first',
+              );
             },
             (song) => () {
               var demixingProvider = context.read<DemixingProvider>();

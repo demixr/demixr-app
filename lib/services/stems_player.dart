@@ -41,9 +41,9 @@ class StemsPlayer {
   /// first use. Lazy creation keeps the player robust to the set of stems a
   /// song actually has (4 or 6) without pre-allocating every possible player.
   AudioPlayer _player(Stem stem) => players.putIfAbsent(
-        stem,
-        () => AudioPlayer()..setAudioContext(_audioContext),
-      );
+    stem,
+    () => AudioPlayer()..setAudioContext(_audioContext),
+  );
 
   AudioPlayer get aPlayer => _player(Stem.vocals);
 

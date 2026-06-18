@@ -163,3 +163,8 @@ app.*.symbols
 
 # Local-only on-device test model (158MB) — never commit
 /assets/test_fixtures/
+
+# vendored plugin build artifacts
+third_party/**/.build/
+third_party/**/build/
+third_party/flutter_onnxruntime/example/

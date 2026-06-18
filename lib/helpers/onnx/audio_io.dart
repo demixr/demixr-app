@@ -72,11 +72,13 @@ class WavWriter {
     final file = File(path);
     if (await file.exists()) await file.delete();
     final sink = file.openWrite();
-    sink.add(_header(
-      sampleRate: sampleRate,
-      channels: channels,
-      totalFrames: totalFrames,
-    ));
+    sink.add(
+      _header(
+        sampleRate: sampleRate,
+        channels: channels,
+        totalFrames: totalFrames,
+      ),
+    );
     return WavWriter._(sink, channels);
   }
 

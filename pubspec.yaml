@@ -61,6 +61,12 @@ dependencies:
   loading_indicator: ^3.1.1
   auto_size_text: ^3.0.0
 
+# Local patched copy of flutter_onnxruntime that exposes graphOptimizationLevel
+# (upstream doesn't), so we can lower it to cut peak memory ~2x on mobile.
+dependency_overrides:
+  flutter_onnxruntime:
+    path: third_party/flutter_onnxruntime
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

@@ -24,8 +24,7 @@ class StemSelection extends StatelessWidget {
           rows.add(
             Row(
               children: [
-                for (final stem in rowStems)
-                  Expanded(child: StemButton(stem)),
+                for (final stem in rowStems) Expanded(child: StemButton(stem)),
                 // Keep the last odd cell aligned with the column above it.
                 for (var pad = rowStems.length; pad < perRow; pad++)
                   const Expanded(child: SizedBox.shrink()),

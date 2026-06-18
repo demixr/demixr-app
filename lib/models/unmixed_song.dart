@@ -88,13 +88,13 @@ class UnmixedSong {
   /// The stems this song actually contains, in display order (excludes the
   /// mixture, which is handled separately by the player).
   List<Stem> get stems => [
-        Stem.vocals,
-        Stem.drums,
-        Stem.bass,
-        Stem.other,
-        if (guitar != null) Stem.guitar,
-        if (piano != null) Stem.piano,
-      ];
+    Stem.vocals,
+    Stem.drums,
+    Stem.bass,
+    Stem.other,
+    if (guitar != null) Stem.guitar,
+    if (piano != null) Stem.piano,
+  ];
 
   String getStem(Stem stem) {
     switch (stem) {

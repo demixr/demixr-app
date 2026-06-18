@@ -56,8 +56,11 @@ class _CheckAppState extends State<_CheckApp> {
       if (!File(modelPath).existsSync() ||
           File(modelPath).lengthSync() < 1000000) {
         _log('downloading model...');
-        await Dio().download(Models.htdemucs.url, modelPath,
-            options: Options(receiveTimeout: const Duration(minutes: 10)));
+        await Dio().download(
+          Models.htdemucs.url,
+          modelPath,
+          options: Options(receiveTimeout: const Duration(minutes: 10)),
+        );
       }
       _log('model ready: ${File(modelPath).lengthSync()} bytes');
 
@@ -78,12 +81,16 @@ class _CheckAppState extends State<_CheckApp> {
       );
       sw.stop();
 
-      final ok = {'vocals', 'drums', 'bass', 'other'}
-          .every((s) => stems.containsKey(s) &&
-              File(stems[s]!).existsSync() &&
-              File(stems[s]!).lengthSync() > 44);
-      _log('RESULT stems=${stems.keys.toList()} ok=$ok '
-          'took=${sw.elapsedMilliseconds}ms');
+      final ok = {'vocals', 'drums', 'bass', 'other'}.every(
+        (s) =>
+            stems.containsKey(s) &&
+            File(stems[s]!).existsSync() &&
+            File(stems[s]!).lengthSync() > 44,
+      );
+      _log(
+        'RESULT stems=${stems.keys.toList()} ok=$ok '
+        'took=${sw.elapsedMilliseconds}ms',
+      );
       _log(ok ? 'PASS' : 'FAIL');
     } catch (e, st) {
       _log('ERROR $e');
@@ -101,8 +108,12 @@ class _CheckAppState extends State<_CheckApp> {
       left[i] = 0.2 * sin(2 * pi * 220 * t);
       right[i] = 0.2 * sin(2 * pi * 330 * t);
     }
-    final w = await WavWriter.create(path,
-        sampleRate: sr, channels: 2, totalFrames: n);
+    final w = await WavWriter.create(
+      path,
+      sampleRate: sr,
+      channels: 2,
+      totalFrames: n,
+    );
     w.addFrames([left, right], 0, n);
     await w.close();
   }
@@ -111,10 +122,12 @@ class _CheckAppState extends State<_CheckApp> {
   Widget build(BuildContext context) {
     return MaterialApp(
       home: Scaffold(
-        body: Center(child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Text(_status, textAlign: TextAlign.center),
-        )),
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Text(_status, textAlign: TextAlign.center),
+          ),
+        ),
       ),
     );
   }
