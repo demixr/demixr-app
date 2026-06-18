@@ -74,12 +74,21 @@ future native-Metal opportunity, out of scope here. (Spike scripts:
   installed + cabling/provisioning. iOS *device* would build; the same ~2.2 GB
   memory concern applies (iPhones 4–8 GB).
 
-**=> Do NOT remove the old Android engine yet.** First make the ONNX path
-mobile-viable: (1) patch `flutter_onnxruntime` to set a lower graph-optimization
-level (→ ~2.2 GB), and/or (2) DSP-split (STFT in Dart) to shrink the graph; then
-re-validate peak RAM on a real Android device + the 16 KB-page emulator, seam-test
-on real music, and confirm player playback/cancellation. Tooling for an on-device
-smoke run: `tool/device_check.dart` (`flutter run -t tool/device_check.dart`).
+**Memory fix — DONE.** Vendored `flutter_onnxruntime` under `third_party/` (via
+`dependency_overrides`) with a minimal patch exposing `graphOptimizationLevel`
+through `OrtSessionOptions` (Android Kotlin + iOS/macOS Swift), and the engine now
+requests `OrtGraphOptimizationLevel.disableAll`. Result: **Android emulator (6 GB)
+now PASSES** — full 2-chunk run, 4 stems, no OOM (`tool/device_check.dart`); macOS
+parity still 1 LSB (optimization is semantics-preserving), inference 3968→6654 ms
+(the memory/speed tradeoff). Peak should now be ~2.2 GB.
+
+**Still remaining before removing the old Android engine:**
+- Validate on a **real Android device** (true peak RAM; 2.2 GB is still borderline
+  on 4 GB phones) and the **16 KB-page emulator**; consider the DSP-split (STFT in
+  Dart) if low-end devices still OOM.
+- Validate on a **real iPhone** (simulator can't build — `ffmpeg_kit_flutter_new_audio`
+  has no arm64-sim slice).
+- Seam-test on real music; confirm player playback/cancellation.
 
 ---
 
