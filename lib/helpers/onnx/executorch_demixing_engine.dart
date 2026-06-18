@@ -58,8 +58,12 @@ class ExecuTorchDemixingEngine {
     }
   }
 
+  // Per-run timing accumulators (ms), for profiling.
+  double _coreMs = 0, _postMs = 0, _marshalMs = 0;
+
   /// Runs one fixed-length segment through core -> post and returns the
-  /// flattened `[1, S, 2, segment]` stems as a [Float32List].
+  /// flattened `[1, S, 2, segment]` stems as a [Float32List] (zero-copy view
+  /// onto the output tensor's bytes — no boxing/extra copy).
   Future<Float32List> _infer(
     ExecuTorchModel core,
     ExecuTorchModel post,
@@ -67,16 +71,24 @@ class ExecuTorchDemixingEngine {
   ) async {
     const segment = DemucsConfig.segment;
     const nChannels = DemucsConfig.channels;
+    final sw = Stopwatch()..start();
     final mix = ExecutorchManager.instance.createTensorData(
       shape: [1, nChannels, segment],
       dataType: TensorType.float32,
       data: mixBuf,
     );
-    // core: mix -> [spec, time]; those flow straight into post -> [stems].
+    _marshalMs += sw.elapsedMicroseconds / 1000;
+    sw.reset();
+
     final coreOut = await core.forward([mix]);
+    _coreMs += sw.elapsedMicroseconds / 1000;
+    sw.reset();
+
     final stems = await post.forward(coreOut);
-    final flat = TensorUtils.extractFloat32Data(stems.first);
-    return flat is Float32List ? flat : Float32List.fromList(flat);
+    _postMs += sw.elapsedMicroseconds / 1000;
+
+    final d = stems.first.data;
+    return Float32List.view(d.buffer, d.offsetInBytes, d.lengthInBytes ~/ 4);
   }
 
   Future<Map<String, String>> _runOverlapAdd({
@@ -183,7 +195,8 @@ class ExecuTorchDemixingEngine {
       for (final writer in writers.values) {
         await writer.close();
       }
-      debugPrint('ExecuTorch demix wrote ${paths.length} stems');
+      debugPrint('ExecuTorch timing/$nChunks chunks: core=${_coreMs.round()}ms '
+          'post=${_postMs.round()}ms marshalIn=${_marshalMs.round()}ms');
     }
 
     return paths;
