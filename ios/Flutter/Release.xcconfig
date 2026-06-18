@@ -1,2 +1,4 @@
 #include? "Pods/Target Support Files/Pods-Runner/Pods-Runner.release.xcconfig"
 #include "Generated.xcconfig"
+
+CODE_SIGN_ENTITLEMENTS=Runner/Runner.entitlements
