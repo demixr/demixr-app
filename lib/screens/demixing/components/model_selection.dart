@@ -97,7 +97,7 @@ class ModelSelection extends StatelessWidget {
     );
 
     List<Widget> children = [
-      for (var model in Models.available)
+      for (var model in Models.all)
         buildModelTile(
           context,
           model,

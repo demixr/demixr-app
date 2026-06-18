@@ -43,8 +43,6 @@ class BoxesNames {
 }
 
 class Models {
-  static const openUnmixInfosUrl = 'https://sigsep.github.io/open-unmix/';
-
   /// htdemucs (Demucs v4), 4-stem, exported to a self-contained ONNX graph.
   /// Cross-platform (Android/iOS/macOS) via ONNX Runtime. The `fp16weights`
   /// variant is ~half the download of fp32 and numerically identical at
@@ -56,57 +54,27 @@ class Models {
     url:
         'https://huggingface.co/StemSplitio/htdemucs-onnx/resolve/main/htdemucs_fp16weights.onnx',
     isDefault: true,
-    fileExtension: '.onnx',
-    engine: ModelEngine.onnx,
   );
 
-  /// htdemucs_6s — same engine as [htdemucs] but 6 stems (adds guitar + piano).
+  /// htdemucs_6s — same model family as [htdemucs] but 6 stems (adds guitar +
+  /// piano; guitar/piano quality is experimental).
   static const htdemucs6s = Model(
     name: 'htdemucs_6s',
     description:
         '6-stem Demucs v4: vocals, drums, bass, other, guitar, piano.\nRuns on all platforms, a bit slower than 4-stem.\n(130 MB)',
     url:
         'https://huggingface.co/StemSplitio/htdemucs-6s-onnx/resolve/main/htdemucs_6s_fp16weights.onnx',
-    fileExtension: '.onnx',
-    engine: ModelEngine.onnx,
     stems: ['vocals', 'drums', 'bass', 'other', 'guitar', 'piano'],
-  );
-
-  static const umxhq = Model(
-    name: 'umxhq',
-    description:
-        'Model trained on the MUSDB18-HQ dataset.\nFaster separation (~ length of the song).\n(140 MB)',
-    url:
-        'https://github.com/demixr/openunmix-torchscript/releases/latest/download/umxhq.ptl',
-  );
-  static const umxl = Model(
-    name: 'umxl',
-    description:
-        'Model trained on extra data. Longer separation, but improved performance.\n(290 MB)',
-    url:
-        'https://github.com/demixr/openunmix-torchscript/releases/latest/download/umxl.ptl',
   );
 
   static Model fromName(String name) {
     if (name == htdemucs.name) return htdemucs;
     if (name == htdemucs6s.name) return htdemucs6s;
-    if (name == umxhq.name) return umxhq;
-    if (name == umxl.name) return umxl;
 
     throw ArgumentError('Models: The given model name does not exist');
   }
 
-  static const List<Model> all = [
-    Models.htdemucs,
-    Models.htdemucs6s,
-    Models.umxhq,
-    Models.umxl,
-  ];
-
-  /// Models whose engine is usable on the current platform (ONNX everywhere,
-  /// OpenUnmix only on Android).
-  static List<Model> get available =>
-      all.where((model) => model.isSupportedOnCurrentPlatform).toList();
+  static const List<Model> all = [Models.htdemucs, Models.htdemucs6s];
 }
 
 enum Stem { mixture, vocals, drums, bass, other, guitar, piano }
@@ -141,9 +109,4 @@ Stem stemFromValue(String value) =>
 
 class Preferences {
   static const model = 'model';
-}
-
-class PlatformChannels {
-  static const demixing = 'demixing';
-  static const demixingProgress = 'demixing/progress';
 }

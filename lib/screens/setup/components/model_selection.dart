@@ -1,5 +1,3 @@
-import 'dart:io' show Platform;
-
 import 'package:demixr_app/constants.dart';
 import 'package:demixr_app/screens/setup/components/model_group.dart';
 import 'package:demixr_app/utils.dart';
@@ -18,14 +16,6 @@ class ModelSelection extends StatelessWidget {
           models: const [Models.htdemucs, Models.htdemucs6s],
           imagePath: getAssetPath('open_unmix', AssetType.image),
         ),
-        // The OpenUnmix engine is native Android-only.
-        if (Platform.isAndroid)
-          ModelGroup(
-            title: 'Open-Unmix',
-            models: const [Models.umxhq, Models.umxl],
-            infosUrl: Models.openUnmixInfosUrl,
-            imagePath: getAssetPath('open_unmix', AssetType.image),
-          ),
       ],
     );
   }

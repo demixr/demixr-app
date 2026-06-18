@@ -31,7 +31,7 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
 
-    // ffmpeg_kit and pytorch_android_lite each bundle their own copy of
+    // ffmpeg_kit and the onnxruntime AAR can each bundle their own copy of
     // libc++_shared.so; keep the first to avoid a duplicate-file merge error.
     packaging {
         jniLibs {
@@ -45,11 +45,6 @@ android {
         targetSdk = flutter.targetSdkVersion
         versionCode = flutterVersionCode.toInteger()
         versionName = flutterVersionName
-        externalNativeBuild {
-            cmake {
-                cppFlags ""
-            }
-        }
     }
 
     buildTypes {
@@ -58,19 +53,8 @@ android {
             signingConfig = signingConfigs.debug
         }
     }
-
-    externalNativeBuild {
-        cmake {
-            path = file("src/main/cpp/CMakeLists.txt")
-            version = "3.22.1"
-        }
-    }
 }
 
 flutter {
     source = "../.."
-}
-
-dependencies {
-    implementation "org.pytorch:pytorch_android_lite:1.10.0"
 }
