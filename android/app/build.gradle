@@ -31,6 +31,10 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
 
+    kotlinOptions {
+        jvmTarget = JavaVersion.VERSION_17.toString()
+    }
+
     // ffmpeg_kit and the onnxruntime AAR can each bundle their own copy of
     // libc++_shared.so; keep the first to avoid a duplicate-file merge error.
     packaging {
