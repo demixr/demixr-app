@@ -44,7 +44,10 @@ jobs:
 
   macos:
     name: Build macOS app
-    runs-on: macos-latest
+    # arm64 runner: the ExecuTorch macOS prebuilt is arm64-only (no x86_64), and
+    # the macOS app builds for the runner's native arch. macos-latest can resolve
+    # to an Intel runner -> x86_64 prebuilt 404. So the .dmg is Apple-Silicon-only.
+    runs-on: macos-14
     steps:
       - uses: actions/checkout@v4
       - uses: subosito/flutter-action@v2
