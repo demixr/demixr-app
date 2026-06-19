@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 
@@ -13,18 +12,14 @@ import 'onnx/onnx_demixing_engine.dart';
 import '../utils.dart';
 import '../constants.dart';
 
-/// Helper handling the source separation, via the cross-platform ONNX
-/// (htdemucs) engine that runs in Dart on ONNX Runtime.
-///
-/// On Apple platforms it will use the GPU-accelerated [ExecuTorchDemixingEngine]
-/// (CoreML) instead, when the core `.pte` has been staged locally — see
-/// [_stagedExecutorchCore]. This is a temporary dev gate until the `.pte` is
-/// hosted + downloaded like the ONNX model (M3).
+/// Handles source separation. Routes to one of two engines by the model's
+/// [DemixingEngine]: the GPU [ExecuTorchDemixingEngine] (CoreML/Vulkan `.pte`)
+/// or the cross-platform CPU [OnnxDemixingEngine] (`.onnx`). Both run the same
+/// htdemucs model and share the Dart decode / overlap-add / WAV-writing.
 ///
 /// Exposes a single [progressStream] of doubles in `[0, 1]`.
 class DemixingHelper {
   final _progressController = StreamController<double>.broadcast();
-  final _engine = OnnxDemixingEngine();
 
   /// The demixing progress stream, values in `[0, 1]`.
   Stream<double> get progressStream => _progressController.stream;
@@ -45,25 +40,22 @@ class DemixingHelper {
 
     Map<String, String> separated;
     try {
-      final corePte = _stagedExecutorchCore(modelName);
-      if (corePte != null) {
-        debugPrint('Demixing via ExecuTorch (GPU) core: $corePte');
-        separated = await ExecuTorchDemixingEngine().separate(
-          corePath: corePte,
+      separated = switch (model.engine) {
+        DemixingEngine.executorch => await ExecuTorchDemixingEngine().separate(
+          corePath: modelPath,
           inputPath: song.path,
           outputDir: outputDir,
           sources: sources,
           onProgress: onProgress,
-        );
-      } else {
-        separated = await _engine.separate(
+        ),
+        DemixingEngine.onnx => await OnnxDemixingEngine().separate(
           modelPath: modelPath,
           inputPath: song.path,
           outputDir: outputDir,
           sources: sources,
           onProgress: onProgress,
-        );
-      }
+        ),
+      };
     } on DemixingException {
       rethrow;
     } catch (e) {
@@ -74,22 +66,6 @@ class DemixingHelper {
     checkResult(separated, model);
 
     return UnmixedSong.fromSeparation(song, separated, modelName: modelName);
-  }
-
-  /// Path to a locally-staged ExecuTorch core `.pte` to run on the GPU, or
-  /// `null` to fall back to the ONNX/CPU engine.
-  ///
-  /// TEMPORARY: gated to Apple + the 4-stem htdemucs (the staged `.pte` is that
-  /// model) and a hand-placed file under `$HOME/Downloads/demixr_test/`. Once
-  /// the `.pte` is hosted and downloaded per platform (M3), this resolves to
-  /// the downloaded path instead.
-  String? _stagedExecutorchCore(String modelName) {
-    if (!(Platform.isMacOS || Platform.isIOS)) return null;
-    if (modelName != Models.htdemucs.name) return null;
-    final home = Platform.environment['HOME'];
-    if (home == null) return null;
-    final path = '$home/Downloads/demixr_test/core_coreml.pte';
-    return File(path).existsSync() ? path : null;
   }
 
   /// Check the [separated] result contains exactly the stems [model] produces.

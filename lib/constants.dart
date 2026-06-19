@@ -43,38 +43,52 @@ class BoxesNames {
 }
 
 class Models {
-  /// htdemucs (Demucs v4), 4-stem, exported to a self-contained ONNX graph.
-  /// Cross-platform (Android/iOS/macOS) via ONNX Runtime. The `fp16weights`
-  /// variant is ~half the download of fp32 and numerically identical at
-  /// runtime (max abs diff ~6e-5).
+  /// htdemucs (Demucs v4), 4-stem, on the **GPU** via ExecuTorch — CoreML on
+  /// Apple, Vulkan on Android. Same model weights as [htdemucsOnnx], just a
+  /// GPU-accelerated backend (much faster on Apple). The mask + iSTFT run in
+  /// Dart, so the `.pte` is the conv+transformer core only.
   static const htdemucs = Model(
     name: 'htdemucs',
     description:
-        'Hybrid Transformer Demucs (Demucs v4).\nState-of-the-art quality, runs on all platforms.\n(158 MB)',
-    url:
-        'https://huggingface.co/StemSplitio/htdemucs-onnx/resolve/main/htdemucs_fp16weights.onnx',
+        'Demucs v4, GPU-accelerated (CoreML / Vulkan).\nFastest on supported devices.\n(~270 MB)',
+    engine: DemixingEngine.executorch,
+    appleUrl:
+        'https://github.com/demixr/demucs-executorch/releases/download/v1.0/htdemucs_coreml.pte',
+    androidUrl:
+        'https://github.com/demixr/demucs-executorch/releases/download/v1.0/htdemucs_vulkan.pte',
     isDefault: true,
   );
 
-  /// htdemucs_6s — same model family as [htdemucs] but 6 stems (adds guitar +
-  /// piano; guitar/piano quality is experimental).
+  /// Same htdemucs (4-stem) on the **CPU** via ONNX Runtime — one cross-platform
+  /// `.onnx`, smaller download, works everywhere.
+  static const htdemucsOnnx = Model(
+    name: 'htdemucs_onnx',
+    description:
+        'Demucs v4, CPU (ONNX).\nWorks on every device, smaller download.\n(158 MB)',
+    engine: DemixingEngine.onnx,
+    onnxUrl:
+        'https://huggingface.co/StemSplitio/htdemucs-onnx/resolve/main/htdemucs_fp16weights.onnx',
+  );
+
+  /// htdemucs_6s — 6 stems (adds guitar + piano), CPU (ONNX).
   static const htdemucs6s = Model(
     name: 'htdemucs_6s',
-    description:
-        '6-stem Demucs v4: vocals, drums, bass, other, guitar, piano.\nRuns on all platforms, a bit slower than 4-stem.\n(130 MB)',
-    url:
+    description: '6-stem Demucs v4: + guitar, piano. CPU (ONNX).\n(130 MB)',
+    engine: DemixingEngine.onnx,
+    onnxUrl:
         'https://huggingface.co/StemSplitio/htdemucs-6s-onnx/resolve/main/htdemucs_6s_fp16weights.onnx',
     stems: ['vocals', 'drums', 'bass', 'other', 'guitar', 'piano'],
   );
 
   static Model fromName(String name) {
     if (name == htdemucs.name) return htdemucs;
+    if (name == htdemucsOnnx.name) return htdemucsOnnx;
     if (name == htdemucs6s.name) return htdemucs6s;
 
     throw ArgumentError('Models: The given model name does not exist');
   }
 
-  static const List<Model> all = [Models.htdemucs, Models.htdemucs6s];
+  static const List<Model> all = [htdemucs, htdemucsOnnx, htdemucs6s];
 }
 
 enum Stem { mixture, vocals, drums, bass, other, guitar, piano }

@@ -30,6 +30,12 @@ class ModelProvider extends ChangeNotifier {
 
   /// Downloads the given [model] to the app storage directory.
   void downloadModel(Model model, {required VoidCallback onDone}) async {
+    final url = model.downloadUrl;
+    if (url == null) {
+      _showDownloadError('This model is not available on this platform');
+      return;
+    }
+
     Get.toNamed('/model/download');
 
     final filename = '${model.name}${model.fileExtension}';
@@ -60,7 +66,7 @@ class ModelProvider extends ChangeNotifier {
     _cancelToken = CancelToken();
     isDownloading = true;
     errorMessage = null;
-    currentUrl = model.url;
+    currentUrl = url;
     notifyListeners();
 
     final dio = Dio(
@@ -74,7 +80,7 @@ class ModelProvider extends ChangeNotifier {
 
     try {
       await dio.download(
-        model.url,
+        url,
         path,
         onReceiveProgress: (received, total) {
           if (total > 0) {

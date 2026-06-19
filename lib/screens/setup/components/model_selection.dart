@@ -13,7 +13,7 @@ class ModelSelection extends StatelessWidget {
       children: [
         ModelGroup(
           title: 'Demucs',
-          models: const [Models.htdemucs, Models.htdemucs6s],
+          models: Models.all,
           imagePath: getAssetPath('open_unmix', AssetType.image),
         ),
       ],

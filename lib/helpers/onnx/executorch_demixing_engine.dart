@@ -25,8 +25,8 @@ import 'istft.dart';
 class ExecuTorchDemixingEngine {
   final Istft _istft = Istft();
 
-  /// Runs separation of [inputPath] using the core [corePath] `.pte`, writing
-  /// `<stem>.wav` into [outputDir]. Returns stem name -> path.
+  /// Runs separation of [inputPath] using the core `.pte` at [corePath],
+  /// writing `<stem>.wav` into [outputDir]. Returns stem name -> path.
   Future<Map<String, String>> separate({
     required String corePath,
     required String inputPath,

@@ -80,6 +80,11 @@ class PreferencesProvider extends ChangeNotifier {
     final modelPath = _repository.getModelPath(model.name);
     if (modelPath == null) return false;
 
+    // The engine (and thus file extension) can change for a persisted name —
+    // e.g. htdemucs went from a `.onnx` (CPU) to a `.pte` (GPU). A leftover
+    // file of the wrong type must be re-downloaded, not loaded.
+    if (!modelPath.endsWith(model.fileExtension)) return false;
+
     final file = File(modelPath);
     return await file.exists();
   }

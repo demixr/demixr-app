@@ -37,24 +37,31 @@ void main() {
     return sw.elapsedMilliseconds;
   }
 
-  testWidgets('benchmark CPU vs available accelerators', (tester) async {
-    if (!File(modelPath).existsSync()) {
-      markTestSkipped('Fixtures missing under $fixtures');
-      return;
-    }
+  testWidgets(
+    'benchmark CPU vs available accelerators',
+    (tester) async {
+      if (!File(modelPath).existsSync()) {
+        markTestSkipped('Fixtures missing under $fixtures');
+        return;
+      }
 
-    final available = await OnnxRuntime().getAvailableProviders();
-    // ignore: avoid_print
-    print('available providers: ${available.map((e) => e.name).toList()}');
-
-    final cpuMs = await run([OrtProvider.CPU], 'bench_cpu');
-    // ignore: avoid_print
-    print('CPU: $cpuMs ms');
-
-    if (available.contains(OrtProvider.CORE_ML)) {
-      final mlMs = await run([OrtProvider.CORE_ML, OrtProvider.CPU], 'bench_coreml');
+      final available = await OnnxRuntime().getAvailableProviders();
       // ignore: avoid_print
-      print('CoreML(+CPU): $mlMs ms (includes graph compile on first run)');
-    }
-  }, timeout: const Timeout(Duration(minutes: 15)));
+      print('available providers: ${available.map((e) => e.name).toList()}');
+
+      final cpuMs = await run([OrtProvider.CPU], 'bench_cpu');
+      // ignore: avoid_print
+      print('CPU: $cpuMs ms');
+
+      if (available.contains(OrtProvider.CORE_ML)) {
+        final mlMs = await run([
+          OrtProvider.CORE_ML,
+          OrtProvider.CPU,
+        ], 'bench_coreml');
+        // ignore: avoid_print
+        print('CoreML(+CPU): $mlMs ms (includes graph compile on first run)');
+      }
+    },
+    timeout: const Timeout(Duration(minutes: 15)),
+  );
 }
