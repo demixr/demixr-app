@@ -24,31 +24,35 @@ Future<List<Float32List>> decodeToFloatPcm(
 
   // `-f f32le` writes raw little-endian float samples with no header, which we
   // can map straight into a Float32List on every (little-endian) target.
-  final session = await FFmpegKit.execute(
-    '-y -i "$inputPath" -ac $channels -ar $sampleRate '
-    '-f f32le -acodec pcm_f32le "$rawPath"',
-  );
-  if (!ReturnCode.isSuccess(await session.getReturnCode())) {
-    throw DemixingException('Failed to decode audio for demixing');
-  }
-
-  final bytes = await rawFile.readAsBytes();
-  await rawFile.delete();
-
-  // Interleaved [c0, c1, c0, c1, ...] -> one buffer per channel.
-  final interleaved = bytes.buffer.asFloat32List(
-    bytes.offsetInBytes,
-    bytes.lengthInBytes ~/ 4,
-  );
-  final frames = interleaved.length ~/ channels;
-  final out = List.generate(channels, (_) => Float32List(frames));
-  for (var i = 0; i < frames; i++) {
-    final base = i * channels;
-    for (var c = 0; c < channels; c++) {
-      out[c][i] = interleaved[base + c];
+  try {
+    final session = await FFmpegKit.execute(
+      '-y -i "$inputPath" -ac $channels -ar $sampleRate '
+      '-f f32le -acodec pcm_f32le "$rawPath"',
+    );
+    if (!ReturnCode.isSuccess(await session.getReturnCode())) {
+      throw DemixingException('Failed to decode audio for demixing');
     }
+
+    final bytes = await rawFile.readAsBytes();
+
+    // Interleaved [c0, c1, c0, c1, ...] -> one buffer per channel.
+    final interleaved = bytes.buffer.asFloat32List(
+      bytes.offsetInBytes,
+      bytes.lengthInBytes ~/ 4,
+    );
+    final frames = interleaved.length ~/ channels;
+    final out = List.generate(channels, (_) => Float32List(frames));
+    for (var i = 0; i < frames; i++) {
+      final base = i * channels;
+      for (var c = 0; c < channels; c++) {
+        out[c][i] = interleaved[base + c];
+      }
+    }
+    return out;
+  } finally {
+    // Always remove the (possibly partial) raw PCM, even on decode failure.
+    if (await rawFile.exists()) await rawFile.delete();
   }
-  return out;
 }
 
 /// Streaming writer for 16-bit PCM WAV files.

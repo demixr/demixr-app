@@ -117,11 +117,9 @@ windows/
 **/android/app/build/
 **/android/build/
 **/android/.gradle/
-**/android/app/src/main/kotlin/
 **/android/app/build.gradle.kts
 **/android/build.gradle.kts
 **/android/settings.gradle.kts
-**/android/gradle/
 
 # iOS Runner tests
 **/ios/RunnerTests/
@@ -159,3 +157,6 @@ third_party/flutter_onnxruntime/example/
 
 # Kotlin compiler scratch dir (created by Android Gradle builds)
 android/.kotlin/
+
+# Claude Code scratch / agent worktrees
+.claude/

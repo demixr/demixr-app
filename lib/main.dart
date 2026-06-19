@@ -60,8 +60,33 @@ Future<void> _warmUpSelectedModel() async {
   }
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   const MyApp({super.key});
+
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didHaveMemoryPressure() {
+    // Free the resident GPU model when the OS signals memory pressure; it
+    // re-warms on the next demix/selection. Keeps the common-case no-stall
+    // benefit while not pinning ~270 MB under pressure.
+    ExecuTorchDemixingEngine.disposeCache();
+  }
 
   @override
   Widget build(BuildContext context) {
