@@ -70,25 +70,19 @@ class Models {
         'https://huggingface.co/StemSplitio/htdemucs-onnx/resolve/main/htdemucs_fp16weights.onnx',
   );
 
-  /// htdemucs_6s — 6 stems (adds guitar + piano), CPU (ONNX).
-  static const htdemucs6s = Model(
-    name: 'htdemucs_6s',
-    description: '6-stem Demucs v4: + guitar, piano. CPU (ONNX).\n(130 MB)',
-    engine: DemixingEngine.onnx,
-    onnxUrl:
-        'https://huggingface.co/StemSplitio/htdemucs-6s-onnx/resolve/main/htdemucs_6s_fp16weights.onnx',
-    stems: ['vocals', 'drums', 'bass', 'other', 'guitar', 'piano'],
-  );
+  // Note: a 6-stem htdemucs variant (adds guitar + piano) was evaluated but
+  // excluded — guitar/piano separation quality was poor in initial testing.
+  // See README. (The Stem.guitar/piano values + UnmixedSong fields remain for
+  // Hive schema compatibility with any previously-saved libraries.)
 
   static Model fromName(String name) {
     if (name == htdemucs.name) return htdemucs;
     if (name == htdemucsOnnx.name) return htdemucsOnnx;
-    if (name == htdemucs6s.name) return htdemucs6s;
 
     throw ArgumentError('Models: The given model name does not exist');
   }
 
-  static const List<Model> all = [htdemucs, htdemucsOnnx, htdemucs6s];
+  static const List<Model> all = [htdemucs, htdemucsOnnx];
 }
 
 enum Stem { mixture, vocals, drums, bass, other, guitar, piano }

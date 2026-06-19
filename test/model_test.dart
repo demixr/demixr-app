@@ -16,21 +16,20 @@ void main() {
       expect(m.onnxUrl, isNull);
     });
 
-    test('ONNX models are cross-platform with a single .onnx', () {
-      for (final m in [Models.htdemucsOnnx, Models.htdemucs6s]) {
-        expect(m.engine, DemixingEngine.onnx);
-        expect(m.fileExtension, '.onnx');
-        expect(m.onnxUrl, endsWith('.onnx'));
-        // ONNX runs everywhere, so it always resolves a download URL.
-        expect(m.downloadUrl, equals(m.onnxUrl));
-        expect(m.isSupportedOnCurrentPlatform, isTrue);
-      }
+    test('ONNX model is cross-platform with a single .onnx', () {
+      const m = Models.htdemucsOnnx;
+      expect(m.engine, DemixingEngine.onnx);
+      expect(m.fileExtension, '.onnx');
+      expect(m.onnxUrl, endsWith('.onnx'));
+      // ONNX runs everywhere, so it always resolves a download URL.
+      expect(m.downloadUrl, equals(m.onnxUrl));
+      expect(m.isSupportedOnCurrentPlatform, isTrue);
     });
 
-    test('htdemucs_6s produces 6 stems, others 4', () {
-      expect(Models.htdemucs6s.stems.length, 6);
-      expect(Models.htdemucs.stems.length, 4);
-      expect(Models.htdemucsOnnx.stems.length, 4);
+    test('all models produce 4 stems (no 6-stem model)', () {
+      for (final m in Models.all) {
+        expect(m.stems.length, 4);
+      }
     });
 
     test('fromName round-trips every catalog entry; unknown throws', () {
