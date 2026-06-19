@@ -56,7 +56,6 @@ dependencies:
   flutter_onnxruntime: ^1.8.0
   executorch_flutter: ^0.4.1
   youtube_explode_dart: ^3.1.0
-  fluttertoast: ^9.1.0
   image: ^4.8.0
   loadmore: ^2.1.0
   loading_indicator: ^3.1.1
