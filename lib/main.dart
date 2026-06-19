@@ -13,7 +13,7 @@ import 'package:demixr_app/screens/youtube/youtube_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:demixr_app/constants.dart' show BoxesNames, ColorPalette;
 import 'package:flutter/services.dart';
-import 'package:hive_flutter/hive_flutter.dart';
+import 'package:hive_ce_flutter/hive_ce_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:get/get.dart';
 
@@ -22,6 +22,7 @@ import 'dart:io';
 
 import 'constants.dart' show Models;
 import 'helpers/separation/executorch_demixing_engine.dart';
+import 'hive_registrar.g.dart';
 import 'models/model.dart';
 import 'repositories/preferences_repository.dart';
 import 'providers/preferences_provider.dart';
@@ -31,8 +32,11 @@ Future<void> main() async {
 
   await Hive.initFlutter();
 
-  Hive.registerAdapter<UnmixedSong>(UnmixedSongAdapter());
-  Hive.registerAdapter<Duration>(DurationAdapter());
+  // Generated registrar covers the @HiveType adapters (UnmixedSong); the
+  // hand-written Duration adapter is registered explicitly.
+  Hive
+    ..registerAdapters()
+    ..registerAdapter(DurationAdapter());
 
   await Hive.openBox<dynamic>(BoxesNames.preferences);
   await Hive.openBox<UnmixedSong>(BoxesNames.library);

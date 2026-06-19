@@ -8,7 +8,7 @@ part of 'unmixed_song.dart';
 
 class UnmixedSongAdapter extends TypeAdapter<UnmixedSong> {
   @override
-  final int typeId = 0;
+  final typeId = 0;
 
   @override
   UnmixedSong read(BinaryReader reader) {

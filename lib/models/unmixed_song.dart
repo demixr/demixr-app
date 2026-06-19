@@ -1,7 +1,7 @@
 // part 'unmixed_song.g.dart';
 import 'package:dartz/dartz.dart';
 import 'package:demixr_app/models/failure/no_album_cover.dart';
-import 'package:hive/hive.dart';
+import 'package:hive_ce/hive.dart';
 
 import '../constants.dart';
 import 'failure/failure.dart';
