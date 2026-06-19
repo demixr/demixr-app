@@ -12,10 +12,13 @@
 > :warning: This project is still in development, all the features might not work perfectly yet
 
 
-| Platform | Support            |
-| -------- | ------------------ |
-| Android  | :white_check_mark: |
-| IOS      | Coming soon        |
+| Platform | Support |
+| -------- | ------- |
+| Android  | :white_check_mark: Downloadable (APK) |
+| macOS    | :white_check_mark: Downloadable (.dmg) |
+| iOS      | :white_check_mark: Implemented & working — not yet on the App Store* |
+
+<sub>*The iOS build is complete and runs on device; publishing to the App Store / TestFlight requires a paid Apple Developer account ($99/yr), so it isn't distributed yet.</sub>
 
 
 
@@ -38,46 +41,66 @@ Music source separation is the task of decomposing music into its constitutive c
 
 ## Demixing
 
-The **demixing** is made using `PyTorch Mobile` and a source separation model optimized for mobile.
+The **demixing** uses [Demucs v4 (htdemucs)](https://github.com/facebookresearch/demucs),
+a hybrid-transformer source separation model, and runs cross-platform on
+Android, iOS and macOS. The decode, chunked overlap-add and the inverse STFT all
+run in Dart; only the conv + transformer core runs on the model runtime.
 
 
 
 ### Models
 
-[Open-Unmix](https://github.com/sigsep/open-unmix-pytorch) is a deep neural network reference implementation for music source separation in [Pytorch](https://pytorch.org/).
+The same htdemucs weights ship in two interchangeable backends, selectable at
+download time:
 
-The models are trained on the [MUSDB18](https://sigsep.github.io/datasets/musdb.html) dataset.
+| Model           | Engine                  | Notes                                              |
+| --------------- | ----------------------- | -------------------------------------------------- |
+| htdemucs (GPU)  | ExecuTorch — CoreML (Apple) / Vulkan (Android) | Default. GPU-accelerated; per-platform `.pte`.     |
+| htdemucs (ONNX) | ONNX Runtime — CPU      | Cross-platform, smaller download, runs everywhere. |
 
+Both separate audio into 4 stems: `Vocals`, `Drums`, `Bass`, `Other`.
 
+> **No 6-stem model.** A 6-stem htdemucs variant (which adds `Guitar` and
+> `Piano`) was evaluated but **excluded** — the guitar and piano separation
+> quality was poor in our initial testing, so we kept the app to the 4 stems
+> that work well.
 
-Two of the models are available in the application:
-
-| Model   | Description                                                  |
-| ------- | ------------------------------------------------------------ |
-| `umxl`  | A model that was trained on extra data which significantly improves the performance, especially generalization. |
-| `umxhq` | Default model trained on [MUSDB18-HQ](https://sigsep.github.io/datasets/musdb.html#uncompressed-wav), which comprises the same tracks as in MUSDB18 but un-compressed which yield in a full bandwidth of 22050 Hz. |
-
-
-In order to use the models on mobile, they are transformed to [torchscript](https://pytorch.org/docs/stable/jit.html) then optimized for mobile and for the `PyTorch Mobile` lite interpreter: https://github.com/demixr/openunmix-torchscript.
-
-
-
-Latest mobile build of the models: https://github.com/demixr/openunmix-torchscript/releases/latest/.
+The GPU `.pte` exports are built and hosted at
+[demixr/demucs-executorch](https://github.com/demixr/demucs-executorch); the
+ONNX model is hosted on [Hugging Face](https://huggingface.co/StemSplitio).
 
 ## Performance
 
-Using a Pixel 6, demixing a 4-minute audio file takes:
-* 3 minutes using the quantized `umxhq` model.
-* 4 minutes 10 seconds using the quantized `umxl` model.
+GPU (ExecuTorch) vs CPU (ONNX) on a 4-minute song, measured:
 
-The quantized `umxhq` model is around 2.3x faster than the `umxhq` model.
-The quantized `umxl` model is at least 3.4x faster the the `umxl` model.
+* **macOS** — GPU ~8.4× faster than CPU.
+* **iPhone** — GPU ~2.5× faster than CPU (≈4× on compute, excluding the one-time
+  model compile, which is warmed up at download time).
 
 > Note: Inference is done on CPU as GPU is not yet fully supported by PyTorch Mobile.
 
-## Download Demixr
+## Download & install
 
-You can download and install the Android application from the [latest Github release](https://github.com/demixr/demixr-app/releases/latest/) by selecting the appropriate platform `apk` file.
+Grab the build for your platform from the [latest GitHub release](https://github.com/demixr/demixr-app/releases/latest/).
+
+### Android (`.apk`)
+1. Download the `.apk` from the release.
+2. Open it. Android will ask to allow installing from this source — enable it
+   (Settings → "Install unknown apps") and confirm.
+3. Open Demixr; on first use it downloads the separation model.
+
+### macOS (`.dmg`)
+1. Download `demixr-macos.dmg` and open it; drag **Demixr** to **Applications**.
+2. The app isn't notarized (it's a free, unsigned build), so the first launch is
+   blocked by Gatekeeper. **Right-click the app → Open → Open** once; afterwards
+   it launches normally.
+
+### iOS
+The iOS app is implemented and works on device, but it isn't distributed yet:
+Apple only allows installs via the App Store / TestFlight, which require a paid
+Apple Developer account ($99/yr). It's the same model and engine as the other
+platforms (GPU-accelerated via CoreML) — just not published. To run it today you
+need to build from source with your own Apple account (`flutter run`).
 
 ## Demo
 

@@ -53,12 +53,20 @@ dependencies:
   url_launcher: ^6.3.2
   percent_indicator: ^4.2.5
   ffmpeg_kit_flutter_new_audio: ^2.0.0
+  flutter_onnxruntime: ^1.8.0
+  executorch_flutter: ^0.4.1
   youtube_explode_dart: ^3.1.0
   fluttertoast: ^9.1.0
   image: ^4.8.0
   loadmore: ^2.1.0
   loading_indicator: ^3.1.1
   auto_size_text: ^3.0.0
+
+# Local patched copy of flutter_onnxruntime that exposes graphOptimizationLevel
+# (upstream doesn't), so we can lower it to cut peak memory ~2x on mobile.
+dependency_overrides:
+  flutter_onnxruntime:
+    path: third_party/flutter_onnxruntime
 
 dev_dependencies:
   flutter_test:

@@ -91,7 +91,7 @@ class SongHelper {
     if (image == null) return null;
 
     final tempDir = await getAppTemp();
-    final filePath = p.join(tempDir, '${title}_cover.jpg');
+    final filePath = p.join(tempDir, '${sanitizeFilename(title)}_cover.jpg');
 
     File file = File(filePath);
     file.writeAsBytesSync(encodeJpg(image));
@@ -174,7 +174,7 @@ class SongHelper {
 
       final stream = yt.videos.streamsClient.get(streamInfo);
 
-      file = File(p.join(await getAppTemp(), song.title));
+      file = File(p.join(await getAppTemp(), sanitizeFilename(song.title)));
       final fileStream = file.openWrite();
 
       // Write the stream chunk by chunk, reporting progress (throttled to ~1%).
@@ -216,7 +216,7 @@ class SongHelper {
   Future<String> _downloadThumbnail(String url, String title) async {
     final response = await get(Uri.parse(url));
     final tempDir = await getAppTemp();
-    final filePath = p.join(tempDir, '${title}_cover.jpg');
+    final filePath = p.join(tempDir, '${sanitizeFilename(title)}_cover.jpg');
 
     File file = File(filePath);
     file.writeAsBytesSync(response.bodyBytes);
@@ -262,8 +262,10 @@ Future<String> convertToWav(String path) async {
     final outputPath = '${p.withoutExtension(path)}.wav';
     File(outputPath).deleteIfExists();
 
+    // 16-bit PCM, not 8-bit (pcm_u8): the demixing models read this file as
+    // their input, and 8-bit quantization audibly degrades the separation.
     final convertSession = await FFmpegKit.execute(
-      '-i "$path" -acodec pcm_u8 "$outputPath"',
+      '-i "$path" -acodec pcm_s16le "$outputPath"',
     );
     final convertRc = await convertSession.getReturnCode();
 

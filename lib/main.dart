@@ -17,6 +17,13 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:get/get.dart';
 
+import 'dart:async';
+import 'dart:io';
+
+import 'constants.dart' show Models;
+import 'helpers/separation/executorch_demixing_engine.dart';
+import 'models/model.dart';
+import 'repositories/preferences_repository.dart';
 import 'providers/preferences_provider.dart';
 
 Future<void> main() async {
@@ -31,10 +38,55 @@ Future<void> main() async {
   await Hive.openBox<UnmixedSong>(BoxesNames.library);
 
   runApp(const MyApp());
+
+  // Warm up the GPU engine for an already-downloaded model so the first demix
+  // of the session isn't stalled by the one-time CoreML compile. Background +
+  // best-effort.
+  unawaited(_warmUpSelectedModel());
 }
 
-class MyApp extends StatelessWidget {
+Future<void> _warmUpSelectedModel() async {
+  try {
+    final repo = PreferencesRepository();
+    final name = repo.getModel();
+    if (name == null) return;
+    final model = Models.fromName(name);
+    if (model.engine != DemixingEngine.executorch) return;
+    final path = repo.getModelPath(name);
+    if (path == null || !File(path).existsSync()) return;
+    await ExecuTorchDemixingEngine.warmUp(path);
+  } catch (_) {
+    // best-effort; the first demix will compile on demand
+  }
+}
+
+class MyApp extends StatefulWidget {
   const MyApp({super.key});
+
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didHaveMemoryPressure() {
+    // Free the resident GPU model when the OS signals memory pressure; it
+    // re-warms on the next demix/selection. Keeps the common-case no-stall
+    // benefit while not pinning ~270 MB under pressure.
+    ExecuTorchDemixingEngine.disposeCache();
+  }
 
   @override
   Widget build(BuildContext context) {

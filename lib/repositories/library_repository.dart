@@ -31,7 +31,9 @@ class LibraryRepository {
     String libraryDirectory,
     UnmixedSong song,
   ) async {
-    var directory = Directory(p.join(libraryDirectory, song.toString()));
+    var directory = Directory(
+      p.join(libraryDirectory, sanitizeFilename(song.toString())),
+    );
     directory = await directory.createUnique();
     return directory.path;
   }
@@ -67,6 +69,15 @@ class LibraryRepository {
     song.bass = await _saveStem(song.bass, Stem.bass.value, songDirectory);
     song.drums = await _saveStem(song.drums, Stem.drums.value, songDirectory);
     song.other = await _saveStem(song.other, Stem.other.value, songDirectory);
+
+    final guitar = song.guitar;
+    if (guitar != null) {
+      song.guitar = await _saveStem(guitar, Stem.guitar.value, songDirectory);
+    }
+    final piano = song.piano;
+    if (piano != null) {
+      song.piano = await _saveStem(piano, Stem.piano.value, songDirectory);
+    }
 
     if (song.coverPath != null) {
       String newPath = p.join(songDirectory, p.basename(song.coverPath!));

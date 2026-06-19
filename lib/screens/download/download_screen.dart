@@ -62,13 +62,17 @@ class DownloadScreen extends StatelessWidget {
                 ),
               ),
             ),
-            const AutoSizeText(
-              'The model is being downloaded',
-              textAlign: TextAlign.center,
-              maxLines: 2,
-              style: TextStyle(
-                fontSize: 20,
-                color: ColorPalette.onSurfaceVariant,
+            Consumer<ModelProvider>(
+              builder: (context, modelProvider, child) => AutoSizeText(
+                modelProvider.warmingUp
+                    ? 'Optimizing the model for your device'
+                    : 'The model is being downloaded',
+                textAlign: TextAlign.center,
+                maxLines: 2,
+                style: const TextStyle(
+                  fontSize: 20,
+                  color: ColorPalette.onSurfaceVariant,
+                ),
               ),
             ),
             CancelButton(

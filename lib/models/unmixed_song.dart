@@ -41,6 +41,14 @@ class UnmixedSong {
   @HiveField(9)
   String modelName;
 
+  /// Extra stems produced by 6-stem models (htdemucs_6s). Null for 4-stem
+  /// songs — kept nullable so existing Hive records remain valid.
+  @HiveField(10)
+  String? guitar;
+
+  @HiveField(11)
+  String? piano;
+
   UnmixedSong({
     required this.title,
     required this.artists,
@@ -51,15 +59,16 @@ class UnmixedSong {
     required this.drums,
     required this.other,
     required this.modelName,
+    this.guitar,
+    this.piano,
     this.coverPath,
   });
 
-  UnmixedSong.fromSong(
-    Song song, {
-    required String vocals,
-    required String bass,
-    required String drums,
-    required String other,
+  /// Builds an [UnmixedSong] from a stem-name -> file-path map (the demixing
+  /// result), supporting both 4-stem and 6-stem models.
+  UnmixedSong.fromSeparation(
+    Song song,
+    Map<String, String> stems, {
     required String modelName,
   }) : this(
          title: song.title,
@@ -67,12 +76,25 @@ class UnmixedSong {
          duration: song.duration,
          coverPath: song.coverPath,
          mixture: song.path,
-         vocals: vocals,
-         bass: bass,
-         drums: drums,
-         other: other,
+         vocals: stems[Stem.vocals.value]!,
+         bass: stems[Stem.bass.value]!,
+         drums: stems[Stem.drums.value]!,
+         other: stems[Stem.other.value]!,
+         guitar: stems[Stem.guitar.value],
+         piano: stems[Stem.piano.value],
          modelName: modelName,
        );
+
+  /// The stems this song actually contains, in display order (excludes the
+  /// mixture, which is handled separately by the player).
+  List<Stem> get stems => [
+    Stem.vocals,
+    Stem.drums,
+    Stem.bass,
+    Stem.other,
+    if (guitar != null) Stem.guitar,
+    if (piano != null) Stem.piano,
+  ];
 
   String getStem(Stem stem) {
     switch (stem) {
@@ -86,6 +108,10 @@ class UnmixedSong {
         return bass;
       case Stem.other:
         return other;
+      case Stem.guitar:
+        return guitar!;
+      case Stem.piano:
+        return piano!;
     }
   }
 

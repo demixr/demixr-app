@@ -19,7 +19,8 @@ pluginManagement {
 plugins {
     id "dev.flutter.flutter-plugin-loader" version "1.0.0"
     id "com.android.application" version "8.13.0" apply false
-    id "org.jetbrains.kotlin.android" version "2.2.20" apply false
+    // Kotlin is provided by Flutter's built-in Kotlin support (the flutter
+    // gradle plugin); no explicit org.jetbrains.kotlin.android needed.
 }
 
 include ":app"

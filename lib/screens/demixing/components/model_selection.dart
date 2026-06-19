@@ -1,5 +1,6 @@
 import 'package:demixr_app/components/buttons.dart';
 import 'package:demixr_app/components/extended_widgets.dart';
+import 'package:demixr_app/helpers/separation/executorch_demixing_engine.dart';
 import 'package:demixr_app/models/model.dart';
 import 'package:demixr_app/providers/model_provider.dart';
 import 'package:demixr_app/providers/preferences_provider.dart';
@@ -12,6 +13,17 @@ import '../../../utils.dart';
 
 class ModelSelection extends StatelessWidget {
   const ModelSelection({super.key});
+
+  /// Selects [model], and for an already-downloaded GPU model kicks off the
+  /// CoreML/Vulkan warm-up (fire-and-forget) so switching to it doesn't stall
+  /// the first demix on the one-time compile.
+  void _useModel(PreferencesProvider preferences, Model model) {
+    preferences.setModel(model);
+    if (model.engine == DemixingEngine.executorch) {
+      final path = preferences.repository.getModelPath(model.name);
+      if (path != null) ExecuTorchDemixingEngine.warmUp(path);
+    }
+  }
 
   Future<Widget> buildSelectButton(BuildContext context, Model model) async {
     final preferences = context.read<PreferencesProvider>();
@@ -28,7 +40,7 @@ class ModelSelection extends StatelessWidget {
         padding: const EdgeInsets.all(10),
         color: Colors.transparent,
         textColor: ColorPalette.primary,
-        onPressed: () => preferences.setModel(model),
+        onPressed: () => _useModel(preferences, model),
       );
     } else {
       return Button(
@@ -98,11 +110,7 @@ class ModelSelection extends StatelessWidget {
 
     List<Widget> children = [
       for (var model in Models.all)
-        buildModelTile(
-          context,
-          model,
-          getAssetPath('open_unmix', AssetType.image),
-        ),
+        buildModelTile(context, model, getAssetPath('demucs', AssetType.image)),
     ];
 
     return Padding(

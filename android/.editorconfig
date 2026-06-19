@@ -1,0 +1,5 @@
+# Kotlin lint config (ktlint). The package name matches the app's established
+# namespace/applicationId (com.demixr.demixr_app), whose underscore predates the
+# ktlint standard rule — so that rule is disabled rather than re-identify the app.
+[*.{kt,kts}]
+ktlint_standard_package-name = disabled

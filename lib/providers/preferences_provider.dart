@@ -34,9 +34,18 @@ class PreferencesProvider extends ChangeNotifier {
   /// Loads the app preferences from the repository.
   void _loadPreferences() {
     String? modelName = _repository.getModel();
-    _model = modelName == null
-        ? Left(NoModelSelected())
-        : Right(Models.fromName(modelName));
+    if (modelName == null) {
+      _model = Left(NoModelSelected());
+      return;
+    }
+    // A persisted name for a model that no longer exists (e.g. a removed
+    // OpenUnmix model carried over from an older install) is treated as no
+    // selection, so the user is routed to pick a current one.
+    try {
+      _model = Right(Models.fromName(modelName));
+    } on ArgumentError {
+      _model = Left(NoModelSelected());
+    }
   }
 
   /// Sets the current model to the given one.
@@ -70,6 +79,11 @@ class PreferencesProvider extends ChangeNotifier {
   Future<bool> isModelAvailable(Model model) async {
     final modelPath = _repository.getModelPath(model.name);
     if (modelPath == null) return false;
+
+    // The engine (and thus file extension) can change for a persisted name —
+    // e.g. htdemucs went from a `.onnx` (CPU) to a `.pte` (GPU). A leftover
+    // file of the wrong type must be re-downloaded, not loaded.
+    if (!modelPath.endsWith(model.fileExtension)) return false;
 
     final file = File(modelPath);
     return await file.exists();

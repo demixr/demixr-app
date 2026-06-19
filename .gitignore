@@ -117,11 +117,9 @@ windows/
 **/android/app/build/
 **/android/build/
 **/android/.gradle/
-**/android/app/src/main/kotlin/
 **/android/app/build.gradle.kts
 **/android/build.gradle.kts
 **/android/settings.gradle.kts
-**/android/gradle/
 
 # iOS Runner tests
 **/ios/RunnerTests/
@@ -148,3 +146,17 @@ app.*.symbols
 
 # cpp files
 *.cxx
+
+# Local-only on-device test model (158MB) — never commit
+/assets/test_fixtures/
+
+# vendored plugin build artifacts
+third_party/**/.build/
+third_party/**/build/
+third_party/flutter_onnxruntime/example/
+
+# Kotlin compiler scratch dir (created by Android Gradle builds)
+android/.kotlin/
+
+# Claude Code scratch / agent worktrees
+.claude/

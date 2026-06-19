@@ -6,7 +6,13 @@ import '../constants.dart';
 enum StemState { mute, unmute }
 
 class StemsPlayer {
-  Map<Stem, AudioPlayer> players = {};
+  /// Players, created lazily per stem and reused across songs so the
+  /// position/completion streams stay stable. [setUrls] picks which ones are
+  /// active for the current song.
+  final Map<Stem, AudioPlayer> players = {};
+
+  /// The stems present in the current song (excludes the mixture).
+  List<Stem> activeStems = const [];
   Map<Stem, StemState> stemStates = {};
   bool mixtureOn = false;
   int duration = 0;
@@ -14,7 +20,7 @@ class StemsPlayer {
   /// All stems play simultaneously, so the players must NOT request exclusive
   /// audio focus (the default) — otherwise each one steals focus from the
   /// others and they all get paused. `none` on Android and `mixWithOthers` on
-  /// iOS let the 5 players mix together.
+  /// iOS let the players mix together.
   static final AudioContext _audioContext = AudioContext(
     android: const AudioContextAndroid(
       contentType: AndroidContentType.music,
@@ -28,29 +34,18 @@ class StemsPlayer {
   );
 
   StemsPlayer() {
-    players = {
-      Stem.mixture: AudioPlayer()..mute(),
-      Stem.vocals: AudioPlayer(),
-      Stem.drums: AudioPlayer(),
-      Stem.bass: AudioPlayer(),
-      Stem.other: AudioPlayer(),
-    };
-
-    stemStates = {
-      Stem.vocals: StemState.unmute,
-      Stem.drums: StemState.unmute,
-      Stem.bass: StemState.unmute,
-      Stem.other: StemState.unmute,
-    };
-
-    for (final player in players.values) {
-      player.setAudioContext(_audioContext);
-    }
-
-    toggleStem(Stem.vocals);
+    _player(Stem.mixture).mute();
   }
 
-  AudioPlayer get aPlayer => players[Stem.vocals]!;
+  /// Returns the [AudioPlayer] for [stem], creating and configuring it on
+  /// first use. Lazy creation keeps the player robust to the set of stems a
+  /// song actually has (4 or 6) without pre-allocating every possible player.
+  AudioPlayer _player(Stem stem) => players.putIfAbsent(
+    stem,
+    () => AudioPlayer()..setAudioContext(_audioContext),
+  );
+
+  AudioPlayer get aPlayer => _player(Stem.vocals);
 
   Stream<Duration> get onAudioPositionChanged => aPlayer.onPositionChanged;
 
@@ -60,40 +55,66 @@ class StemsPlayer {
 
   StemState getStemState(Stem stem) => stemStates[stem] ?? StemState.mute;
 
+  /// The players in use for the current song: the active stems plus mixture.
+  Iterable<AudioPlayer> get _activePlayers =>
+      [Stem.mixture, ...activeStems].map(_player);
+
   bool get allStemsUnmute {
-    return stemStates.values.every((element) => element == StemState.unmute);
+    return activeStems.every((stem) => getStemState(stem) == StemState.unmute);
   }
 
   void setUrls(UnmixedSong song) {
-    players.forEach((stem, player) {
-      player.setSource(DeviceFileSource(song.getStem(stem)));
-    });
+    activeStems = song.stems;
+    stemStates = {for (final stem in activeStems) stem: StemState.unmute};
+    mixtureOn = false;
+
+    _player(Stem.mixture)
+      ..setSource(DeviceFileSource(song.mixture))
+      ..mute();
+    for (final stem in activeStems) {
+      _player(stem)
+        ..setSource(DeviceFileSource(song.getStem(stem)))
+        ..unMute();
+    }
+
+    // Preserve the historical default of starting with vocals muted.
+    toggleStem(Stem.vocals);
   }
 
   void pause() {
-    players.forEach((stem, player) => player.pause());
+    for (final player in _activePlayers) {
+      player.pause();
+    }
   }
 
   void resume() {
-    players.forEach((stem, player) => player.resume());
+    for (final player in _activePlayers) {
+      player.resume();
+    }
   }
 
   void stop() {
-    players.forEach((stem, player) => player.stop());
+    for (final player in _activePlayers) {
+      player.stop();
+    }
   }
 
   void seek(Duration position) {
-    players.forEach((stem, player) => player.seek(position));
+    for (final player in _activePlayers) {
+      player.seek(position);
+    }
   }
 
-  void mute(AudioPlayer player) {}
-
   void muteAll() {
-    players.forEach((stem, player) => player.mute());
+    for (final stem in activeStems) {
+      _player(stem).mute();
+    }
   }
 
   void unmuteAll() {
-    players.forEach((stem, player) => player.unMute());
+    for (final stem in activeStems) {
+      _player(stem).unMute();
+    }
   }
 
   void toggleStem(Stem stem) {
