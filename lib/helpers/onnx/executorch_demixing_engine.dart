@@ -25,6 +25,39 @@ import 'istft.dart';
 class ExecuTorchDemixingEngine {
   final Istft _istft = Istft();
 
+  // The loaded core model is kept resident and reused across demixes: loading
+  // a `.pte` triggers a one-time CoreML compile (~10 s Mac / ~20 s iPhone) that
+  // is NOT cached on disk (measured), so reusing the in-memory model is the
+  // only way to avoid recompiling on every demix. [warmUp] pays that cost once
+  // at download time, off the first-demix critical path.
+  static ExecuTorchModel? _model;
+  static String? _modelPath;
+
+  static Future<ExecuTorchModel> _loadCore(String corePath) async {
+    if (_modelPath == corePath && _model != null) return _model!;
+    await _model?.dispose();
+    _model = null;
+    _modelPath = null;
+    final m = await ExecuTorchModel.load(corePath);
+    _model = m;
+    _modelPath = corePath;
+    return m;
+  }
+
+  /// Pre-loads + compiles the core `.pte` so the first demix isn't stalled by
+  /// the CoreML compile. Call after the model finishes downloading (and at app
+  /// launch for an already-downloaded model). Safe to call repeatedly.
+  static Future<void> warmUp(String corePath) async {
+    await _loadCore(corePath);
+  }
+
+  /// Frees the resident model (e.g. on app background, to reclaim memory).
+  static Future<void> disposeCache() async {
+    await _model?.dispose();
+    _model = null;
+    _modelPath = null;
+  }
+
   /// Runs separation of [inputPath] using the core `.pte` at [corePath],
   /// writing `<stem>.wav` into [outputDir]. Returns stem name -> path.
   Future<Map<String, String>> separate({
@@ -34,29 +67,27 @@ class ExecuTorchDemixingEngine {
     required List<String> sources,
     void Function(double progress)? onProgress,
   }) async {
-    final core = await ExecuTorchModel.load(corePath);
+    // Reuses the resident model (and its compile) when warmed; loads on demand
+    // otherwise. Not disposed here — kept resident for the next demix.
+    final core = await _loadCore(corePath);
 
-    try {
-      final channels = await decodeToFloatPcm(
-        inputPath,
-        sampleRate: DemucsConfig.sampleRate,
-        channels: DemucsConfig.channels,
-      );
-      final totalFrames = channels[0].length;
-      if (totalFrames == 0) {
-        throw DemixingException('Decoded audio is empty');
-      }
-      return await _runOverlapAdd(
-        core: core,
-        input: channels,
-        totalFrames: totalFrames,
-        outputDir: outputDir,
-        sources: sources,
-        onProgress: onProgress,
-      );
-    } finally {
-      await core.dispose();
+    final channels = await decodeToFloatPcm(
+      inputPath,
+      sampleRate: DemucsConfig.sampleRate,
+      channels: DemucsConfig.channels,
+    );
+    final totalFrames = channels[0].length;
+    if (totalFrames == 0) {
+      throw DemixingException('Decoded audio is empty');
     }
+    return await _runOverlapAdd(
+      core: core,
+      input: channels,
+      totalFrames: totalFrames,
+      outputDir: outputDir,
+      sources: sources,
+      onProgress: onProgress,
+    );
   }
 
   // Per-run timing accumulators (ms), for profiling.

@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:path/path.dart' as p;
 
+import '../helpers/onnx/executorch_demixing_engine.dart';
 import '../models/model.dart';
 import '../providers/preferences_provider.dart';
 import '../constants.dart';
@@ -16,6 +17,9 @@ class ModelProvider extends ChangeNotifier {
   double progress = 0;
   int currentDownloaded = 0;
   bool isDownloading = false;
+
+  /// True while the freshly-downloaded GPU model is being compiled/warmed up.
+  bool warmingUp = false;
   String? errorMessage;
   String? currentUrl;
 
@@ -98,6 +102,20 @@ class ModelProvider extends ChangeNotifier {
       // Download completed successfully
       _preferences.repository.setModelPath(path, model.name);
       _preferences.setModel(model);
+
+      // Warm up the GPU engine now (the one-time CoreML compile) so the first
+      // demix isn't stalled by it.
+      if (model.engine == DemixingEngine.executorch) {
+        warmingUp = true;
+        notifyListeners();
+        try {
+          await ExecuTorchDemixingEngine.warmUp(path);
+        } catch (e) {
+          debugPrint('Model warm-up failed (non-fatal): $e');
+        }
+        warmingUp = false;
+      }
+
       _clearDownload();
       onDone();
     } on DioException catch (e) {
@@ -140,6 +158,7 @@ class ModelProvider extends ChangeNotifier {
     progress = 0;
     currentDownloaded = 0;
     isDownloading = false;
+    warmingUp = false;
     errorMessage = null;
     currentUrl = null;
     _cancelToken = null;
