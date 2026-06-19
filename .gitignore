@@ -156,3 +156,6 @@ app.*.symbols
 third_party/**/.build/
 third_party/**/build/
 third_party/flutter_onnxruntime/example/
+
+# Kotlin compiler scratch dir (created by Android Gradle builds)
+android/.kotlin/
