@@ -1,7 +1,7 @@
 import 'dart:io';
 
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:flowder/flowder.dart';
 import 'package:get/get.dart';
 import 'package:path/path.dart' as p;
 
@@ -10,15 +10,16 @@ import '../providers/preferences_provider.dart';
 import '../constants.dart';
 
 /// Provider handling the model downloads.
-///
-/// Uses the [PreferencesProvider] to store the model informations
-/// and holds the [progress] and [currentDownloade] metrics.
+/// Uses Dio directly for reliable cross-platform downloads.
 class ModelProvider extends ChangeNotifier {
   late PreferencesProvider _preferences;
   double progress = 0;
   int currentDownloaded = 0;
+  bool isDownloading = false;
+  String? errorMessage;
+  String? currentUrl;
 
-  DownloaderCore? downloader;
+  CancelToken? _cancelToken;
 
   ModelProvider();
 
@@ -27,56 +28,103 @@ class ModelProvider extends ChangeNotifier {
     _preferences = preferences;
   }
 
-  /// Downloads the given [model] to the app external storage.
-  ///
-  /// Displays the progress on the [DownloadScreen].
-  /// Runs the [onDone] callback when the download is over.
+  /// Downloads the given [model] to the app storage directory.
   void downloadModel(Model model, {required VoidCallback onDone}) async {
     Get.toNamed('/model/download');
 
     final filename = '${model.name}${Models.fileExtension}';
     final directory = await _preferences.repository.modelsPath;
-
     final path = p.join(directory, filename);
 
-    final options = DownloaderUtils(
-      progressCallback: (current, total) {
-        progress = (current / total);
-        currentDownloaded = current ~/ 1e6;
-        notifyListeners();
-      },
-      file: File(path),
-      progress: ProgressImplementation(),
-      deleteOnCancel: true,
-      onDone: () {
-        _preferences.repository.setModelPath(path, model.name);
-        _preferences.setModel(model);
-        _clearDownload();
+    // Verify the directory is writable
+    final dir = Directory(directory);
+    if (!await dir.exists()) {
+      try {
+        await dir.create(recursive: true);
+      } catch (e) {
+        _showDownloadError('Could not create models directory: $e');
+        return;
+      }
+    }
 
-        onDone();
-      },
+    // Verify we can write to the directory
+    final testFile = File(p.join(directory, '.write_test'));
+    try {
+      await testFile.writeAsBytes([]);
+      await testFile.delete();
+    } catch (e) {
+      _showDownloadError('Models directory is not writable: $e');
+      return;
+    }
+
+    _cancelToken = CancelToken();
+    isDownloading = true;
+    errorMessage = null;
+    currentUrl = model.url;
+    notifyListeners();
+
+    final dio = Dio(
+      BaseOptions(
+        receiveTimeout: const Duration(minutes: 30),
+        sendTimeout: const Duration(minutes: 30),
+        followRedirects: true,
+        maxRedirects: 10,
+      ),
     );
 
     try {
-      downloader = await Flowder.download(model.url, options);
-    } catch (e) {
-      Get.snackbar(
-        'Download error',
-        'You must be connected in order to download the model. '
-            'Please check your connection and try again.',
-        backgroundColor: ColorPalette.errorContainer,
-        colorText: ColorPalette.onError,
-        duration: const Duration(seconds: 5),
+      await dio.download(
+        model.url,
+        path,
+        onReceiveProgress: (received, total) {
+          if (total > 0) {
+            final newProgress = received / total;
+            if ((newProgress - progress).abs() > 0.005) {
+              progress = newProgress;
+              currentDownloaded = received ~/ (1024 * 1024);
+              notifyListeners();
+            }
+          }
+        },
+        cancelToken: _cancelToken,
       );
-      await Future.delayed(const Duration(seconds: 2));
+
+      // Download completed successfully
+      _preferences.repository.setModelPath(path, model.name);
+      _preferences.setModel(model);
       _clearDownload();
-      notifyListeners();
+      onDone();
+    } on DioException catch (e) {
+      if (e.type == DioExceptionType.cancel) {
+        final file = File(path);
+        if (await file.exists()) {
+          await file.delete();
+        }
+        return;
+      }
+      _showDownloadError(
+        'Could not download the model: ${e.message ?? e.toString()}',
+      );
+    } catch (e) {
+      _showDownloadError('Could not download the model: $e');
     }
   }
 
-  /// Cancels the current download registered in the [downloader].
+  void _showDownloadError(String message) {
+    Get.snackbar(
+      'Download error',
+      message,
+      backgroundColor: ColorPalette.errorContainer,
+      colorText: ColorPalette.onError,
+      duration: const Duration(seconds: 5),
+    );
+    _clearDownload();
+    notifyListeners();
+  }
+
+  /// Cancels the current download.
   void cancelDownload() {
-    downloader?.cancel();
+    _cancelToken?.cancel();
     _clearDownload();
     Get.back();
   }
@@ -85,6 +133,9 @@ class ModelProvider extends ChangeNotifier {
   void _clearDownload() {
     progress = 0;
     currentDownloaded = 0;
-    downloader = null;
+    isDownloading = false;
+    errorMessage = null;
+    currentUrl = null;
+    _cancelToken = null;
   }
 }

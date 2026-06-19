@@ -1,0 +1,20 @@
+disabled_rules:
+  - line_length
+  - file_length
+  - type_body_length
+  - unused_optional_binding
+
+opt_in_rules:
+  - empty_count
+  - fatal_error_message
+  - modifier_order
+  - overridden_super_call
+  - private_action
+  - private_outlet
+  - prohibited_super_call
+
+excluded:
+  - Pods
+  - build
+  - .build
+  - DerivedSources

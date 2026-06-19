@@ -29,9 +29,9 @@ class LibraryProvider extends ChangeNotifier {
 
   /// The current selected song, from it's index.
   Either<Failure, UnmixedSong> get currentSong => _currentSongIndex.fold(
-        (noSongSelected) => Left(noSongSelected),
-        (index) => Right(getAt(index)),
-      );
+    (noSongSelected) => Left(noSongSelected),
+    (index) => Right(getAt(index)),
+  );
 
   /// Sets the current song [index].
   bool setCurrentSongIndex(int index) {
@@ -48,7 +48,9 @@ class LibraryProvider extends ChangeNotifier {
 
   /// Returns true if the given [index] matches the currently selected song.
   bool matchSelectedSong(int index) => _currentSongIndex.fold(
-      (noSongSelected) => false, (songIndex) => index == songIndex);
+    (noSongSelected) => false,
+    (songIndex) => index == songIndex,
+  );
 
   /// Returns the [UnmixedSong] at the given [index].
   UnmixedSong getAt(int index) {
@@ -72,12 +74,9 @@ class LibraryProvider extends ChangeNotifier {
   /// Removes the song at the given [index] from the library.
   void removeSong(int index) {
     // if the song to remove is the selected song, unselect it
-    _currentSongIndex.fold(
-      (noSongSelected) => null,
-      (currIndex) {
-        if (index == currIndex) _currentSongIndex = Left(NoSongSelected());
-      },
-    );
+    _currentSongIndex.fold((noSongSelected) => null, (currIndex) {
+      if (index == currIndex) _currentSongIndex = Left(NoSongSelected());
+    });
 
     _repository.removeSongFiles(getAt(index));
 

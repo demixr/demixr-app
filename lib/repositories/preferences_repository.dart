@@ -16,7 +16,7 @@ class PreferencesRepository {
 
   /// The directory path where the models are stored.
   Future<String> get modelsPath async {
-    final path = await getAppExternalStorage();
+    final path = await getAppModelsStorage();
     var directory = Directory(p.join(path, _modelsDirectoryName));
     directory = await directory.createIfNotPresent();
     return directory.path;

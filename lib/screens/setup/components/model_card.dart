@@ -9,11 +9,7 @@ class ModelCard extends StatelessWidget {
   final Model model;
   final String imagePath;
 
-  const ModelCard({
-    required this.model,
-    required this.imagePath,
-    Key? key,
-  }) : super(key: key);
+  const ModelCard({required this.model, required this.imagePath, super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -29,9 +25,7 @@ class ModelCard extends StatelessWidget {
             CircleAvatar(
               backgroundColor: ColorPalette.surface,
               radius: 30,
-              backgroundImage: Image.asset(
-                imagePath,
-              ).image,
+              backgroundImage: Image.asset(imagePath).image,
             ),
             Expanded(
               child: SpacedColumn(

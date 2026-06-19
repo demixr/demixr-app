@@ -7,8 +7,8 @@ import 'package:demixr_app/screens/setup/components/model_card.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:get/route_manager.dart';
-import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:provider/provider.dart';
 
 class ModelGroup extends StatelessWidget {
   final String title;
@@ -21,8 +21,8 @@ class ModelGroup extends StatelessWidget {
     required this.imagePath,
     this.models = const [],
     this.infosUrl,
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -31,14 +31,13 @@ class ModelGroup extends StatelessWidget {
     List<Widget> modelCards = [
       for (var model in models)
         TextButton(
-          child: ModelCard(
-            model: model,
-            imagePath: imagePath,
-          ),
           style: TextButton.styleFrom(padding: const EdgeInsets.all(0)),
-          onPressed: () => modelProvider.downloadModel(model,
-              onDone: () => Get.offAllNamed('/')),
-        )
+          onPressed: () => modelProvider.downloadModel(
+            model,
+            onDone: () => Get.offAllNamed('/'),
+          ),
+          child: ModelCard(model: model, imagePath: imagePath),
+        ),
     ];
 
     var children = [
@@ -47,10 +46,7 @@ class ModelGroup extends StatelessWidget {
         children: [
           Text(
             title,
-            style: const TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.w600,
-            ),
+            style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w600),
           ),
         ],
       ),
@@ -63,19 +59,18 @@ class ModelGroup extends StatelessWidget {
           TextSpan(
             text: 'More information',
             style: TextStyle(
-                color: ColorPalette.link,
-                fontSize: 12,
-                decoration: TextDecoration.underline),
-            recognizer: TapGestureRecognizer()..onTap = () => launch(infosUrl!),
+              color: ColorPalette.link,
+              fontSize: 12,
+              decoration: TextDecoration.underline,
+            ),
+            recognizer: TapGestureRecognizer()
+              ..onTap = () => launchUrl(Uri.parse(infosUrl!)),
           ),
           maxLines: 1,
         ),
       );
     }
 
-    return SpacedColumn(
-      spacing: 15,
-      children: children,
-    );
+    return SpacedColumn(spacing: 15, children: children);
   }
 }

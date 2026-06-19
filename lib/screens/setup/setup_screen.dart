@@ -4,23 +4,22 @@ import 'package:demixr_app/screens/setup/components/setup_title.dart';
 import 'package:flutter/material.dart';
 
 class SetupScreen extends StatelessWidget {
-  const SetupScreen({Key? key}) : super(key: key);
+  const SetupScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        margin: const EdgeInsets.only(left: 20, top: 70, right: 20, bottom: 30),
-        height: double.maxFinite,
-        width: double.maxFinite,
+      body: Padding(
+        padding: const EdgeInsets.only(
+          left: 20,
+          top: 70,
+          right: 20,
+          bottom: 30,
+        ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           crossAxisAlignment: CrossAxisAlignment.center,
-          children: const [
-            SetupTitle(),
-            Instructions(),
-            ModelSelection(),
-          ],
+          children: const [SetupTitle(), Instructions(), ModelSelection()],
         ),
       ),
     );

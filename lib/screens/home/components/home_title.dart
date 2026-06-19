@@ -3,13 +3,13 @@ import 'package:demixr_app/constants.dart';
 import 'package:flutter/material.dart';
 
 class HomeTitle extends StatelessWidget {
-  const HomeTitle({Key? key}) : super(key: key);
+  const HomeTitle({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Column(
+    return const Column(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: const [
+      children: [
         AutoSizeText(
           'Demixr',
           style: TextStyle(
@@ -23,7 +23,7 @@ class HomeTitle extends StatelessWidget {
           'Music demixing in your pocket',
           style: TextStyle(fontSize: 16),
           maxLines: 1,
-        )
+        ),
       ],
     );
   }

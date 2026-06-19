@@ -11,7 +11,7 @@ import '../../../constants.dart';
 import '../../../utils.dart';
 
 class UnmixButton extends StatelessWidget {
-  const UnmixButton({Key? key}) : super(key: key);
+  const UnmixButton({super.key});
 
   @override
   Widget build(BuildContext context) {

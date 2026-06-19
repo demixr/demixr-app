@@ -1,14 +1,3 @@
-buildscript {
-    repositories {
-        google()
-        mavenCentral()
-    }
-
-    dependencies {
-        classpath 'com.android.tools.build:gradle:7.0.4'
-    }
-}
-
 allprojects {
     repositories {
         google()
@@ -16,14 +5,28 @@ allprojects {
     }
 }
 
-rootProject.buildDir = '../build'
+rootProject.buildDir = "../build"
 subprojects {
     project.buildDir = "${rootProject.buildDir}/${project.name}"
+
+    // AGP 8 requires every Android module to declare a `namespace`. Some
+    // older, unmaintained Flutter plugins (e.g. flutter_media_metadata) still
+    // rely on the deprecated `package` attribute in their AndroidManifest.
+    // Backfill the namespace from the plugin's group so they keep building.
+    afterEvaluate { project ->
+        if (project.hasProperty("android")) {
+            project.android {
+                if (namespace == null) {
+                    namespace project.group
+                }
+            }
+        }
+    }
 }
 subprojects {
-    project.evaluationDependsOn(':app')
+    project.evaluationDependsOn(":app")
 }
 
-task clean(type: Delete) {
+tasks.register("clean", Delete) {
     delete rootProject.buildDir
 }

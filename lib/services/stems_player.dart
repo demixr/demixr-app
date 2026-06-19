@@ -3,16 +3,29 @@ import 'package:demixr_app/models/unmixed_song.dart';
 
 import '../constants.dart';
 
-enum StemState {
-  mute,
-  unmute,
-}
+enum StemState { mute, unmute }
 
 class StemsPlayer {
   Map<Stem, AudioPlayer> players = {};
   Map<Stem, StemState> stemStates = {};
   bool mixtureOn = false;
   int duration = 0;
+
+  /// All stems play simultaneously, so the players must NOT request exclusive
+  /// audio focus (the default) — otherwise each one steals focus from the
+  /// others and they all get paused. `none` on Android and `mixWithOthers` on
+  /// iOS let the 5 players mix together.
+  static final AudioContext _audioContext = AudioContext(
+    android: const AudioContextAndroid(
+      contentType: AndroidContentType.music,
+      usageType: AndroidUsageType.media,
+      audioFocus: AndroidAudioFocus.none,
+    ),
+    iOS: AudioContextIOS(
+      category: AVAudioSessionCategory.playback,
+      options: const {AVAudioSessionOptions.mixWithOthers},
+    ),
+  );
 
   StemsPlayer() {
     players = {
@@ -30,14 +43,20 @@ class StemsPlayer {
       Stem.other: StemState.unmute,
     };
 
+    for (final player in players.values) {
+      player.setAudioContext(_audioContext);
+    }
+
     toggleStem(Stem.vocals);
   }
 
   AudioPlayer get aPlayer => players[Stem.vocals]!;
 
-  Stream<Duration> get onAudioPositionChanged => aPlayer.onAudioPositionChanged;
+  Stream<Duration> get onAudioPositionChanged => aPlayer.onPositionChanged;
 
-  Stream<void> get onPlayerCompletion => aPlayer.onPlayerCompletion;
+  Stream<void> get onPlayerCompletion => aPlayer.onPlayerStateChanged.where(
+    (state) => state == PlayerState.completed,
+  );
 
   StemState getStemState(Stem stem) => stemStates[stem] ?? StemState.mute;
 
@@ -46,8 +65,9 @@ class StemsPlayer {
   }
 
   void setUrls(UnmixedSong song) {
-    players.forEach(
-        (stem, player) => player.setUrl(song.getStem(stem), isLocal: true));
+    players.forEach((stem, player) {
+      player.setSource(DeviceFileSource(song.getStem(stem)));
+    });
   }
 
   void pause() {

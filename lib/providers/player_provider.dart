@@ -9,11 +9,7 @@ import '../services/stems_player.dart';
 import '../constants.dart';
 
 /// The sate of the music player.
-enum PlayerState {
-  play,
-  pause,
-  off,
-}
+enum PlayerState { play, pause, off }
 
 /// Provider handling the music player logic.
 ///
@@ -55,19 +51,16 @@ class PlayerProvider extends ChangeNotifier {
       _song = _library.currentSong;
 
       // prepare the player
-      _song.fold(
-        (failure) => null,
-        (song) {
-          _player.setUrls(song);
-          _player.seek(position);
+      _song.fold((failure) => null, (song) {
+        _player.setUrls(song);
+        _player.seek(position);
 
-          state = PlayerState.pause;
+        state = PlayerState.pause;
 
-          _player.onPlayerCompletion.listen((event) {
-            toStart(setPause: true);
-          });
-        },
-      );
+        _player.onPlayerCompletion.listen((event) {
+          toStart(setPause: true);
+        });
+      });
 
       if (wasPlaying) playpause();
     }

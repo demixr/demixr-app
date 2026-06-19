@@ -16,13 +16,13 @@ class VideoInfos extends StatelessWidget {
   final Color textColor;
 
   const VideoInfos({
-    Key? key,
+    super.key,
     required this.title,
     required this.author,
     required this.duration,
     this.size = 16,
     this.textColor = ColorPalette.onSurface,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -48,16 +48,18 @@ class VideoInfos extends StatelessWidget {
             Text(
               title,
               style: TextStyle(
-                  fontSize: size,
-                  color: textColor,
-                  fontWeight: FontWeight.w600),
+                fontSize: size,
+                color: textColor,
+                fontWeight: FontWeight.w600,
+              ),
             ),
             Text(
               author,
               style: TextStyle(
-                  fontSize: size - 2,
-                  color: textColor,
-                  fontWeight: FontWeight.w400),
+                fontSize: size - 2,
+                color: textColor,
+                fontWeight: FontWeight.w400,
+              ),
             ),
           ],
         ),
@@ -71,8 +73,7 @@ class Thumbnail extends StatelessWidget {
   final Either<Failure, String> imageUrl;
   final double size;
 
-  const Thumbnail({Key? key, required this.imageUrl, this.size = 100})
-      : super(key: key);
+  const Thumbnail({super.key, required this.imageUrl, this.size = 100});
 
   @override
   Widget build(BuildContext context) {
@@ -83,12 +84,7 @@ class Thumbnail extends StatelessWidget {
         width: size,
         height: size,
       ),
-      (url) => Image.network(
-        url,
-        fit: BoxFit.cover,
-        width: size,
-        height: size,
-      ),
+      (url) => Image.network(url, fit: BoxFit.cover, width: size, height: size),
     );
   }
 }
@@ -103,7 +99,7 @@ class VideoWidget extends StatelessWidget {
   final Color textColor;
 
   const VideoWidget({
-    Key? key,
+    super.key,
     required this.title,
     required this.author,
     required this.coverUrl,
@@ -111,12 +107,13 @@ class VideoWidget extends StatelessWidget {
     required this.duration,
     this.onRemovePressed,
     this.textColor = ColorPalette.onSurface,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
-    Either<Failure, String> imageUrl =
-        (coverUrl == null) ? Left(NoAlbumCover()) : Right(coverUrl!);
+    Either<Failure, String> imageUrl = (coverUrl == null)
+        ? Left(NoAlbumCover())
+        : Right(coverUrl!);
 
     List<Widget> children = [
       Expanded(

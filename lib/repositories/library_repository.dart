@@ -28,7 +28,9 @@ class LibraryRepository {
 
   /// Creates the directory for the given [song] in the library.
   Future<String> _createSongDirectory(
-      String libraryDirectory, UnmixedSong song) async {
+    String libraryDirectory,
+    UnmixedSong song,
+  ) async {
     var directory = Directory(p.join(libraryDirectory, song.toString()));
     directory = await directory.createUnique();
     return directory.path;
@@ -52,10 +54,16 @@ class LibraryRepository {
     String libraryDirectory = await _directoryPath;
     String songDirectory = await _createSongDirectory(libraryDirectory, song);
 
-    song.mixture =
-        await _saveStem(song.mixture, Stem.mixture.value, songDirectory);
-    song.vocals =
-        await _saveStem(song.vocals, Stem.vocals.value, songDirectory);
+    song.mixture = await _saveStem(
+      song.mixture,
+      Stem.mixture.value,
+      songDirectory,
+    );
+    song.vocals = await _saveStem(
+      song.vocals,
+      Stem.vocals.value,
+      songDirectory,
+    );
     song.bass = await _saveStem(song.bass, Stem.bass.value, songDirectory);
     song.drums = await _saveStem(song.drums, Stem.drums.value, songDirectory);
     song.other = await _saveStem(song.other, Stem.other.value, songDirectory);

@@ -20,6 +20,8 @@ import 'package:get/get.dart';
 import 'providers/preferences_provider.dart';
 
 Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
   await Hive.initFlutter();
 
   Hive.registerAdapter<UnmixedSong>(UnmixedSongAdapter());
@@ -32,7 +34,7 @@ Future<void> main() async {
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({Key? key}) : super(key: key);
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -45,14 +47,16 @@ class MyApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider<PreferencesProvider>(
-            create: (_) => PreferencesProvider()),
+          create: (_) => PreferencesProvider(),
+        ),
         ChangeNotifierProxyProvider<PreferencesProvider, ModelProvider>(
           create: (context) => ModelProvider(),
           update: (context, preferences, modelProvider) =>
               (modelProvider ?? ModelProvider())..setPreferences(preferences),
         ),
         ChangeNotifierProvider<LibraryProvider>(
-            create: (_) => LibraryProvider()),
+          create: (_) => LibraryProvider(),
+        ),
         ChangeNotifierProxyProvider<LibraryProvider, PlayerProvider>(
           create: (context) => PlayerProvider(),
           update: (context, library, player) =>
@@ -66,14 +70,17 @@ class MyApp extends StatelessWidget {
           scaffoldBackgroundColor: ColorPalette.surface,
           primaryColor: ColorPalette.primary,
           textTheme: Theme.of(context).textTheme.apply(
-              bodyColor: ColorPalette.onSurface,
-              displayColor: ColorPalette.onSurface),
+            bodyColor: ColorPalette.onSurface,
+            displayColor: ColorPalette.onSurface,
+          ),
           visualDensity: VisualDensity.adaptivePlatformDensity,
         ),
         home: buildHome(),
         initialRoute: '/',
-        unknownRoute:
-            GetPage(name: '/notfound', page: () => const ErrorScreen()),
+        unknownRoute: GetPage(
+          name: '/notfound',
+          page: () => const ErrorScreen(),
+        ),
         getPages: [
           GetPage(
             name: '/',
@@ -114,9 +121,11 @@ class MyApp extends StatelessWidget {
 
   AnnotatedRegion<SystemUiOverlayStyle> buildHome() {
     return const AnnotatedRegion<SystemUiOverlayStyle>(
-        child: HomeScreen(),
-        value: SystemUiOverlayStyle(
-            statusBarColor: Colors.transparent,
-            statusBarIconBrightness: Brightness.light));
+      value: SystemUiOverlayStyle(
+        statusBarColor: Colors.transparent,
+        statusBarIconBrightness: Brightness.light,
+      ),
+      child: HomeScreen(),
+    );
   }
 }

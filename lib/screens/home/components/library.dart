@@ -12,7 +12,7 @@ import 'package:provider/provider.dart';
 import '../../../utils.dart';
 
 class Library extends StatelessWidget {
-  const Library({Key? key}) : super(key: key);
+  const Library({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -42,15 +42,15 @@ class Library extends StatelessWidget {
 }
 
 class LibrarySongs extends StatelessWidget {
-  const LibrarySongs({Key? key}) : super(key: key);
+  const LibrarySongs({super.key});
 
   Widget buildSongButton(SongWidget song, {VoidCallback? onPressed}) =>
       TextButton(
+        style: TextButton.styleFrom(
+          padding: const EdgeInsets.only(left: 2, top: 5, right: 2, bottom: 5),
+        ),
         onPressed: onPressed,
         child: song,
-        style: TextButton.styleFrom(
-            padding:
-                const EdgeInsets.only(left: 2, top: 5, right: 2, bottom: 5)),
       );
 
   bool isSongSelected(UnmixedSong song, Either<Failure, UnmixedSong> selected) {
@@ -107,27 +107,32 @@ class LibrarySongs extends StatelessWidget {
 }
 
 class EmptyLibrary extends StatelessWidget {
-  const EmptyLibrary({Key? key}) : super(key: key);
+  const EmptyLibrary({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Column(
-      mainAxisAlignment: MainAxisAlignment.start,
+      mainAxisAlignment: MainAxisAlignment.center,
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        FractionallySizedBox(
-          child: Image.asset(getAssetPath('astronaut', AssetType.image)),
-          widthFactor: 0.6,
+        // Flexible + BoxFit.contain so the illustration scales down to fit the
+        // available height instead of overflowing on short/wide windows.
+        Flexible(
+          child: FractionallySizedBox(
+            widthFactor: 0.6,
+            child: Image.asset(
+              getAssetPath('astronaut', AssetType.image),
+              fit: BoxFit.contain,
+            ),
+          ),
         ),
+        const SizedBox(height: 16),
         const FractionallySizedBox(
           widthFactor: 0.6,
           child: AutoSizeText(
             'Your library is empty at the moment',
             textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 18,
-              color: ColorPalette.onSurface,
-            ),
+            style: TextStyle(fontSize: 18, color: ColorPalette.onSurface),
             maxLines: 2,
           ),
         ),

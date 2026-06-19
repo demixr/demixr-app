@@ -13,6 +13,8 @@ class Song {
 
   String? coverPath;
 
+  String? modelName;
+
   Duration duration;
 
   Song({
@@ -21,16 +23,17 @@ class Song {
     required this.path,
     required this.duration,
     this.coverPath,
+    this.modelName,
   });
 
   Song.fromDownload(SongDownload song, String path)
-      : this(
-          title: song.title,
-          artists: song.artists,
-          coverPath: song.coverPath,
-          path: path,
-          duration: song.duration,
-        );
+    : this(
+        title: song.title,
+        artists: song.artists,
+        coverPath: song.coverPath,
+        path: path,
+        duration: song.duration,
+      );
 
   Either<Failure, String> get albumCover =>
       coverPath == null ? Left(NoAlbumCover()) : Right(coverPath!);

@@ -62,17 +62,17 @@ class UnmixedSong {
     required String other,
     required String modelName,
   }) : this(
-          title: song.title,
-          artists: song.artists,
-          duration: song.duration,
-          coverPath: song.coverPath,
-          mixture: song.path,
-          vocals: vocals,
-          bass: bass,
-          drums: drums,
-          other: other,
-          modelName: modelName,
-        );
+         title: song.title,
+         artists: song.artists,
+         duration: song.duration,
+         coverPath: song.coverPath,
+         mixture: song.path,
+         vocals: vocals,
+         bass: bass,
+         drums: drums,
+         other: other,
+         modelName: modelName,
+       );
 
   String getStem(Stem stem) {
     switch (stem) {

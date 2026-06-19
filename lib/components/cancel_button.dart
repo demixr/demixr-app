@@ -5,16 +5,13 @@ import 'package:flutter/material.dart';
 class CancelButton extends StatelessWidget {
   final VoidCallback onPressed;
 
-  const CancelButton({required this.onPressed, Key? key}) : super(key: key);
+  const CancelButton({required this.onPressed, super.key});
 
   @override
   Widget build(BuildContext context) {
     return Button(
       'Cancel',
-      icon: const Icon(
-        Icons.cancel,
-        color: ColorPalette.onError,
-      ),
+      icon: const Icon(Icons.cancel, color: ColorPalette.onError),
       color: ColorPalette.errorContainer,
       textColor: ColorPalette.onError,
       textSize: 18,

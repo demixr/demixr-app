@@ -30,13 +30,16 @@ class DemixingProvider extends ChangeNotifier {
   /// Runs the separation and save the unmixed song in the [library] on success.
   Future<void> unmix(Song song, LibraryProvider library) async {
     if (!(await preferences.isSelectedModelAvailable())) {
-      errorSnackbar('Model unavailable',
-          'The selected model is not available, download it to continue.');
+      errorSnackbar(
+        'Model unavailable',
+        'The selected model is not available, download it to continue.',
+      );
       return;
     }
 
-    _progressStream =
-        _helper.progressStream.receiveBroadcastStream().cast<double>();
+    _progressStream = _helper.progressStream
+        .receiveBroadcastStream()
+        .cast<double>();
 
     separate(song)
         ?.then((unmixed) => library.saveSong(unmixed))
@@ -56,13 +59,15 @@ class DemixingProvider extends ChangeNotifier {
   CancelableOperation<UnmixedSong>? separate(Song song) {
     Get.toNamed('/demixing/processing', arguments: this);
 
-    _operation = CancelableOperation<UnmixedSong>.fromFuture(_helper
-        .separate(song, preferences.getModelPath(), preferences.modelName)
-        .onError((DemixingException error, _) {
-      errorSnackbar('Demixing error', error.message, seconds: 5);
-      cancelDemixing();
-      throw error;
-    }));
+    _operation = CancelableOperation<UnmixedSong>.fromFuture(
+      _helper
+          .separate(song, preferences.getModelPath(), preferences.modelName)
+          .onError((DemixingException error, _) {
+            errorSnackbar('Demixing error', error.message, seconds: 5);
+            cancelDemixing();
+            throw error;
+          }),
+    );
     return _operation;
   }
 

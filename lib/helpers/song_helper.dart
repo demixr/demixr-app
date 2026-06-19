@@ -1,11 +1,11 @@
 import 'dart:io';
 
 import 'package:dartz/dartz.dart';
-import 'package:ffmpeg_kit_flutter/ffmpeg_kit.dart';
-import 'package:ffmpeg_kit_flutter/ffprobe_kit.dart';
-import 'package:ffmpeg_kit_flutter/return_code.dart';
+import 'package:ffmpeg_kit_flutter_new_audio/ffmpeg_kit.dart';
+import 'package:ffmpeg_kit_flutter_new_audio/ffprobe_kit.dart';
+import 'package:ffmpeg_kit_flutter_new_audio/return_code.dart';
 import 'package:file_picker/file_picker.dart';
-import 'package:flutter_media_metadata/flutter_media_metadata.dart';
+import 'package:audio_metadata_reader/audio_metadata_reader.dart';
 import 'package:youtube_explode_dart/youtube_explode_dart.dart';
 import 'package:path/path.dart' as p;
 import 'package:http/http.dart' show get;
@@ -39,11 +39,11 @@ class SongHelper {
       if (file.path == null) return Left(SongLoadFailure());
 
       File path = File(file.path!);
-      var metadata = await MetadataRetriever.fromFile(path);
+      final metadata = _readMetadata(path, getImage: false);
 
       Tuple2<String, List<String>> songInfos = _getSongInfos(
-        metadata.trackName,
-        metadata.trackArtistNames,
+        metadata?.title,
+        metadata?.artist != null ? [metadata!.artist!] : null,
         p.basename(path.path).removeExtension(),
       );
 
@@ -62,16 +62,28 @@ class SongHelper {
           artists: songInfos.value2,
           path: newPath,
           coverPath: coverPath,
-          duration: Duration(milliseconds: metadata.trackDuration ?? 0),
+          duration: metadata?.duration ?? Duration.zero,
         ),
       );
     });
   }
 
+  /// Reads the audio metadata for the file at [path], returning `null` if the
+  /// file's tags can't be parsed (the caller falls back to the filename).
+  AudioMetadata? _readMetadata(File path, {required bool getImage}) {
+    try {
+      return readMetadata(path, getImage: getImage);
+    } catch (_) {
+      return null;
+    }
+  }
+
   /// Saves the song cover from the metadata to the app cache.
   Future<String?> _saveCover(String songPath, String title) async {
-    var metadata = await MetadataRetriever.fromFile(File(songPath));
-    final albumCover = metadata.albumArt;
+    final metadata = _readMetadata(File(songPath), getImage: true);
+    final albumCover = (metadata != null && metadata.pictures.isNotEmpty)
+        ? metadata.pictures.first.bytes
+        : null;
 
     if (albumCover == null) return null;
 
@@ -91,56 +103,97 @@ class SongHelper {
   ///
   /// Finds the song title, artists and download the thumbnail.
   Future<Either<Failure, SongDownload>> getSongInfosFromYoutube(
-      String url) async {
+    String url,
+  ) async {
     final yt = YoutubeExplode();
 
     Video video;
     try {
       video = await yt.videos.get(url);
-    } on ArgumentError {
-      return Left(SongNotFoundOnYoutube());
     } on SocketException {
       return Left(NoInternetConnection());
+    } catch (_) {
+      // ArgumentError (bad URL), VideoUnavailableException, VideoUnplayable,
+      // or any other youtube_explode error: treat as "not found" so the flow
+      // surfaces a failure instead of throwing into a fire-and-forget call.
+      return Left(SongNotFoundOnYoutube());
     }
 
     String? coverPath;
     try {
-      coverPath =
-          await _downloadThumbnail(video.thumbnails.mediumResUrl, video.title);
+      coverPath = await _downloadThumbnail(
+        video.thumbnails.mediumResUrl,
+        video.title,
+      );
     } catch (e) {
       coverPath = null;
     }
 
     yt.close();
 
-    return Right(SongDownload(
-      title: video.title,
-      artists: [video.author],
-      url: url,
-      coverPath: coverPath,
-      duration: video.duration ?? Duration.zero,
-    ));
+    return Right(
+      SongDownload(
+        title: video.title,
+        artists: [video.author],
+        url: url,
+        coverPath: coverPath,
+        duration: video.duration ?? Duration.zero,
+      ),
+    );
   }
 
   /// Downloads the given [song] from Youtube with [YoutubeExplode].
-  Future<Either<Failure, Song>> downloadFromYoutube(SongDownload song) async {
+  ///
+  /// [onProgress] is called with the download completion ratio (0.0 to 1.0)
+  /// as bytes are received, so the UI can show real progress.
+  Future<Either<Failure, Song>> downloadFromYoutube(
+    SongDownload song, {
+    void Function(double progress)? onProgress,
+  }) async {
     final yt = YoutubeExplode();
 
     File file;
     try {
-      final manifest = await yt.videos.streamsClient.getManifest(song.url);
+      // The androidVr client, combined with the watch page (the default, which
+      // deciphers YouTube's throttling "n" parameter), reliably returns fast,
+      // un-throttled audio streams. The default/other clients hand back
+      // throttled URLs that download at a few KB/s or stall entirely.
+      final manifest = await yt.videos.streamsClient.getManifest(
+        song.url,
+        ytClients: [YoutubeApiClient.androidVr],
+      );
       final streamInfo = manifest.audioOnly.withHighestBitrate();
+      // Some streams don't report a content length; fall back to estimating it
+      // from bitrate x duration so the progress bar still advances.
+      var totalBytes = streamInfo.size.totalBytes;
+      if (totalBytes <= 0) {
+        totalBytes =
+            (streamInfo.bitrate.bitsPerSecond / 8 * song.duration.inSeconds)
+                .round();
+      }
 
-      // Get the actual stream
       final stream = yt.videos.streamsClient.get(streamInfo);
 
       file = File(p.join(await getAppTemp(), song.title));
       final fileStream = file.openWrite();
 
-      // Pipe all the content of the stream into the file.
-      await stream.pipe(fileStream);
+      // Write the stream chunk by chunk, reporting progress (throttled to ~1%).
+      // An idle timeout guards against a stalled stream hanging forever.
+      var received = 0;
+      var lastReported = 0.0;
+      await for (final chunk in stream.timeout(const Duration(seconds: 30))) {
+        fileStream.add(chunk);
+        received += chunk.length;
+        if (totalBytes > 0) {
+          final progress = received / totalBytes;
+          if (progress - lastReported >= 0.01) {
+            lastReported = progress;
+            onProgress?.call(progress);
+          }
+        }
+      }
+      onProgress?.call(1);
 
-      // Close the file.
       await fileStream.flush();
       await fileStream.close();
     } catch (_) {
@@ -201,7 +254,7 @@ Future<String> convertToWav(String path) async {
   final session = await FFprobeKit.getMediaInformation(path);
   final information = session.getMediaInformation();
 
-  String? format = information?.getProperties('format_name');
+  String? format = information?.getFormat();
 
   if (format == null) {
     throw ConversionException('SongLoader: Failed to get the file format');
@@ -209,15 +262,17 @@ Future<String> convertToWav(String path) async {
     final outputPath = '${p.withoutExtension(path)}.wav';
     File(outputPath).deleteIfExists();
 
-    final convertSession =
-        await FFmpegKit.execute('-i "$path" -acodec pcm_u8 "$outputPath"');
+    final convertSession = await FFmpegKit.execute(
+      '-i "$path" -acodec pcm_u8 "$outputPath"',
+    );
     final convertRc = await convertSession.getReturnCode();
 
     if (ReturnCode.isSuccess(convertRc)) {
       path = outputPath;
     } else {
       throw ConversionException(
-          'SongLoader: Failed to convert audio file to wav');
+        'SongLoader: Failed to convert audio file to wav',
+      );
     }
   }
 
