@@ -12,10 +12,13 @@
 > :warning: This project is still in development, all the features might not work perfectly yet
 
 
-| Platform | Support            |
-| -------- | ------------------ |
-| Android  | :white_check_mark: |
-| IOS      | Coming soon        |
+| Platform | Support |
+| -------- | ------- |
+| Android  | :white_check_mark: Downloadable (APK) |
+| macOS    | :white_check_mark: Downloadable (.dmg) |
+| iOS      | :white_check_mark: Implemented & working — not yet on the App Store* |
+
+<sub>*The iOS build is complete and runs on device; publishing to the App Store / TestFlight requires a paid Apple Developer account ($99/yr), so it isn't distributed yet.</sub>
 
 
 
@@ -76,9 +79,28 @@ GPU (ExecuTorch) vs CPU (ONNX) on a 4-minute song, measured:
 
 > Note: Inference is done on CPU as GPU is not yet fully supported by PyTorch Mobile.
 
-## Download Demixr
+## Download & install
 
-You can download and install the Android application from the [latest Github release](https://github.com/demixr/demixr-app/releases/latest/) by selecting the appropriate platform `apk` file.
+Grab the build for your platform from the [latest GitHub release](https://github.com/demixr/demixr-app/releases/latest/).
+
+### Android (`.apk`)
+1. Download the `.apk` from the release.
+2. Open it. Android will ask to allow installing from this source — enable it
+   (Settings → "Install unknown apps") and confirm.
+3. Open Demixr; on first use it downloads the separation model.
+
+### macOS (`.dmg`)
+1. Download `demixr-macos.dmg` and open it; drag **Demixr** to **Applications**.
+2. The app isn't notarized (it's a free, unsigned build), so the first launch is
+   blocked by Gatekeeper. **Right-click the app → Open → Open** once; afterwards
+   it launches normally.
+
+### iOS
+The iOS app is implemented and works on device, but it isn't distributed yet:
+Apple only allows installs via the App Store / TestFlight, which require a paid
+Apple Developer account ($99/yr). It's the same model and engine as the other
+platforms (GPU-accelerated via CoreML) — just not published. To run it today you
+need to build from source with your own Apple account (`flutter run`).
 
 ## Demo
 
