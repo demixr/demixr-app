@@ -1,2 +1,8 @@
 #include "../../Flutter/Flutter-Release.xcconfig"
 #include "Warnings.xcconfig"
+
+// The ExecuTorch macOS prebuilt is arm64-only (no x86_64), so a universal
+// release build fails the native-assets download. Build arm64-only — the app
+// is Apple-Silicon-only by necessity.
+ARCHS = arm64
+ONLY_ACTIVE_ARCH = YES
