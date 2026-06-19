@@ -7,8 +7,8 @@ import 'package:integration_test/integration_test.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 
-import 'package:demixr_app/helpers/onnx/demucs_config.dart';
-import 'package:demixr_app/helpers/onnx/executorch_demixing_engine.dart';
+import 'package:demixr_app/helpers/separation/demucs_config.dart';
+import 'package:demixr_app/helpers/separation/executorch_demixing_engine.dart';
 
 /// End-to-end test of the ExecuTorch (GPU) engine via executorch_flutter.
 ///

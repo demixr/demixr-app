@@ -4,7 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:path/path.dart' as p;
 
-import 'package:demixr_app/helpers/onnx/executorch_demixing_engine.dart';
+import 'package:demixr_app/helpers/separation/executorch_demixing_engine.dart';
 
 /// Verifies the resident-model warm-up: the first warmUp pays the CoreML
 /// compile (~10 s Mac / ~20 s iPhone); the second reuses the resident model and

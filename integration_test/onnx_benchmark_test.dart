@@ -6,8 +6,8 @@ import 'package:integration_test/integration_test.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 
-import 'package:demixr_app/helpers/onnx/demucs_config.dart';
-import 'package:demixr_app/helpers/onnx/onnx_demixing_engine.dart';
+import 'package:demixr_app/helpers/separation/demucs_config.dart';
+import 'package:demixr_app/helpers/separation/onnx_demixing_engine.dart';
 
 /// Benchmarks the htdemucs ONNX engine across execution providers so we can
 /// pick the fastest per platform (the accelerator is not assumed — measured).

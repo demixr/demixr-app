@@ -17,9 +17,9 @@ import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 
 import 'package:demixr_app/constants.dart';
-import 'package:demixr_app/helpers/onnx/audio_io.dart';
-import 'package:demixr_app/helpers/onnx/demucs_config.dart';
-import 'package:demixr_app/helpers/onnx/onnx_demixing_engine.dart';
+import 'package:demixr_app/helpers/separation/audio_io.dart';
+import 'package:demixr_app/helpers/separation/demucs_config.dart';
+import 'package:demixr_app/helpers/separation/onnx_demixing_engine.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -57,7 +57,7 @@ class _CheckAppState extends State<_CheckApp> {
           File(modelPath).lengthSync() < 1000000) {
         _log('downloading model...');
         await Dio().download(
-          Models.htdemucs.url,
+          Models.htdemucsOnnx.onnxUrl!,
           modelPath,
           options: Options(receiveTimeout: const Duration(minutes: 10)),
         );
@@ -65,7 +65,10 @@ class _CheckAppState extends State<_CheckApp> {
       _log('model ready: ${File(modelPath).lengthSync()} bytes');
 
       final inputPath = p.join(dir, 'tone.wav');
-      await _writeTone(inputPath, seconds: 30); // a few chunks; bump to stress-test memory
+      await _writeTone(
+        inputPath,
+        seconds: 30,
+      ); // a few chunks; bump to stress-test memory
 
       final outDir = p.join(dir, 'out');
       await Directory(outDir).create(recursive: true);

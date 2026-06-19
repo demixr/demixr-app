@@ -14,7 +14,7 @@ class ModelSelection extends StatelessWidget {
         ModelGroup(
           title: 'Demucs',
           models: Models.all,
-          imagePath: getAssetPath('open_unmix', AssetType.image),
+          imagePath: getAssetPath('demucs', AssetType.image),
         ),
       ],
     );

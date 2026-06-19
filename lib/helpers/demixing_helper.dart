@@ -6,9 +6,9 @@ import '../models/model.dart';
 import '../models/song.dart';
 import '../models/unmixed_song.dart';
 import '../models/exceptions/demixing_exception.dart';
-import 'onnx/demucs_config.dart';
-import 'onnx/executorch_demixing_engine.dart';
-import 'onnx/onnx_demixing_engine.dart';
+import 'separation/demucs_config.dart';
+import 'separation/executorch_demixing_engine.dart';
+import 'separation/onnx_demixing_engine.dart';
 import '../utils.dart';
 import '../constants.dart';
 
@@ -33,7 +33,7 @@ class DemixingHelper {
   ) async {
     final model = Models.fromName(modelName);
     final outputDir = await getAppTemp();
-    final sources = DemucsConfig.sourcesForCount(model.stems.length);
+    final sources = DemucsConfig.sources4;
     void onProgress(double p) {
       if (!_progressController.isClosed) _progressController.add(p);
     }

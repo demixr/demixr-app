@@ -21,7 +21,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'constants.dart' show Models;
-import 'helpers/onnx/executorch_demixing_engine.dart';
+import 'helpers/separation/executorch_demixing_engine.dart';
 import 'models/model.dart';
 import 'repositories/preferences_repository.dart';
 import 'providers/preferences_provider.dart';

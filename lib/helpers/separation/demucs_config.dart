@@ -41,20 +41,6 @@ class DemucsConfig {
   /// in Demucs' native ordering, mapped by name to the app's stems.
   static const List<String> sources4 = ['drums', 'bass', 'other', 'vocals'];
 
-  /// 6-stem (htdemucs_6s) output order: the 4 above plus guitar and piano.
-  static const List<String> sources6 = [
-    'drums',
-    'bass',
-    'other',
-    'vocals',
-    'guitar',
-    'piano',
-  ];
-
-  /// The ordered model output sources for a model producing [count] stems.
-  static List<String> sourcesForCount(int count) =>
-      count == 6 ? sources6 : sources4;
-
   /// ONNX graph input/output tensor names.
   static const String inputName = 'mix';
   static const String outputName = 'stems';

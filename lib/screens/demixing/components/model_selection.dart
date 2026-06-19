@@ -98,11 +98,7 @@ class ModelSelection extends StatelessWidget {
 
     List<Widget> children = [
       for (var model in Models.all)
-        buildModelTile(
-          context,
-          model,
-          getAssetPath('open_unmix', AssetType.image),
-        ),
+        buildModelTile(context, model, getAssetPath('demucs', AssetType.image)),
     ];
 
     return Padding(

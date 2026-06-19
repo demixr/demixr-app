@@ -9,8 +9,8 @@ import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 
 import 'package:demixr_app/helpers/demixing_helper.dart';
-import 'package:demixr_app/helpers/onnx/demucs_config.dart';
-import 'package:demixr_app/helpers/onnx/onnx_demixing_engine.dart';
+import 'package:demixr_app/helpers/separation/demucs_config.dart';
+import 'package:demixr_app/helpers/separation/onnx_demixing_engine.dart';
 import 'package:demixr_app/models/song.dart';
 
 /// End-to-end test of the cross-platform ONNX demixing engine.
@@ -104,61 +104,6 @@ void main() {
         // (reference truncates, we round) and float op-ordering.
         expect(maxDiff, lessThan(8), reason: '$stem max diff too large');
         expect(rms, lessThan(1.0), reason: '$stem rms diff too large');
-      }
-    },
-    timeout: const Timeout(Duration(minutes: 5)),
-  );
-
-  testWidgets(
-    'htdemucs_6s ONNX engine produces 6 parity-matching stems',
-    (tester) async {
-      final fixtures = await _fixturesDir();
-      final modelPath = p.join(fixtures, 'htdemucs_6s.onnx');
-      final inputPath = p.join(fixtures, 'test_clip.wav');
-      final refDir = p.join(fixtures, 'ref_out_6s');
-      if (!File(modelPath).existsSync() || !File(inputPath).existsSync()) {
-        markTestSkipped('6-stem fixtures missing under $fixtures');
-        return;
-      }
-
-      final outDir = p.join(
-        (await getTemporaryDirectory()).path,
-        'onnx_out_6s',
-      );
-      await Directory(outDir).create(recursive: true);
-
-      final stems = await OnnxDemixingEngine().separate(
-        modelPath: modelPath,
-        inputPath: inputPath,
-        outputDir: outDir,
-        sources: DemucsConfig.sources6,
-        providerOverride: [OrtProvider.CPU],
-      );
-
-      expect(stems.keys.toSet(), {
-        'vocals',
-        'drums',
-        'bass',
-        'other',
-        'guitar',
-        'piano',
-      });
-
-      for (final stem in stems.keys) {
-        final samples = _readWav16(stems[stem]!);
-        expect(samples.isNotEmpty, isTrue, reason: '$stem is empty');
-        final refFile = File(p.join(refDir, '$stem.wav'));
-        if (!refFile.existsSync()) continue;
-        final ref = _readWav16(refFile.path);
-        final n = min(samples.length, ref.length);
-        var maxDiff = 0;
-        for (var i = 0; i < n; i++) {
-          final d = (samples[i] - ref[i]).abs();
-          if (d > maxDiff) maxDiff = d;
-        }
-        // ignore: avoid_print
-        print('6s $stem parity: maxDiff=$maxDiff LSB');
-        expect(maxDiff, lessThan(8), reason: '$stem max diff too large');
       }
     },
     timeout: const Timeout(Duration(minutes: 5)),

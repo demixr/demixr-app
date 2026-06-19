@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:path/path.dart' as p;
 
-import '../helpers/onnx/executorch_demixing_engine.dart';
+import '../helpers/separation/executorch_demixing_engine.dart';
 import '../models/model.dart';
 import '../providers/preferences_provider.dart';
 import '../constants.dart';

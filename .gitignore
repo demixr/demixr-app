@@ -149,18 +149,6 @@ app.*.symbols
 # cpp files
 *.cxx
 
-# ONNX model export workspace (venv + multi-hundred-MB artifacts)
-/tools/onnx_export/.venv/
-/tools/onnx_export/*.onnx
-/tools/onnx_export/*.pt
-/tools/onnx_export/audio/
-/tools/onnx_export/*.wav
-/tools/onnx_export/*.pcm
-/tools/onnx_export/ref_out/
-/tools/onnx_export/ref_out*/
-/tools/onnx_export/**/*.wav
-/tools/onnx_export/*.mlpackage/
-
 # Local-only on-device test model (158MB) — never commit
 /assets/test_fixtures/
 
@@ -168,7 +156,3 @@ app.*.symbols
 third_party/**/.build/
 third_party/**/build/
 third_party/flutter_onnxruntime/example/
-/tools/onnx_export/*.pte
-/tools/onnx_export/*.mlpackage
-
-# Temporary on-device benchmark fixtures (large, not committed)
