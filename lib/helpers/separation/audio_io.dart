@@ -26,6 +26,7 @@ Future<List<Float32List>> decodeToFloatPcm(
   // can map straight into a Float32List on every (little-endian) target.
   try {
     final session = await FFmpegKit.execute(
+      '-hide_banner -loglevel error '
       '-y -i "$inputPath" -ac $channels -ar $sampleRate '
       '-f f32le -acodec pcm_f32le "$rawPath"',
     );

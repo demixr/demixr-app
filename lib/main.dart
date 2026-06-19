@@ -20,6 +20,8 @@ import 'package:get/get.dart';
 import 'dart:async';
 import 'dart:io';
 
+import 'package:executorch_flutter/executorch_flutter.dart';
+
 import 'constants.dart' show Models;
 import 'helpers/separation/executorch_demixing_engine.dart';
 import 'models/model.dart';
@@ -28,6 +30,10 @@ import 'providers/preferences_provider.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // ExecuTorch enables verbose debug logging by default ('[ExecuTorch DEBUG]
+  // …' on every load/inference). Turn it off so the console isn't spammed.
+  await ExecutorchManager.instance.setDebugLogging(false);
 
   await Hive.initFlutter();
 
