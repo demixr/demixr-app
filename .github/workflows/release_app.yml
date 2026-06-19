@@ -28,8 +28,14 @@ jobs:
       # arm64 only: the ExecuTorch (executorch_flutter) Android prebuilt ships
       # arm64-v8a only, so --split-per-abi / 32-bit builds would fail. Release
       # is debug-signed (see android/app/build.gradle) — installable, not
-      # Play-Store-ready until a release keystore is configured.
-      - run: flutter build apk --release --target-platform android-arm64
+      # Play-Store-ready until a release keystore is configured. Retried: the
+      # ExecuTorch prebuilt download has a short timeout that can flake.
+      - name: Build APK
+        run: |
+          n=0; until flutter build apk --release --target-platform android-arm64; do
+            n=$((n+1)); [ $n -ge 3 ] && exit 1
+            echo "::warning::build failed (likely prebuilt download); retry $n"; sleep 20
+          done
       - uses: ncipollo/release-action@v1
         with:
           artifacts: "build/app/outputs/flutter-apk/*.apk"
@@ -47,21 +53,36 @@ jobs:
           channel: stable
           cache: true
       - run: flutter pub get
-      - run: flutter build macos --release
-      # Unsigned / not notarized — runnable locally (right-click → Open). For
-      # distribution, add Developer ID signing + notarization secrets.
-      - name: Package .app
+      - name: Build macOS
         run: |
-          cd build/macos/Build/Products/Release
-          zip -r -y demixr-macos.zip ./*.app
+          n=0; until flutter build macos --release; do
+            n=$((n+1)); [ $n -ge 3 ] && exit 1
+            echo "::warning::build failed (likely prebuilt download); retry $n"; sleep 20
+          done
+      # Build a drag-to-install .dmg (app + Applications shortcut). The app is
+      # ad-hoc signed (no Apple Developer account), so it's NOT notarized: on
+      # first launch users right-click → Open once to pass Gatekeeper. For a
+      # warning-free download, add Developer ID signing + notarization.
+      - name: Package .dmg
+        run: |
+          APP=$(ls -d build/macos/Build/Products/Release/*.app | head -1)
+          STAGE="$(mktemp -d)/dmg"
+          mkdir -p "$STAGE"
+          cp -R "$APP" "$STAGE/"
+          ln -s /Applications "$STAGE/Applications"
+          hdiutil create -volname "Demixr" -srcfolder "$STAGE" \
+            -ov -format UDZO build/demixr-macos.dmg
       - uses: ncipollo/release-action@v1
         with:
-          artifacts: "build/macos/Build/Products/Release/demixr-macos.zip"
+          artifacts: "build/demixr-macos.dmg"
           allowUpdates: true
           token: ${{ secrets.GITHUB_TOKEN }}
 
   ios:
-    name: Build iOS app (unsigned)
+    # Build-check only: iOS apps can't be distributed without a paid Apple
+    # Developer account (App Store / TestFlight). This confirms iOS still
+    # compiles and produces a re-signable .app — it is NOT installable as-is.
+    name: Build iOS app (build-check, unsigned)
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
@@ -75,7 +96,12 @@ jobs:
       # re-signable artifact, NOT an installable IPA. To ship a signed .ipa, add
       # the signing cert + provisioning profile as secrets and switch to
       # `flutter build ipa --export-options-plist=...`.
-      - run: flutter build ios --release --no-codesign
+      - name: Build iOS (unsigned)
+        run: |
+          n=0; until flutter build ios --release --no-codesign; do
+            n=$((n+1)); [ $n -ge 3 ] && exit 1
+            echo "::warning::build failed (likely prebuilt download); retry $n"; sleep 20
+          done
       - name: Package unsigned .app
         run: |
           cd build/ios/iphoneos
