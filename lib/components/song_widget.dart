@@ -71,22 +71,27 @@ class AlbumCover extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    Widget fallbackCover() => Image.asset(
+      getAssetPath('default_cover', AssetType.image),
+      fit: BoxFit.cover,
+      width: size,
+      height: size,
+    );
+
     return ClipRRect(
       borderRadius: BorderRadius.circular(size == null ? 16 : size! * .1),
-      child: imagePath.fold(
-        (failure) => Image.asset(
-          getAssetPath('default_cover', AssetType.image),
+      child: imagePath.fold((failure) => fallbackCover(), (coverPath) {
+        final cover = File(coverPath);
+        if (!cover.existsSync()) return fallbackCover();
+
+        return Image.file(
+          cover,
           fit: BoxFit.cover,
           width: size,
           height: size,
-        ),
-        (coverPath) => Image.file(
-          File(coverPath),
-          fit: BoxFit.cover,
-          width: size,
-          height: size,
-        ),
-      ),
+          errorBuilder: (context, error, stackTrace) => fallbackCover(),
+        );
+      }),
     );
   }
 }
