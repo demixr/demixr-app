@@ -1,3 +1,4 @@
+import 'package:demixr_app/models/duration_adapter.dart';
 import 'package:demixr_app/models/unmixed_song.dart';
 import 'package:demixr_app/providers/library_provider.dart';
 import 'package:demixr_app/providers/model_provider.dart';
@@ -36,7 +37,7 @@ Future<void> main() async {
   Hive.registerAdapters();
 
   await Hive.openBox<dynamic>(BoxesNames.preferences);
-  await Hive.openBox<UnmixedSong>(BoxesNames.library);
+  await _openLibraryWithLegacyDurationMigration();
 
   runApp(const MyApp());
 
@@ -44,6 +45,25 @@ Future<void> main() async {
   // of the session isn't stalled by the one-time CoreML compile. Background +
   // best-effort.
   unawaited(_warmUpSelectedModel());
+}
+
+Future<void> _openLibraryWithLegacyDurationMigration() async {
+  try {
+    await Hive.openBox<UnmixedSong>(BoxesNames.library);
+  } on HiveError catch (error) {
+    // Older Demixr versions stored Duration with the app adapter typeId 1,
+    // encoded by Hive CE as on-disk typeId 33. Read that format once, then
+    // recreate the box so Hive's built-in Duration adapter is used afterward.
+    if (!error.message.contains('unknown typeId: 33')) rethrow;
+
+    Hive.registerAdapter<Duration>(DurationAdapter());
+    final legacyBox = await Hive.openBox<UnmixedSong>(BoxesNames.library);
+    final songs = legacyBox.toMap();
+    await legacyBox.deleteFromDisk();
+
+    final migratedBox = await Hive.openBox<UnmixedSong>(BoxesNames.library);
+    await migratedBox.putAll(songs);
+  }
 }
 
 Future<void> _warmUpSelectedModel() async {
