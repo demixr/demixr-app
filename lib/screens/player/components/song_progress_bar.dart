@@ -23,11 +23,11 @@ class SongProgressBar extends StatelessWidget {
             return ProgressBar(
               progress: progress,
               total: total,
-              progressBarColor: ColorPalette.inverseSurface,
+              progressBarColor: ColorPalette.primary,
               baseBarColor: Colors.white.withValues(alpha: 0.2),
               barHeight: 3,
               thumbRadius: 5,
-              thumbColor: ColorPalette.inverseSurface,
+              thumbColor: ColorPalette.primary,
               thumbGlowRadius: 12,
               timeLabelTextStyle: const TextStyle(
                 fontSize: 12,

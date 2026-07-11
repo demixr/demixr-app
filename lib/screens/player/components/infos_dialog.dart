@@ -1,4 +1,3 @@
-import 'package:demixr_app/components/buttons.dart';
 import 'package:demixr_app/providers/library_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:get/route_manager.dart';
@@ -23,8 +22,15 @@ class InfosDialog extends StatelessWidget {
     );
 
     return AlertDialog(
+      backgroundColor: ColorPalette.surfaceContainer,
+      surfaceTintColor: Colors.transparent,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(24),
+        side: const BorderSide(color: ColorPalette.outline),
+      ),
+      icon: const Icon(Icons.graphic_eq_rounded, color: ColorPalette.primary),
       title: Text(songTitle),
-      elevation: 24,
+      elevation: 0,
       content: RichText(
         text: TextSpan(
           style: const TextStyle(color: ColorPalette.onSurfaceVariant),
@@ -33,7 +39,7 @@ class InfosDialog extends StatelessWidget {
             TextSpan(
               text: modelName,
               style: const TextStyle(
-                color: Colors.redAccent,
+                color: ColorPalette.primary,
                 fontWeight: FontWeight.bold,
                 fontSize: 16,
               ),
@@ -41,15 +47,7 @@ class InfosDialog extends StatelessWidget {
           ],
         ),
       ),
-      backgroundColor: ColorPalette.surfaceVariant,
-      actions: [
-        Button(
-          'Ok'.toUpperCase(),
-          color: Colors.transparent,
-          textColor: ColorPalette.primary,
-          onPressed: Get.back,
-        ),
-      ],
+      actions: [TextButton(onPressed: Get.back, child: const Text('Done'))],
     );
   }
 }

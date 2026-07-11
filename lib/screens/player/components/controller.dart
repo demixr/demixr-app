@@ -23,19 +23,19 @@ class SongController extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const radius = Radius.circular(35);
     return SizedBox(
-      height: 125,
+      height: 138,
       child: DecoratedBox(
-        decoration: const BoxDecoration(
-          color: ColorPalette.surfaceVariant,
-          borderRadius: BorderRadius.only(topLeft: radius, topRight: radius),
+        decoration: BoxDecoration(
+          color: ColorPalette.surfaceContainer,
+          borderRadius: BorderRadius.circular(24),
+          border: Border.all(color: ColorPalette.outline),
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             const Padding(
-              padding: EdgeInsets.only(left: 20, right: 20),
+              padding: EdgeInsets.symmetric(horizontal: 20),
               child: SongProgressBar(),
             ),
             Row(
@@ -44,7 +44,7 @@ class SongController extends StatelessWidget {
                 ControllerButton(
                   SvgPicture.asset(getAssetPath('previous', AssetType.icon)),
                   gradient: ColorPalette.primaryFadedGradient,
-                  size: 55,
+                  size: 48,
                   onPressed: () => context.read<PlayerProvider>().previous(),
                 ),
                 Consumer<PlayerProvider>(
@@ -57,6 +57,7 @@ class SongController extends StatelessWidget {
 
                     return ControllerButton(
                       icon,
+                      size: 58,
                       onPressed: () => player.playpause(),
                     );
                   },
@@ -64,7 +65,7 @@ class SongController extends StatelessWidget {
                 ControllerButton(
                   SvgPicture.asset(getAssetPath('next', AssetType.icon)),
                   gradient: ColorPalette.primaryFadedGradient,
-                  size: 55,
+                  size: 48,
                   onPressed: () => context.read<PlayerProvider>().next(),
                 ),
               ],

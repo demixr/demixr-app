@@ -14,79 +14,76 @@ class DownloadScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Padding(
-        padding: const EdgeInsets.only(
-          left: 20,
-          top: 70,
-          right: 20,
-          bottom: 30,
-        ),
-        child: SpacedColumn(
-          spacing: 50,
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Expanded(
-              child: Center(
-                child: Consumer<ModelProvider>(
-                  builder: (context, modelProvider, child) {
-                    return CircularPercentIndicator(
-                      radius: 130.0,
-                      lineWidth: 15.0,
-                      percent: modelProvider.progress,
-                      backgroundColor: ColorPalette.surfaceVariant,
-                      progressColor: ColorPalette.primary,
-                      circularStrokeCap: CircularStrokeCap.round,
-                      center: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            '${modelProvider.currentDownloaded}',
-                            style: const TextStyle(
-                              fontSize: 48,
-                              fontWeight: FontWeight.w600,
-                              color: ColorPalette.primary,
+      body: SafeArea(
+        child: Center(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(24),
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 560),
+              child: SpacedColumn(
+                spacing: 50,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Consumer<ModelProvider>(
+                    builder: (context, modelProvider, child) {
+                      return CircularPercentIndicator(
+                        radius: 130,
+                        lineWidth: 15,
+                        percent: modelProvider.progress,
+                        backgroundColor: ColorPalette.surfaceVariant,
+                        progressColor: ColorPalette.primary,
+                        circularStrokeCap: CircularStrokeCap.round,
+                        center: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              '${modelProvider.currentDownloaded}',
+                              style: const TextStyle(
+                                fontSize: 48,
+                                fontWeight: FontWeight.w600,
+                                color: ColorPalette.primary,
+                              ),
                             ),
-                          ),
-                          const Text(
-                            ' MB',
-                            style: TextStyle(
-                              fontSize: 18,
-                              color: ColorPalette.primary,
+                            const Text(
+                              ' MB',
+                              style: TextStyle(
+                                fontSize: 18,
+                                color: ColorPalette.primary,
+                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
+                      );
+                    },
+                  ),
+                  Consumer<ModelProvider>(
+                    builder: (context, modelProvider, child) => AutoSizeText(
+                      modelProvider.warmingUp
+                          ? 'Optimizing the model for your device'
+                          : 'The model is being downloaded',
+                      textAlign: TextAlign.center,
+                      maxLines: 2,
+                      style: const TextStyle(
+                        fontSize: 20,
+                        color: ColorPalette.onSurfaceVariant,
                       ),
-                    );
-                  },
-                ),
+                    ),
+                  ),
+                  CancelButton(
+                    onPressed: () {
+                      context.read<ModelProvider>().cancelDownload();
+                      Get.snackbar(
+                        'Model',
+                        'Download canceled',
+                        backgroundColor: ColorPalette.primary,
+                        colorText: ColorPalette.onPrimary,
+                      );
+                    },
+                  ),
+                ],
               ),
             ),
-            Consumer<ModelProvider>(
-              builder: (context, modelProvider, child) => AutoSizeText(
-                modelProvider.warmingUp
-                    ? 'Optimizing the model for your device'
-                    : 'The model is being downloaded',
-                textAlign: TextAlign.center,
-                maxLines: 2,
-                style: const TextStyle(
-                  fontSize: 20,
-                  color: ColorPalette.onSurfaceVariant,
-                ),
-              ),
-            ),
-            CancelButton(
-              onPressed: () {
-                context.read<ModelProvider>().cancelDownload();
-                Get.snackbar(
-                  'Model',
-                  'Download canceled',
-                  backgroundColor: ColorPalette.primary,
-                  colorText: ColorPalette.onPrimary,
-                );
-              },
-            ),
-          ],
+          ),
         ),
       ),
     );

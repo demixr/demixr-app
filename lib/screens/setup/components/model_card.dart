@@ -1,4 +1,3 @@
-import 'package:auto_size_text/auto_size_text.dart';
 import 'package:demixr_app/components/extended_widgets.dart';
 import 'package:demixr_app/models/model.dart';
 import 'package:flutter/material.dart';
@@ -14,16 +13,20 @@ class ModelCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      color: ColorPalette.surfaceVariant,
+      elevation: 0,
+      color: ColorPalette.surfaceContainer,
       clipBehavior: Clip.antiAlias,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: const BorderSide(color: ColorPalette.outline),
+      ),
       child: Padding(
-        padding: const EdgeInsets.all(10),
+        padding: const EdgeInsets.all(16),
         child: SpacedRow(
           spacing: 10,
           children: [
             CircleAvatar(
-              backgroundColor: ColorPalette.surface,
+              backgroundColor: ColorPalette.surfaceContainerHigh,
               radius: 30,
               backgroundImage: Image.asset(imagePath).image,
             ),
@@ -32,21 +35,50 @@ class ModelCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 spacing: 5,
                 children: [
-                  AutoSizeText(
-                    model.name.toUpperCase() +
-                        (model.isDefault ? ' (default)' : ''),
-                    style: const TextStyle(fontSize: 16),
-                    minFontSize: 12,
-                    maxLines: 1,
+                  Row(
+                    children: [
+                      Flexible(
+                        child: Text(
+                          model.name.toUpperCase(),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                      if (model.isDefault) ...[
+                        const SizedBox(width: 6),
+                        const Tooltip(
+                          message: 'Recommended',
+                          child: Icon(
+                            Icons.auto_awesome_rounded,
+                            size: 16,
+                            color: ColorPalette.tertiary,
+                          ),
+                        ),
+                      ],
+                    ],
                   ),
-                  AutoSizeText(
+                  Text(
                     model.description,
-                    style: const TextStyle(fontSize: 14),
-                    minFontSize: 8,
+                    style: const TextStyle(
+                      fontSize: 14,
+                      height: 1.35,
+                      color: ColorPalette.onSurfaceVariant,
+                    ),
                     maxLines: 3,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ],
               ),
+            ),
+            const SizedBox(width: 4),
+            const Icon(
+              Icons.arrow_downward_rounded,
+              color: ColorPalette.primary,
+              size: 22,
             ),
           ],
         ),

@@ -1,5 +1,3 @@
-import 'package:auto_size_text/auto_size_text.dart';
-import 'package:demixr_app/constants.dart';
 import 'package:flutter/material.dart';
 
 class SetupTitle extends StatelessWidget {
@@ -7,22 +5,17 @@ class SetupTitle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Column(
-      mainAxisAlignment: MainAxisAlignment.start,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        AutoSizeText(
-          'Welcome',
-          maxLines: 1,
-          style: TextStyle(
-            fontSize: 80,
-            fontWeight: FontWeight.normal,
-            color: ColorPalette.primary,
-          ),
+        Text(
+          'Welcome to Demixr',
+          style: Theme.of(context).textTheme.displayLarge,
         ),
-        AutoSizeText(
-          'to Demixr',
-          maxLines: 1,
-          style: TextStyle(fontSize: 48, color: ColorPalette.primary),
+        const SizedBox(height: 14),
+        const Text(
+          'Separate vocals, drums, bass, and instruments directly on your device.',
+          style: TextStyle(fontSize: 18, height: 1.45),
         ),
       ],
     );

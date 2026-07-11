@@ -1,4 +1,3 @@
-import 'package:auto_size_text/auto_size_text.dart';
 import 'package:demixr_app/constants.dart';
 import 'package:flutter/material.dart';
 
@@ -7,22 +6,21 @@ class HomeTitle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Column(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        AutoSizeText(
-          'Demixr',
-          style: TextStyle(
-            fontSize: 72,
-            fontWeight: FontWeight.normal,
-            color: ColorPalette.primary,
+        Text('Demixr', style: Theme.of(context).textTheme.displayLarge),
+        const SizedBox(height: 14),
+        ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 360),
+          child: const Text(
+            'Pull every part of your music into focus.',
+            style: TextStyle(
+              color: ColorPalette.onSurfaceVariant,
+              fontSize: 18,
+              height: 1.45,
+            ),
           ),
-          maxLines: 1,
-        ),
-        AutoSizeText(
-          'Music demixing in your pocket',
-          style: TextStyle(fontSize: 16),
-          maxLines: 1,
         ),
       ],
     );

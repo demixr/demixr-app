@@ -1,5 +1,3 @@
-import 'package:auto_size_text/auto_size_text.dart';
-import 'package:demixr_app/components/extended_widgets.dart';
 import 'package:demixr_app/constants.dart';
 import 'package:flutter/material.dart';
 
@@ -8,24 +6,25 @@ class Instructions extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SpacedColumn(
-      spacing: 10,
-      mainAxisAlignment: MainAxisAlignment.start,
-      children: const [
-        AutoSizeText(
-          'First, select a model to separate your music',
-          maxLines: 2,
-          textAlign: TextAlign.center,
+    return const Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Choose your separation engine',
           style: TextStyle(
-            fontSize: 36,
-            fontWeight: FontWeight.normal,
+            fontSize: 24,
+            fontWeight: FontWeight.w700,
             color: ColorPalette.onSurface,
           ),
         ),
+        SizedBox(height: 8),
         Text(
-          'You can always change this later in the settings',
-          textAlign: TextAlign.center,
-          style: TextStyle(fontSize: 16, color: ColorPalette.onSurfaceVariant),
+          'The GPU model is fastest on supported devices. You can change this choice later.',
+          style: TextStyle(
+            fontSize: 16,
+            height: 1.45,
+            color: ColorPalette.onSurfaceVariant,
+          ),
         ),
       ],
     );

@@ -30,13 +30,17 @@ class ModelGroup extends StatelessWidget {
 
     List<Widget> modelCards = [
       for (var model in models)
-        TextButton(
-          style: TextButton.styleFrom(padding: const EdgeInsets.all(0)),
-          onPressed: () => modelProvider.downloadModel(
-            model,
-            onDone: () => Get.offAllNamed('/'),
+        Semantics(
+          button: true,
+          label: 'Download ${model.name}',
+          child: TextButton(
+            style: TextButton.styleFrom(padding: EdgeInsets.zero),
+            onPressed: () => modelProvider.downloadModel(
+              model,
+              onDone: () => Get.offAllNamed('/'),
+            ),
+            child: ModelCard(model: model, imagePath: imagePath),
           ),
-          child: ModelCard(model: model, imagePath: imagePath),
         ),
     ];
 
@@ -46,7 +50,11 @@ class ModelGroup extends StatelessWidget {
         children: [
           Text(
             title,
-            style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w600),
+            style: const TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 1.4,
+            ),
           ),
         ],
       ),

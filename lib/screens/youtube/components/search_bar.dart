@@ -12,45 +12,55 @@ class SearchBar extends StatelessWidget {
     final youtube = context.read<YoutubeProvider>();
 
     return SafeArea(
-      child: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(12),
-            child: TextField(
-              autofocus: true,
-              textInputAction: TextInputAction.search,
-              style: const TextStyle(color: ColorPalette.onSurface),
-              decoration: InputDecoration(
-                hintText: 'Search Youtube',
-                hintStyle: const TextStyle(
-                  color: ColorPalette.onSurfaceVariant,
-                ),
-                prefixIcon: const Icon(
-                  Icons.search,
-                  color: ColorPalette.onSurfaceVariant,
-                ),
-                filled: true,
-                fillColor: ColorPalette.surfaceVariant,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide.none,
+      child: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 900),
+          child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(12),
+                child: TextField(
+                  autofocus: true,
+                  textInputAction: TextInputAction.search,
+                  style: const TextStyle(color: ColorPalette.onSurface),
+                  decoration: InputDecoration(
+                    hintText: 'Search Youtube',
+                    hintStyle: const TextStyle(
+                      color: ColorPalette.onSurfaceVariant,
+                    ),
+                    prefixIcon: const Icon(
+                      Icons.search,
+                      color: ColorPalette.onSurfaceVariant,
+                    ),
+                    filled: true,
+                    fillColor: ColorPalette.surfaceContainer,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(16),
+                      borderSide: const BorderSide(color: ColorPalette.outline),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(16),
+                      borderSide: const BorderSide(color: ColorPalette.outline),
+                    ),
+                  ),
+                  onSubmitted: (query) => youtube.search(query),
                 ),
               ),
-              onSubmitted: (query) => youtube.search(query),
-            ),
+              Expanded(
+                child: Consumer<YoutubeProvider>(
+                  builder: (context, youtube, child) {
+                    return youtube.videos.fold(
+                      (failure) => const EmptySearch(),
+                      (videos) => videos.isEmpty
+                          ? const EmptySearch()
+                          : const VideoList(),
+                    );
+                  },
+                ),
+              ),
+            ],
           ),
-          Expanded(
-            child: Consumer<YoutubeProvider>(
-              builder: (context, youtube, child) {
-                return youtube.videos.fold(
-                  (failure) => const EmptySearch(),
-                  (videos) =>
-                      videos.isEmpty ? const EmptySearch() : const VideoList(),
-                );
-              },
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }

@@ -1,4 +1,3 @@
-import 'package:demixr_app/constants.dart';
 import 'package:flutter/material.dart';
 
 class PageTitle extends StatelessWidget {
@@ -8,13 +7,6 @@ class PageTitle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Text(
-      title,
-      style: const TextStyle(
-        fontSize: 48,
-        fontWeight: FontWeight.w400,
-        color: ColorPalette.primary,
-      ),
-    );
+    return Text(title, style: Theme.of(context).textTheme.headlineMedium);
   }
 }
