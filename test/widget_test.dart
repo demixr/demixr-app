@@ -1,4 +1,5 @@
 import 'package:demixr_app/providers/model_provider.dart';
+import 'package:demixr_app/screens/demixing/components/selection_screen.dart';
 import 'package:demixr_app/screens/setup/setup_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -39,6 +40,27 @@ void main() {
 
     expect(find.text('Welcome to Demixr'), findsOneWidget);
     expect(find.text('Demucs'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('new separation renders at fullscreen desktop size', (
+    tester,
+  ) async {
+    tester.view.devicePixelRatio = 1;
+    tester.view.physicalSize = const Size(1920, 1080);
+    addTearDown(() {
+      tester.view.resetDevicePixelRatio();
+      tester.view.resetPhysicalSize();
+    });
+
+    await tester.pumpWidget(
+      const MaterialApp(home: Scaffold(body: SelectionScreen())),
+    );
+    await tester.pump();
+
+    expect(find.text('New separation'), findsOneWidget);
+    expect(find.text('Choose a song'), findsOneWidget);
+    expect(find.text('Unmix'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 }
