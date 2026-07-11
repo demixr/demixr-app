@@ -1,4 +1,3 @@
-import 'package:demixr_app/models/duration_adapter.dart';
 import 'package:demixr_app/models/unmixed_song.dart';
 import 'package:demixr_app/providers/library_provider.dart';
 import 'package:demixr_app/providers/model_provider.dart';
@@ -32,11 +31,9 @@ Future<void> main() async {
 
   await Hive.initFlutter();
 
-  // Generated registrar covers the @HiveType adapters (UnmixedSong); the
-  // hand-written Duration adapter is registered explicitly.
-  Hive
-    ..registerAdapters()
-    ..registerAdapter(DurationAdapter());
+  // Hive CE already registers its built-in Duration adapter. Register only
+  // the app's generated model adapters here.
+  Hive.registerAdapters();
 
   await Hive.openBox<dynamic>(BoxesNames.preferences);
   await Hive.openBox<UnmixedSong>(BoxesNames.library);
