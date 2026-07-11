@@ -68,7 +68,7 @@ class NowPlayingCard extends StatelessWidget {
                               ),
                             ],
                           ),
-                          const SizedBox(height: 18),
+                          const Spacer(),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
@@ -165,6 +165,7 @@ class _EmptyPlayerCard extends StatelessWidget {
       child: const Padding(
         padding: EdgeInsets.all(20),
         child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Icon(Icons.graphic_eq_rounded, color: ColorPalette.primary),

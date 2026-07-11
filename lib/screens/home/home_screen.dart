@@ -46,18 +46,58 @@ class HomeScreen extends StatelessWidget {
                           children: [
                             SizedBox(
                               width: 310,
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  const HomeTitle(),
-                                  const SizedBox(height: 32),
-                                  const NowPlayingCard(),
-                                  const Spacer(),
-                                  SizedBox(
-                                    width: double.infinity,
-                                    child: action,
-                                  ),
-                                ],
+                              child: LayoutBuilder(
+                                builder: (context, rail) {
+                                  final isShort = rail.maxHeight < 520;
+
+                                  if (isShort) {
+                                    return Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.stretch,
+                                      children: [
+                                        Text(
+                                          'Demixr',
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .headlineMedium
+                                              ?.copyWith(fontSize: 38),
+                                        ),
+                                        const SizedBox(height: 10),
+                                        const Expanded(
+                                          child: FittedBox(
+                                            fit: BoxFit.scaleDown,
+                                            child: SizedBox(
+                                              width: 310,
+                                              child: NowPlayingCard(
+                                                compact: true,
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                        const SizedBox(height: 10),
+                                        SizedBox(
+                                          width: double.infinity,
+                                          child: action,
+                                        ),
+                                      ],
+                                    );
+                                  }
+
+                                  return Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.stretch,
+                                    children: [
+                                      const HomeTitle(),
+                                      const SizedBox(height: 28),
+                                      const Expanded(child: NowPlayingCard()),
+                                      const SizedBox(height: 24),
+                                      SizedBox(
+                                        width: double.infinity,
+                                        child: action,
+                                      ),
+                                    ],
+                                  );
+                                },
                               ),
                             ),
                             const SizedBox(width: 64),
