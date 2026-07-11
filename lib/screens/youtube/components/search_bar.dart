@@ -1,3 +1,4 @@
+import 'package:demixr_app/components/navbar.dart';
 import 'package:demixr_app/constants.dart';
 import 'package:demixr_app/providers/youtube_provider.dart';
 import 'package:demixr_app/screens/youtube/components/video_list.dart';
@@ -17,8 +18,12 @@ class SearchBar extends StatelessWidget {
           constraints: const BoxConstraints(maxWidth: 900),
           child: Column(
             children: [
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 12),
+                child: NavBar(),
+              ),
               Padding(
-                padding: const EdgeInsets.all(12),
+                padding: const EdgeInsets.fromLTRB(12, 4, 12, 12),
                 child: TextField(
                   autofocus: true,
                   textInputAction: TextInputAction.search,
