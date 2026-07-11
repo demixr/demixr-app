@@ -8,6 +8,7 @@ import 'package:provider/provider.dart';
 import '../../constants.dart';
 import 'components/home_title.dart';
 import 'components/library.dart';
+import 'components/now_playing_card.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -49,6 +50,8 @@ class HomeScreen extends StatelessWidget {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   const HomeTitle(),
+                                  const SizedBox(height: 32),
+                                  const NowPlayingCard(),
                                   const Spacer(),
                                   SizedBox(
                                     width: double.infinity,
@@ -65,7 +68,9 @@ class HomeScreen extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             const HomeTitle(),
-                            const SizedBox(height: 40),
+                            const SizedBox(height: 20),
+                            const NowPlayingCard(compact: true),
+                            const SizedBox(height: 24),
                             const Expanded(child: Library()),
                             const SizedBox(height: 16),
                             SizedBox(width: double.infinity, child: action),

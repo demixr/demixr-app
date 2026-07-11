@@ -132,6 +132,11 @@ class PlayerProvider extends ChangeNotifier {
 
   /// Play the previous song in the [_library].
   void previous() {
+    if (position > const Duration(seconds: 3)) {
+      toStart(setPause: false);
+      return;
+    }
+
     final success = _library.previousSong();
     if (!success) toStart(setPause: false);
   }
