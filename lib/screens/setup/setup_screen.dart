@@ -1,6 +1,7 @@
 import 'package:demixr_app/screens/setup/components/instructions.dart';
 import 'package:demixr_app/screens/setup/components/model_selection.dart';
 import 'package:demixr_app/screens/setup/components/setup_title.dart';
+import 'package:demixr_app/constants.dart';
 import 'package:flutter/material.dart';
 
 class SetupScreen extends StatelessWidget {
@@ -12,7 +13,7 @@ class SetupScreen extends StatelessWidget {
       body: SafeArea(
         child: LayoutBuilder(
           builder: (context, constraints) {
-            final isDesktop = constraints.maxWidth >= 820;
+            final isDesktop = constraints.maxWidth >= LayoutBreakpoints.desktop;
             return SingleChildScrollView(
               padding: EdgeInsets.symmetric(
                 horizontal: isDesktop ? 48 : 20,

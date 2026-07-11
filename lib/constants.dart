@@ -32,6 +32,15 @@ class ColorPalette {
   ];
 }
 
+class LayoutBreakpoints {
+  /// Width at which screens switch from the stacked mobile composition to
+  /// their two-column desktop composition.
+  static const double desktop = 760;
+
+  /// Desktop widths below this value use tighter gutters and panel spacing.
+  static const double compactDesktop = 1000;
+}
+
 class Paths {
   static const images = 'assets/images/';
   static const icons = 'assets/icons/';

@@ -18,8 +18,12 @@ class HomeScreen extends StatelessWidget {
       body: SafeArea(
         child: LayoutBuilder(
           builder: (context, constraints) {
-            final isDesktop = constraints.maxWidth >= 820;
-            final horizontalPadding = isDesktop ? 48.0 : 20.0;
+            final isDesktop = constraints.maxWidth >= LayoutBreakpoints.desktop;
+            final isCompactDesktop =
+                constraints.maxWidth < LayoutBreakpoints.compactDesktop;
+            final horizontalPadding = isDesktop
+                ? (isCompactDesktop ? 32.0 : 48.0)
+                : 20.0;
             final action = Button(
               'Unmix a new song',
               icon: const Icon(
@@ -45,7 +49,7 @@ class HomeScreen extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
                             SizedBox(
-                              width: 310,
+                              width: isCompactDesktop ? 280 : 310,
                               child: LayoutBuilder(
                                 builder: (context, rail) {
                                   final isShort = rail.maxHeight < 520;
@@ -112,7 +116,7 @@ class HomeScreen extends StatelessWidget {
                                 },
                               ),
                             ),
-                            const SizedBox(width: 64),
+                            SizedBox(width: isCompactDesktop ? 32 : 64),
                             const Expanded(child: Library()),
                           ],
                         )

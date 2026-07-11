@@ -15,8 +15,9 @@ class PlayerScreen extends StatelessWidget {
       body: SafeArea(
         child: LayoutBuilder(
           builder: (context, constraints) {
-            final isDesktop = constraints.maxWidth >= 760;
-            final isCompactDesktop = constraints.maxWidth < 1050;
+            final isDesktop = constraints.maxWidth >= LayoutBreakpoints.desktop;
+            final isCompactDesktop =
+                constraints.maxWidth < LayoutBreakpoints.compactDesktop;
             final padding = isDesktop ? 20.0 : 12.0;
 
             return Center(
