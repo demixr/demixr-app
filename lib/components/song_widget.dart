@@ -6,7 +6,6 @@ import 'package:demixr_app/constants.dart';
 import 'package:demixr_app/models/failure/failure.dart';
 import 'package:demixr_app/utils.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 
 import 'extended_widgets.dart';
 
@@ -72,18 +71,21 @@ class AlbumCover extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return imagePath.fold(
-      (failure) => Image.asset(
-        getAssetPath('default_cover', AssetType.image),
-        fit: BoxFit.contain,
-        width: size,
-        height: size,
-      ),
-      (coverPath) => Image.file(
-        File(coverPath),
-        fit: BoxFit.cover,
-        width: size,
-        height: size,
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(size == null ? 16 : size! * .1),
+      child: imagePath.fold(
+        (failure) => Image.asset(
+          getAssetPath('default_cover', AssetType.image),
+          fit: BoxFit.cover,
+          width: size,
+          height: size,
+        ),
+        (coverPath) => Image.file(
+          File(coverPath),
+          fit: BoxFit.cover,
+          width: size,
+          height: size,
+        ),
       ),
     );
   }
@@ -151,8 +153,11 @@ class SongWidget extends StatelessWidget {
       children.add(
         PopupMenuButton(
           padding: const EdgeInsets.all(0),
-          color: ColorPalette.surfaceVariant,
-          icon: SvgPicture.asset(getAssetPath('dots', AssetType.icon)),
+          color: ColorPalette.surfaceContainerHigh,
+          icon: const Icon(
+            Icons.more_horiz_rounded,
+            color: ColorPalette.onSurfaceVariant,
+          ),
           itemBuilder: (context) => [
             PopupMenuItem(
               onTap: onRemovePressed,

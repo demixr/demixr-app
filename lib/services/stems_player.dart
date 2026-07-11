@@ -64,21 +64,28 @@ class StemsPlayer {
   }
 
   void setUrls(UnmixedSong song) {
+    final previousStates = Map<Stem, StemState>.from(stemStates);
     activeStems = song.stems;
-    stemStates = {for (final stem in activeStems) stem: StemState.unmute};
-    mixtureOn = false;
+    stemStates = {
+      for (final stem in activeStems)
+        stem:
+            previousStates[stem] ??
+            (stem == Stem.vocals ? StemState.mute : StemState.unmute),
+    };
+    mixtureOn = allStemsUnmute;
 
-    _player(Stem.mixture)
-      ..setSource(DeviceFileSource(song.mixture))
-      ..mute();
+    _player(Stem.mixture).setSource(DeviceFileSource(song.mixture));
     for (final stem in activeStems) {
-      _player(stem)
-        ..setSource(DeviceFileSource(song.getStem(stem)))
-        ..unMute();
+      final player = _player(stem)
+        ..setSource(DeviceFileSource(song.getStem(stem)));
+      if (mixtureOn || getStemState(stem) == StemState.mute) {
+        player.mute();
+      } else {
+        player.unMute();
+      }
     }
 
-    // Preserve the historical default of starting with vocals muted.
-    toggleStem(Stem.vocals);
+    mixtureOn ? _player(Stem.mixture).unMute() : _player(Stem.mixture).mute();
   }
 
   void pause() {

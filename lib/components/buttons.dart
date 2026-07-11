@@ -20,12 +20,12 @@ class Button extends StatelessWidget {
     this.textColor = ColorPalette.onPrimary,
     this.textSize = 14,
     this.icon,
-    this.radius = 100,
+    this.radius = 14,
     this.padding = const EdgeInsets.only(
       left: 24,
-      top: 10,
+      top: 14,
       right: 24,
-      bottom: 10,
+      bottom: 14,
     ),
     this.onPressed,
   });
@@ -34,11 +34,12 @@ class Button extends StatelessWidget {
   Widget build(BuildContext context) {
     final style = TextButton.styleFrom(
       backgroundColor: color,
-      minimumSize: const Size(75, 40),
+      minimumSize: const Size(75, 48),
       padding: padding,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.all(Radius.circular(radius)),
       ),
+      elevation: 0,
     );
     final textWidget = AutoSizeText(
       text,

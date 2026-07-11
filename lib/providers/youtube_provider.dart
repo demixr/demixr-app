@@ -18,12 +18,14 @@ import '../utils.dart';
 class YoutubeProvider extends ChangeNotifier {
   final SongProvider songProvider;
   final SearchClient _youtube = YoutubeExplode().search;
-  Either<Failure, VideoSearchList> _videos = Left(NoSearchResult());
+  Either<Failure, List<Video>> _videos = Left(NoSearchResult());
+  VideoSearchList? _currentPage;
+  bool _loadingMore = false;
 
   YoutubeProvider(this.songProvider);
 
   /// The videos of the current search.
-  Either<Failure, VideoSearchList> get videos => _videos;
+  Either<Failure, List<Video>> get videos => _videos;
 
   /// Searches the [query] on youtube with [YoutubeExplode].
   Future<void> search(String query) async {
@@ -32,8 +34,10 @@ class YoutubeProvider extends ChangeNotifier {
         query,
         filter: TypeFilters.video,
       );
-      _videos = Right(searchList);
+      _currentPage = searchList;
+      _videos = Right(searchList.toList());
     } on SocketException {
+      _currentPage = null;
       _videos = Left(NoInternetConnection());
       errorSnackbar('Search failed', 'Could not reach Youtube', seconds: 5);
     }
@@ -45,19 +49,25 @@ class YoutubeProvider extends ChangeNotifier {
   ///
   /// Loads the videos of the next page while keeping the precedent ones.
   Future<bool> loadMore() async {
-    await _videos.fold((failure) => null, (searchList) async {
-      final nextPage = await searchList.nextPage();
+    if (_loadingMore || _currentPage == null) return false;
+    _loadingMore = true;
 
-      if (nextPage != null) {
-        // Since SearchList is likely immutable, we'll replace it with a new one
-        // or we need to manually manage the list.
-        // But let's try to just replace it for now to get it running.
-        _videos = Right(nextPage);
-      }
-    });
-    notifyListeners();
+    try {
+      final nextPage = await _currentPage!.nextPage();
+      if (nextPage == null) return false;
 
-    return true;
+      final accumulated = _videos.fold<List<Video>>(
+        (_) => <Video>[],
+        (videos) => List<Video>.from(videos),
+      )..addAll(nextPage);
+
+      _currentPage = nextPage;
+      _videos = Right(accumulated);
+      notifyListeners();
+      return true;
+    } finally {
+      _loadingMore = false;
+    }
   }
 
   /// Downloads the audio of the Youtube video at the given [url].

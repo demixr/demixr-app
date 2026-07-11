@@ -11,10 +11,10 @@ class CancelButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return Button(
       'Cancel',
-      icon: const Icon(Icons.cancel, color: ColorPalette.onError),
-      color: ColorPalette.errorContainer,
+      icon: const Icon(Icons.close_rounded, color: ColorPalette.onError),
+      color: ColorPalette.errorContainer.withValues(alpha: 0.55),
       textColor: ColorPalette.onError,
-      textSize: 18,
+      textSize: 16,
       onPressed: onPressed,
     );
   }

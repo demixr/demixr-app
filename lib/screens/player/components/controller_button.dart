@@ -28,11 +28,11 @@ class ControllerButton extends StatelessWidget {
       ),
       child: Ink(
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(size / 2),
           gradient: LinearGradient(
             colors: gradient,
-            begin: const Alignment(-3, -3),
-            end: Alignment.bottomCenter,
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
           ),
         ),
         child: Container(

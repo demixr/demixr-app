@@ -19,94 +19,118 @@ class ProcessingScreen extends StatelessWidget {
         child: Center(
           child: SingleChildScrollView(
             padding: const EdgeInsets.all(20),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                ConstrainedBox(
-                  constraints: const BoxConstraints(
-                    maxHeight: 220,
-                    maxWidth: 320,
-                  ),
-                  child: Image.asset(
-                    getAssetPath('demixing', AssetType.animation),
-                  ),
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 560),
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  color: ColorPalette.surfaceContainer,
+                  borderRadius: BorderRadius.circular(24),
+                  border: Border.all(color: ColorPalette.outline),
                 ),
-                const SizedBox(height: 20),
-                SpacedColumn(
-                  spacing: 5,
-                  children: const [
-                    AutoSizeText(
-                      'Demixing in progress',
-                      style: TextStyle(
-                        color: ColorPalette.onSurfaceVariant,
-                        fontSize: 20,
-                      ),
-                    ),
-                    AutoSizeText(
-                      'This may take a few minutes',
-                      style: TextStyle(
-                        color: ColorPalette.onSurfaceVariant,
-                        fontSize: 20,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 20),
-                StreamBuilder<double>(
-                  stream: demixingProvider.progressStream,
-                  builder: (context, snapshot) {
-                    final progress = snapshot.hasData ? snapshot.data! : 0.0;
-                    return LinearPercentIndicator(
-                      percent: progress.clamp(0.0, 1.0),
-                      lineHeight: 20,
-                      backgroundColor: ColorPalette.surfaceVariant,
-                      progressColor: ColorPalette.primary,
-                      barRadius: const Radius.circular(10),
-                      animation: true,
-                      animationDuration: 1000,
-                      animateFromLastPercent: true,
-                    );
-                  },
-                ),
-                const SizedBox(height: 20),
-                CancelButton(
-                  onPressed: () {
-                    showDialog(
-                      context: context,
-                      barrierDismissible: true,
-                      builder: (context) {
-                        return AlertDialog(
-                          title: const Text('Cancel'),
-                          elevation: 24,
-                          content: const Text(
-                            'Do you really want to cancel the demixing?',
+                child: Padding(
+                  padding: const EdgeInsets.all(28),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      RepaintBoundary(
+                        child: ConstrainedBox(
+                          constraints: const BoxConstraints(
+                            maxHeight: 180,
+                            maxWidth: 240,
                           ),
-                          backgroundColor: ColorPalette.surfaceVariant,
-                          actions: [
-                            TextButton(
-                              onPressed: Get.back,
-                              child: const Text(
-                                'No',
-                                style: TextStyle(color: ColorPalette.primary),
-                              ),
+                          child: Image.asset(
+                            getAssetPath('demixing', AssetType.animation),
+                            filterQuality: FilterQuality.low,
+                            gaplessPlayback: true,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      SpacedColumn(
+                        spacing: 5,
+                        children: const [
+                          AutoSizeText(
+                            'Demixing in progress',
+                            style: TextStyle(
+                              color: ColorPalette.onSurface,
+                              fontSize: 24,
+                              fontWeight: FontWeight.w700,
                             ),
-                            TextButton(
-                              onPressed: () {
-                                demixingProvider.cancelDemixing();
-                                Get.back();
-                              },
-                              child: const Text(
-                                'Yes, cancel',
-                                style: TextStyle(color: ColorPalette.primary),
-                              ),
+                          ),
+                          AutoSizeText(
+                            'This may take a few minutes',
+                            style: TextStyle(
+                              color: ColorPalette.onSurfaceVariant,
+                              fontSize: 20,
                             ),
-                          ],
-                        );
-                      },
-                    );
-                  },
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 20),
+                      StreamBuilder<double>(
+                        stream: demixingProvider.progressStream,
+                        builder: (context, snapshot) {
+                          final progress = snapshot.hasData
+                              ? snapshot.data!
+                              : 0.0;
+                          return LinearPercentIndicator(
+                            percent: progress.clamp(0.0, 1.0),
+                            lineHeight: 20,
+                            backgroundColor: ColorPalette.surfaceVariant,
+                            progressColor: ColorPalette.primary,
+                            barRadius: const Radius.circular(10),
+                            animation: true,
+                            animationDuration: 1000,
+                            animateFromLastPercent: true,
+                          );
+                        },
+                      ),
+                      const SizedBox(height: 20),
+                      CancelButton(
+                        onPressed: () {
+                          showDialog(
+                            context: context,
+                            barrierDismissible: true,
+                            builder: (context) {
+                              return AlertDialog(
+                                title: const Text('Cancel'),
+                                elevation: 24,
+                                content: const Text(
+                                  'Do you really want to cancel the demixing?',
+                                ),
+                                backgroundColor: ColorPalette.surfaceVariant,
+                                actions: [
+                                  TextButton(
+                                    onPressed: Get.back,
+                                    child: const Text(
+                                      'No',
+                                      style: TextStyle(
+                                        color: ColorPalette.primary,
+                                      ),
+                                    ),
+                                  ),
+                                  TextButton(
+                                    onPressed: () {
+                                      demixingProvider.cancelDemixing();
+                                      Get.back();
+                                    },
+                                    child: const Text(
+                                      'Yes, cancel',
+                                      style: TextStyle(
+                                        color: ColorPalette.primary,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              );
+                            },
+                          );
+                        },
+                      ),
+                    ],
+                  ),
                 ),
-              ],
+              ),
             ),
           ),
         ),

@@ -15,10 +15,14 @@ class SelectionScreen extends StatelessWidget {
   Widget buildNavBar(BuildContext context) => NavBar(
     extra: [
       IconButton(
-        icon: const Icon(Icons.more_vert, color: ColorPalette.onSurface),
+        tooltip: 'Separation model',
+        icon: const Icon(Icons.tune_rounded, color: ColorPalette.onSurface),
         onPressed: () {
           showModalBottomSheet(
             backgroundColor: ColorPalette.surface,
+            showDragHandle: true,
+            isScrollControlled: true,
+            constraints: const BoxConstraints(maxWidth: 720),
             context: context,
             builder: (context) {
               return const ModelSelection();
@@ -31,29 +35,55 @@ class SelectionScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(10),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.start,
-        children: [
-          buildNavBar(context),
-          const SizedBox(height: 20),
-          Expanded(
-            child: ChangeNotifierProvider(
-              create: (context) => SongProvider(),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: const [
-                  PageTitle('Demixing'),
-                  SongSelection(),
-                  SizedBox(height: 20),
-                  FractionallySizedBox(widthFactor: 0.7, child: UnmixButton()),
+    return SafeArea(
+      child: ChangeNotifierProvider(
+        create: (context) => SongProvider(),
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              child: buildNavBar(context),
+            ),
+            Expanded(
+              child: Stack(
+                children: [
+                  Positioned.fill(
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.fromLTRB(20, 12, 20, 112),
+                      child: Center(
+                        child: ConstrainedBox(
+                          constraints: const BoxConstraints(maxWidth: 760),
+                          child: const Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              PageTitle('New separation'),
+                              SizedBox(height: 28),
+                              SongSelection(),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  Positioned(
+                    left: 20,
+                    right: 20,
+                    bottom: 24,
+                    child: Center(
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 760),
+                        child: const SizedBox(
+                          width: double.infinity,
+                          child: UnmixButton(),
+                        ),
+                      ),
+                    ),
+                  ),
                 ],
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

@@ -1,4 +1,3 @@
-import 'package:auto_size_text/auto_size_text.dart';
 import 'package:dartz/dartz.dart';
 import 'package:demixr_app/components/song_widget.dart';
 import 'package:demixr_app/constants.dart';
@@ -16,27 +15,22 @@ class Library extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Expanded(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.start,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          const AutoSizeText(
-            'Library',
-            style: TextStyle(color: ColorPalette.onSurface, fontSize: 36),
-            maxLines: 1,
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Text('Library', style: Theme.of(context).textTheme.headlineMedium),
+        const SizedBox(height: 18),
+        Expanded(
+          child: Consumer<LibraryProvider>(
+            builder: (context, library, child) {
+              return library.isEmpty
+                  ? const EmptyLibrary()
+                  : const LibrarySongs();
+            },
           ),
-          Expanded(
-            child: Consumer<LibraryProvider>(
-              builder: (context, library, child) {
-                return library.isEmpty
-                    ? const EmptyLibrary()
-                    : const LibrarySongs();
-              },
-            ),
-          ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }
@@ -44,14 +38,29 @@ class Library extends StatelessWidget {
 class LibrarySongs extends StatelessWidget {
   const LibrarySongs({super.key});
 
-  Widget buildSongButton(SongWidget song, {VoidCallback? onPressed}) =>
-      TextButton(
-        style: TextButton.styleFrom(
-          padding: const EdgeInsets.only(left: 2, top: 5, right: 2, bottom: 5),
+  Widget buildSongButton(
+    SongWidget song, {
+    required String semanticsLabel,
+    VoidCallback? onPressed,
+  }) => Padding(
+    padding: const EdgeInsets.only(bottom: 10),
+    child: Semantics(
+      button: true,
+      label: semanticsLabel,
+      onTap: onPressed,
+      excludeSemantics: true,
+      child: Material(
+        color: ColorPalette.surfaceContainer,
+        borderRadius: BorderRadius.circular(16),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(16),
+          onTap: onPressed,
+          child: Padding(padding: const EdgeInsets.all(12), child: song),
         ),
-        onPressed: onPressed,
-        child: song,
-      );
+      ),
+    ),
+  );
 
   bool isSongSelected(UnmixedSong song, Either<Failure, UnmixedSong> selected) {
     return selected.fold(
@@ -94,6 +103,8 @@ class LibrarySongs extends StatelessWidget {
                   );
                 },
               ),
+              semanticsLabel:
+                  '${currentSong.title}, ${currentSong.artists.join(', ')}',
               onPressed: () {
                 library.setCurrentSongIndex(index);
                 Get.toNamed('player');
@@ -129,11 +140,10 @@ class EmptyLibrary extends StatelessWidget {
         const SizedBox(height: 16),
         const FractionallySizedBox(
           widthFactor: 0.6,
-          child: AutoSizeText(
+          child: Text(
             'Your library is empty at the moment',
             textAlign: TextAlign.center,
             style: TextStyle(fontSize: 18, color: ColorPalette.onSurface),
-            maxLines: 2,
           ),
         ),
       ],

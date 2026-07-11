@@ -1,4 +1,3 @@
-import 'package:demixr_app/components/buttons.dart';
 import 'package:demixr_app/constants.dart';
 import 'package:demixr_app/providers/player_provider.dart';
 import 'package:flutter/material.dart';
@@ -9,38 +8,37 @@ class StemSelection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const radius = Radius.circular(35);
     return Consumer<PlayerProvider>(
       builder: (context, player, child) {
         final stems = player.stems;
-        // 4 stems stack one per row; 6 lay out two per row so the player stays
-        // compact. Each cell is Expanded, so buttons share the width evenly and
-        // never overflow regardless of window size.
-        final perRow = stems.length > 4 ? 2 : 1;
-
-        final rows = <Widget>[];
-        for (var i = 0; i < stems.length; i += perRow) {
-          final rowStems = stems.skip(i).take(perRow).toList();
-          rows.add(
-            Row(
-              children: [
-                for (final stem in rowStems) Expanded(child: StemButton(stem)),
-                // Keep the last odd cell aligned with the column above it.
-                for (var pad = rowStems.length; pad < perRow; pad++)
-                  const Expanded(child: SizedBox.shrink()),
-              ],
-            ),
-          );
-        }
-
         return DecoratedBox(
           decoration: BoxDecoration(
-            borderRadius: const BorderRadius.all(radius),
-            border: Border.all(width: 2, color: ColorPalette.surfaceVariant),
+            color: ColorPalette.surfaceContainer,
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(color: ColorPalette.outline),
           ),
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-            child: Column(mainAxisSize: MainAxisSize.min, children: rows),
+            padding: const EdgeInsets.all(18),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                const Text(
+                  'STEMS',
+                  style: TextStyle(
+                    color: ColorPalette.onSurfaceVariant,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 1.4,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                for (final stem in stems) ...[
+                  StemButton(stem),
+                  if (stem != stems.last) const SizedBox(height: 8),
+                ],
+              ],
+            ),
           ),
         );
       },
@@ -57,32 +55,54 @@ class StemButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return Consumer<PlayerProvider>(
       builder: (context, player, child) {
-        final icon = player.isStemMute(stem)
-            ? Icons.headset_off
-            : Icons.headset;
+        final isMuted = player.isStemMute(stem);
 
-        return TextButton(
-          style: TextButton.styleFrom(padding: const EdgeInsets.all(0)),
-          onPressed: () => player.toggleStem(stem),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(icon, color: ColorPalette.onSurface),
-              const SizedBox(width: 8),
-              Flexible(
-                child: Button(
-                  stem.name,
-                  color: ColorPalette.inverseSurface,
-                  textColor: ColorPalette.inversePrimary,
-                  textSize: 16,
-                  radius: 12,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 15,
-                    vertical: 5,
+        return Material(
+          color: isMuted
+              ? ColorPalette.surfaceContainerHigh
+              : ColorPalette.primary.withValues(alpha: 0.14),
+          borderRadius: BorderRadius.circular(12),
+          child: InkWell(
+            borderRadius: BorderRadius.circular(12),
+            onTap: () => player.toggleStem(stem),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
+              child: Row(
+                children: [
+                  Container(
+                    width: 8,
+                    height: 8,
+                    decoration: BoxDecoration(
+                      color: isMuted
+                          ? ColorPalette.onSurfaceVariant
+                          : ColorPalette.tertiary,
+                      shape: BoxShape.circle,
+                    ),
                   ),
-                ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      stem.name,
+                      style: TextStyle(
+                        color: isMuted
+                            ? ColorPalette.onSurfaceVariant
+                            : ColorPalette.onSurface,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                  Icon(
+                    isMuted
+                        ? Icons.volume_off_rounded
+                        : Icons.volume_up_rounded,
+                    size: 20,
+                    color: isMuted
+                        ? ColorPalette.onSurfaceVariant
+                        : ColorPalette.tertiary,
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
         );
       },

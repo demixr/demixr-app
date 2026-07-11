@@ -15,8 +15,10 @@ import 'package:provider/provider.dart';
 class SongSelection extends StatelessWidget {
   const SongSelection({super.key});
 
-  Widget buildButtons(SongProvider provider, BuildContext context) => Row(
-    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+  Widget buildButtons(SongProvider provider, BuildContext context) => Wrap(
+    alignment: WrapAlignment.center,
+    spacing: 12,
+    runSpacing: 12,
     children: [
       FittedBox(
         child: Button(
@@ -58,9 +60,13 @@ class SongSelection extends StatelessWidget {
     SongProvider provider,
     BuildContext context,
   ) => Card(
-    color: ColorPalette.surfaceVariant,
+    elevation: 0,
+    color: ColorPalette.surfaceContainer,
     clipBehavior: Clip.antiAlias,
-    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(20),
+      side: const BorderSide(color: ColorPalette.outline),
+    ),
     child: Padding(
       padding: const EdgeInsets.only(top: 20, bottom: 20),
       child: SpacedColumn(
@@ -68,9 +74,9 @@ class SongSelection extends StatelessWidget {
         children: [
           const ListTile(
             title: AutoSizeText(
-              'Song selection',
+              'Choose a song',
               style: TextStyle(
-                color: ColorPalette.primary,
+                color: ColorPalette.onSurface,
                 fontSize: 22,
                 fontWeight: FontWeight.w600,
               ),
@@ -79,7 +85,7 @@ class SongSelection extends StatelessWidget {
             ),
           ),
           const AutoSizeText(
-            'You can select a song from your device or directly from Youtube.',
+            'Select an audio file from your device or find a track on YouTube.',
             style: TextStyle(
               color: ColorPalette.onSurfaceVariant,
               fontSize: 16,
@@ -96,9 +102,10 @@ class SongSelection extends StatelessWidget {
 
   Widget buildSelectedSongCard(Song song, {VoidCallback? onRemovePressed}) =>
       Card(
-        color: ColorPalette.surfaceVariant,
+        elevation: 0,
+        color: ColorPalette.surfaceContainer,
         clipBehavior: Clip.antiAlias,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         child: Padding(
           padding: const EdgeInsets.all(10),
           child: SongWidget(
@@ -111,7 +118,8 @@ class SongSelection extends StatelessWidget {
       );
 
   Widget buildDownloadSongCard(SongDownload song, double progress) => Card(
-    color: ColorPalette.surfaceVariant,
+    elevation: 0,
+    color: ColorPalette.surfaceContainer,
     clipBehavior: Clip.antiAlias,
     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
     child: Padding(

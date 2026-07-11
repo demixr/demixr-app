@@ -43,20 +43,26 @@ class VideoInfos extends StatelessWidget {
       children: [
         SpacedColumn(
           crossAxisAlignment: CrossAxisAlignment.start,
-          spacing: 5,
+          spacing: 3,
           children: [
             Text(
               title,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
               style: TextStyle(
                 fontSize: size,
+                height: 1.2,
                 color: textColor,
                 fontWeight: FontWeight.w600,
               ),
             ),
             Text(
               author,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
               style: TextStyle(
                 fontSize: size - 2,
+                height: 1.2,
                 color: textColor,
                 fontWeight: FontWeight.w400,
               ),
@@ -77,14 +83,28 @@ class Thumbnail extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return imageUrl.fold(
-      (failure) => Image.asset(
-        getAssetPath('default_cover', AssetType.image),
-        fit: BoxFit.contain,
-        width: size,
-        height: size,
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(12),
+      child: imageUrl.fold(
+        (failure) => Image.asset(
+          getAssetPath('default_cover', AssetType.image),
+          fit: BoxFit.cover,
+          width: size,
+          height: size,
+        ),
+        (url) => Image.network(
+          url,
+          fit: BoxFit.cover,
+          width: size,
+          height: size,
+          errorBuilder: (_, _, _) => Image.asset(
+            getAssetPath('default_cover', AssetType.image),
+            fit: BoxFit.cover,
+            width: size,
+            height: size,
+          ),
+        ),
       ),
-      (url) => Image.network(url, fit: BoxFit.cover, width: size, height: size),
     );
   }
 }
@@ -115,39 +135,37 @@ class VideoWidget extends StatelessWidget {
         ? Left(NoAlbumCover())
         : Right(coverUrl!);
 
-    List<Widget> children = [
-      Expanded(
-        child: IntrinsicHeight(
-          child: SpacedRow(
-            spacing: 15,
-            children: [
-              Thumbnail(imageUrl: imageUrl),
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.only(top: 5, bottom: 5),
-                  child: VideoInfos(
-                    title: title,
-                    author: author,
-                    textColor: textColor,
-                    duration: duration,
+    final youtubeProvider = context.read<YoutubeProvider>();
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(12, 0, 12, 10),
+      child: Material(
+        color: ColorPalette.surfaceContainer,
+        borderRadius: BorderRadius.circular(16),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: () => youtubeProvider.download(url),
+          child: Padding(
+            padding: const EdgeInsets.all(12),
+            child: Row(
+              children: [
+                Thumbnail(imageUrl: imageUrl, size: 96),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: SizedBox(
+                    height: 96,
+                    child: VideoInfos(
+                      title: title,
+                      author: author,
+                      textColor: textColor,
+                      duration: duration,
+                    ),
                   ),
                 ),
-              ),
-            ],
+                const SizedBox(width: 8),
+                const Icon(Icons.download_rounded, color: ColorPalette.primary),
+              ],
+            ),
           ),
-        ),
-      ),
-    ];
-
-    final youtubeProvider = context.read<YoutubeProvider>();
-    return TextButton(
-      onPressed: () => youtubeProvider.download(url),
-      style: TextButton.styleFrom(padding: const EdgeInsets.all(0)),
-      child: Padding(
-        padding: const EdgeInsets.all(10),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: children,
         ),
       ),
     );

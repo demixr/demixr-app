@@ -123,11 +123,54 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
         debugShowCheckedModeBanner: false,
         title: 'Demixr',
         theme: ThemeData(
+          brightness: Brightness.dark,
+          useMaterial3: true,
           scaffoldBackgroundColor: ColorPalette.surface,
-          primaryColor: ColorPalette.primary,
-          textTheme: Theme.of(context).textTheme.apply(
-            bodyColor: ColorPalette.onSurface,
-            displayColor: ColorPalette.onSurface,
+          colorScheme: const ColorScheme.dark(
+            primary: ColorPalette.primary,
+            onPrimary: ColorPalette.onPrimary,
+            secondary: ColorPalette.tertiary,
+            onSecondary: ColorPalette.onTertiary,
+            surface: ColorPalette.surface,
+            onSurface: ColorPalette.onSurface,
+            outline: ColorPalette.outline,
+          ),
+          fontFamily: Platform.isMacOS || Platform.isIOS
+              ? '.SF Pro Text'
+              : null,
+          textTheme: const TextTheme(
+            displayLarge: TextStyle(
+              color: ColorPalette.onSurface,
+              fontSize: 56,
+              height: 1,
+              fontWeight: FontWeight.w700,
+              letterSpacing: -2.2,
+            ),
+            headlineMedium: TextStyle(
+              color: ColorPalette.onSurface,
+              fontSize: 30,
+              height: 1.15,
+              fontWeight: FontWeight.w700,
+              letterSpacing: -0.8,
+            ),
+            titleLarge: TextStyle(
+              color: ColorPalette.onSurface,
+              fontSize: 20,
+              fontWeight: FontWeight.w600,
+            ),
+            bodyLarge: TextStyle(
+              color: ColorPalette.onSurfaceVariant,
+              fontSize: 16,
+              height: 1.45,
+            ),
+          ),
+          dividerColor: ColorPalette.outline,
+          iconTheme: const IconThemeData(color: ColorPalette.onSurface),
+          tooltipTheme: const TooltipThemeData(
+            decoration: BoxDecoration(
+              color: ColorPalette.surfaceContainerHigh,
+              borderRadius: BorderRadius.all(Radius.circular(8)),
+            ),
           ),
           visualDensity: VisualDensity.adaptivePlatformDensity,
         ),
@@ -151,8 +194,8 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
           GetPage(
             name: '/demixing/processing',
             page: () => const ProcessingScreen(),
-            transitionDuration: const Duration(milliseconds: 800),
-            transition: Transition.circularReveal,
+            transitionDuration: const Duration(milliseconds: 180),
+            transition: Transition.fadeIn,
           ),
           GetPage(
             name: '/player',
