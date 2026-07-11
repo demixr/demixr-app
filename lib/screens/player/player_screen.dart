@@ -64,17 +64,25 @@ class PlayerScreen extends StatelessWidget {
                                   ),
                                 ],
                               )
-                            : SingleChildScrollView(
-                                padding: const EdgeInsets.only(bottom: 4),
-                                child: const Column(
-                                  children: [
-                                    PlayerSong(compact: true),
-                                    SizedBox(height: 20),
-                                    StemSelection(),
-                                    SizedBox(height: 12),
-                                    SongController(),
-                                  ],
-                                ),
+                            : LayoutBuilder(
+                                builder: (context, viewport) {
+                                  return FittedBox(
+                                    fit: BoxFit.scaleDown,
+                                    alignment: Alignment.topCenter,
+                                    child: SizedBox(
+                                      width: viewport.maxWidth,
+                                      child: const Column(
+                                        children: [
+                                          PlayerSong(compact: true),
+                                          SizedBox(height: 16),
+                                          StemSelection(),
+                                          SizedBox(height: 10),
+                                          SongController(),
+                                        ],
+                                      ),
+                                    ),
+                                  );
+                                },
                               ),
                       ),
                     ],

@@ -2,6 +2,7 @@ import 'package:auto_size_text/auto_size_text.dart';
 import 'package:demixr_app/components/extended_widgets.dart';
 import 'package:demixr_app/constants.dart';
 import 'package:demixr_app/components/cancel_button.dart';
+import 'package:demixr_app/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:get/route_manager.dart';
 import 'package:percent_indicator/linear_percent_indicator.dart';
@@ -31,7 +32,19 @@ class ProcessingScreen extends StatelessWidget {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const _ProcessingMark(),
+                      RepaintBoundary(
+                        child: ConstrainedBox(
+                          constraints: const BoxConstraints(
+                            maxHeight: 180,
+                            maxWidth: 240,
+                          ),
+                          child: Image.asset(
+                            getAssetPath('demixing', AssetType.animation),
+                            filterQuality: FilterQuality.low,
+                            gaplessPlayback: true,
+                          ),
+                        ),
+                      ),
                       const SizedBox(height: 20),
                       SpacedColumn(
                         spacing: 5,
@@ -121,40 +134,6 @@ class ProcessingScreen extends StatelessWidget {
             ),
           ),
         ),
-      ),
-    );
-  }
-}
-
-/// A lightweight static mark for the processing screen. The previous 800x600
-/// animated GIF decoded on the UI thread and visibly stuttered while the
-/// demixing engine was saturating the machine.
-class _ProcessingMark extends StatelessWidget {
-  const _ProcessingMark();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 132,
-      height: 132,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        gradient: const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: ColorPalette.primaryGradient,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: ColorPalette.primary.withValues(alpha: 0.18),
-            blurRadius: 34,
-          ),
-        ],
-      ),
-      child: const Icon(
-        Icons.graphic_eq_rounded,
-        size: 58,
-        color: ColorPalette.onPrimary,
       ),
     );
   }
