@@ -194,8 +194,8 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
           GetPage(
             name: '/demixing/processing',
             page: () => const ProcessingScreen(),
-            transitionDuration: const Duration(milliseconds: 800),
-            transition: Transition.circularReveal,
+            transitionDuration: const Duration(milliseconds: 180),
+            transition: Transition.fadeIn,
           ),
           GetPage(
             name: '/player',

@@ -1,5 +1,6 @@
 import 'package:demixr_app/components/song_widget.dart';
 import 'package:demixr_app/constants.dart';
+import 'package:demixr_app/models/unmixed_song.dart';
 import 'package:demixr_app/providers/library_provider.dart';
 import 'package:demixr_app/providers/player_provider.dart';
 import 'package:flutter/material.dart';
@@ -46,49 +47,7 @@ class NowPlayingCard extends StatelessWidget {
                           _PlayButton(player: player, compact: true),
                         ],
                       )
-                    : Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text(
-                            'NOW PLAYING',
-                            style: TextStyle(
-                              color: ColorPalette.primary,
-                              fontSize: 12,
-                              fontWeight: FontWeight.w800,
-                              letterSpacing: 1.4,
-                            ),
-                          ),
-                          const SizedBox(height: 16),
-                          Row(
-                            children: [
-                              AlbumCover(imagePath: song.albumCover, size: 72),
-                              const SizedBox(width: 14),
-                              Expanded(
-                                child: _SongLabel(song.title, song.artists),
-                              ),
-                            ],
-                          ),
-                          const Spacer(),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              IconButton(
-                                tooltip: 'Previous',
-                                onPressed: player.previous,
-                                icon: const Icon(Icons.skip_previous_rounded),
-                              ),
-                              const SizedBox(width: 8),
-                              _PlayButton(player: player),
-                              const SizedBox(width: 8),
-                              IconButton(
-                                tooltip: 'Next',
-                                onPressed: player.next,
-                                icon: const Icon(Icons.skip_next_rounded),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
+                    : _ExpandedNowPlaying(song: song, player: player),
               ),
             ),
           ),
@@ -101,17 +60,21 @@ class NowPlayingCard extends StatelessWidget {
 class _SongLabel extends StatelessWidget {
   final String title;
   final List<String> artists;
+  final bool centered;
 
-  const _SongLabel(this.title, this.artists);
+  const _SongLabel(this.title, this.artists, {this.centered = false});
 
   @override
   Widget build(BuildContext context) {
     return Column(
       mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: centered
+          ? CrossAxisAlignment.center
+          : CrossAxisAlignment.start,
       children: [
         Text(
           title,
+          textAlign: centered ? TextAlign.center : TextAlign.start,
           maxLines: 2,
           overflow: TextOverflow.ellipsis,
           style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
@@ -119,11 +82,68 @@ class _SongLabel extends StatelessWidget {
         const SizedBox(height: 4),
         Text(
           artists.join(', '),
+          textAlign: centered ? TextAlign.center : TextAlign.start,
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
           style: const TextStyle(color: ColorPalette.onSurfaceVariant),
         ),
       ],
+    );
+  }
+}
+
+class _ExpandedNowPlaying extends StatelessWidget {
+  final UnmixedSong song;
+  final PlayerProvider player;
+
+  const _ExpandedNowPlaying({required this.song, required this.player});
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, card) {
+        final artworkSize = (card.maxHeight * 0.36).clamp(88.0, 180.0);
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            const Text(
+              'NOW PLAYING',
+              style: TextStyle(
+                color: ColorPalette.primary,
+                fontSize: 12,
+                fontWeight: FontWeight.w800,
+                letterSpacing: 1.4,
+              ),
+            ),
+            const Spacer(),
+            Center(
+              child: AlbumCover(imagePath: song.albumCover, size: artworkSize),
+            ),
+            const SizedBox(height: 14),
+            _SongLabel(song.title, song.artists, centered: true),
+            const Spacer(),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                IconButton(
+                  tooltip: 'Previous',
+                  onPressed: player.previous,
+                  icon: const Icon(Icons.skip_previous_rounded),
+                ),
+                const SizedBox(width: 8),
+                _PlayButton(player: player),
+                const SizedBox(width: 8),
+                IconButton(
+                  tooltip: 'Next',
+                  onPressed: player.next,
+                  icon: const Icon(Icons.skip_next_rounded),
+                ),
+              ],
+            ),
+          ],
+        );
+      },
     );
   }
 }

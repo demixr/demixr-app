@@ -51,35 +51,47 @@ class HomeScreen extends StatelessWidget {
                                   final isShort = rail.maxHeight < 520;
 
                                   if (isShort) {
-                                    return Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.stretch,
-                                      children: [
-                                        Text(
-                                          'Demixr',
-                                          style: Theme.of(context)
-                                              .textTheme
-                                              .headlineMedium
-                                              ?.copyWith(fontSize: 38),
-                                        ),
-                                        const SizedBox(height: 10),
-                                        const Expanded(
-                                          child: FittedBox(
-                                            fit: BoxFit.scaleDown,
-                                            child: SizedBox(
-                                              width: 310,
-                                              child: NowPlayingCard(
-                                                compact: true,
+                                    final designHeight = rail.maxHeight.clamp(
+                                      220.0,
+                                      520.0,
+                                    );
+                                    return FittedBox(
+                                      fit: BoxFit.scaleDown,
+                                      alignment: Alignment.topCenter,
+                                      child: SizedBox(
+                                        width: 310,
+                                        height: designHeight,
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.stretch,
+                                          children: [
+                                            Text(
+                                              'Demixr',
+                                              style: Theme.of(context)
+                                                  .textTheme
+                                                  .headlineMedium
+                                                  ?.copyWith(fontSize: 38),
+                                            ),
+                                            const SizedBox(height: 10),
+                                            const Expanded(
+                                              child: FittedBox(
+                                                fit: BoxFit.scaleDown,
+                                                child: SizedBox(
+                                                  width: 310,
+                                                  child: NowPlayingCard(
+                                                    compact: true,
+                                                  ),
+                                                ),
                                               ),
                                             ),
-                                          ),
+                                            const SizedBox(height: 10),
+                                            SizedBox(
+                                              width: double.infinity,
+                                              child: action,
+                                            ),
+                                          ],
                                         ),
-                                        const SizedBox(height: 10),
-                                        SizedBox(
-                                          width: double.infinity,
-                                          child: action,
-                                        ),
-                                      ],
+                                      ),
                                     );
                                   }
 

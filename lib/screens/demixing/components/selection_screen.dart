@@ -45,20 +45,31 @@ class SelectionScreen extends StatelessWidget {
               child: buildNavBar(context),
             ),
             Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
-                child: Center(
-                  child: ConstrainedBox(
-                    constraints: const BoxConstraints(maxWidth: 760),
-                    child: const Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        PageTitle('New separation'),
-                        SizedBox(height: 28),
-                        SongSelection(),
-                        SizedBox(height: 24),
-                        SizedBox(width: double.infinity, child: UnmixButton()),
-                      ],
+              child: LayoutBuilder(
+                builder: (context, viewport) => SingleChildScrollView(
+                  padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
+                  child: Center(
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(
+                        maxWidth: 760,
+                        minHeight: viewport.maxHeight - 36,
+                      ),
+                      child: const IntrinsicHeight(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            PageTitle('New separation'),
+                            SizedBox(height: 28),
+                            SongSelection(),
+                            Spacer(),
+                            SizedBox(height: 24),
+                            SizedBox(
+                              width: double.infinity,
+                              child: UnmixButton(),
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
                   ),
                 ),
