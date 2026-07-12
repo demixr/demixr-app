@@ -59,6 +59,7 @@ dependencies:
   loadmore: ^2.1.0
   loading_indicator: ^3.1.1
   auto_size_text: ^3.0.0
+  archive: ^4.0.9
   hive_ce: ^2.19.3
   hive_ce_flutter: ^2.3.4
 

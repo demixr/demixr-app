@@ -59,6 +59,12 @@ class PlayerProvider extends ChangeNotifier {
   List<Stem> get stems =>
       _song.fold((failure) => const [], (song) => song.stems);
 
+  UnmixedSong? get currentSong => _song.fold((failure) => null, (song) => song);
+
+  Map<Stem, double> get stemVolumes => {
+    for (final stem in stems) stem: _player.getStemVolume(stem),
+  };
+
   /// Checks if a [stem] is muted or not.
   bool isStemMute(Stem stem) => _player.getStemState(stem) == StemState.mute;
 
