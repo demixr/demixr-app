@@ -124,9 +124,12 @@ class _ExportDialogState extends State<_ExportDialog> {
                     leading: const Icon(Icons.tune_rounded),
                     title: const Text('Current remix'),
                     subtitle: const Text('Uses the current stem levels'),
-                    onTap: () => _run(
-                      () => _exporter.exportRemix(song, player.stemVolumes),
-                    ),
+                    onTap: () {
+                      final gains = Map<Stem, double>.unmodifiable(
+                        player.stemVolumes,
+                      );
+                      _run(() => _exporter.exportRemix(song, gains));
+                    },
                   ),
                   ListTile(
                     leading: const Icon(Icons.music_note_rounded),

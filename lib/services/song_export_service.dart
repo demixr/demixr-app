@@ -23,7 +23,10 @@ class SongExportService {
   );
 
   Future<bool> exportRemix(UnmixedSong song, Map<Stem, double> volumes) async {
-    if (song.stems.every((stem) => volumes[stem] == 1)) {
+    final gains = <Stem, double>{
+      for (final stem in song.stems) stem: (volumes[stem] ?? 1).clamp(0, 1),
+    };
+    if (song.stems.every((stem) => gains[stem] == 1)) {
       return _saveFile(
         File(song.mixture),
         '${sanitizeFilename(song.title)} - remix.wav',
@@ -37,16 +40,17 @@ class SongExportService {
       ),
     );
     final inputs = <String>[];
-    final filters = <String>[];
     final labels = <String>[];
     for (var index = 0; index < song.stems.length; index++) {
       final stem = song.stems[index];
       inputs.add('-i ${_quote(song.getStem(stem))}');
-      filters.add('[$index:a]volume=${volumes[stem] ?? 1}[a$index]');
-      labels.add('[a$index]');
+      labels.add('[$index:a]');
     }
+    final weights = song.stems
+        .map((stem) => gains[stem]!.toStringAsFixed(4))
+        .join(' ');
     final filter =
-        '${filters.join(';')};${labels.join()}amix=inputs=${song.stems.length}:normalize=0:dropout_transition=0[out]';
+        '${labels.join()}amix=inputs=${song.stems.length}:weights=\'$weights\':normalize=0:dropout_transition=0[out]';
     final session = await FFmpegKit.execute(
       '${inputs.join(' ')} -filter_complex ${_quote(filter)} -map "[out]" -c:a pcm_s16le -y ${_quote(output.path)}',
     );
