@@ -56,54 +56,79 @@ class StemButton extends StatelessWidget {
     return Consumer<PlayerProvider>(
       builder: (context, player, child) {
         final isMuted = player.isStemMute(stem);
+        final volume = player.stemVolume(stem);
 
-        return Material(
-          color: isMuted
-              ? ColorPalette.surfaceContainerHigh
-              : ColorPalette.primary.withValues(alpha: 0.14),
-          borderRadius: BorderRadius.circular(12),
-          child: InkWell(
-            borderRadius: BorderRadius.circular(12),
-            onTap: () => player.toggleStem(stem),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
-              child: Row(
-                children: [
-                  Container(
-                    width: 8,
-                    height: 8,
-                    decoration: BoxDecoration(
-                      color: isMuted
-                          ? ColorPalette.onSurfaceVariant
-                          : ColorPalette.tertiary,
-                      shape: BoxShape.circle,
+        return LayoutBuilder(
+          builder: (context, constraints) {
+            void updateVolume(double x) => player.setStemVolume(
+              stem,
+              (x / constraints.maxWidth).clamp(0.0, 1.0),
+            );
+
+            return Semantics(
+              label: '${stem.name} volume',
+              value: isMuted ? 'Muted' : '${(volume * 100).round()} percent',
+              slider: true,
+              increasedValue: '${((volume + .1).clamp(0, 1) * 100).round()}%',
+              decreasedValue: '${((volume - .1).clamp(0, 1) * 100).round()}%',
+              onIncrease: () =>
+                  player.setStemVolume(stem, (volume + .1).clamp(0, 1)),
+              onDecrease: () =>
+                  player.setStemVolume(stem, (volume - .1).clamp(0, 1)),
+              child: GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTapDown: (details) => updateVolume(details.localPosition.dx),
+                onHorizontalDragUpdate: (details) =>
+                    updateVolume(details.localPosition.dx),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: SizedBox(
+                    height: 52,
+                    child: Stack(
+                      fit: StackFit.expand,
+                      children: [
+                        ColoredBox(color: ColorPalette.surfaceContainerHigh),
+                        FractionallySizedBox(
+                          alignment: Alignment.centerLeft,
+                          widthFactor: volume,
+                          child: ColoredBox(
+                            color: ColorPalette.primary.withValues(alpha: .34),
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  stem.name,
+                                  style: TextStyle(
+                                    color: isMuted
+                                        ? ColorPalette.onSurfaceVariant
+                                        : ColorPalette.onSurface,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                              ),
+                              Icon(
+                                isMuted
+                                    ? Icons.volume_off_rounded
+                                    : Icons.volume_up_rounded,
+                                size: 20,
+                                color: isMuted
+                                    ? ColorPalette.onSurfaceVariant
+                                    : ColorPalette.tertiary,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Text(
-                      stem.name,
-                      style: TextStyle(
-                        color: isMuted
-                            ? ColorPalette.onSurfaceVariant
-                            : ColorPalette.onSurface,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                  Icon(
-                    isMuted
-                        ? Icons.volume_off_rounded
-                        : Icons.volume_up_rounded,
-                    size: 20,
-                    color: isMuted
-                        ? ColorPalette.onSurfaceVariant
-                        : ColorPalette.tertiary,
-                  ),
-                ],
+                ),
               ),
-            ),
-          ),
+            );
+          },
         );
       },
     );

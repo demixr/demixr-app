@@ -38,6 +38,8 @@ class PlayerProvider extends ChangeNotifier {
   /// Checks if a [stem] is muted or not.
   bool isStemMute(Stem stem) => _player.getStemState(stem) == StemState.mute;
 
+  double stemVolume(Stem stem) => _player.getStemVolume(stem);
+
   /// Handles the updates of the [library].
   ///
   /// Start playing a new song if another song was selected from the library.
@@ -144,6 +146,11 @@ class PlayerProvider extends ChangeNotifier {
   /// Toggle mute / unmute on the given [stem].
   void toggleStem(Stem stem) {
     _player.toggleStem(stem);
+    notifyListeners();
+  }
+
+  void setStemVolume(Stem stem, double volume) {
+    _player.setStemVolume(stem, volume);
     notifyListeners();
   }
 }

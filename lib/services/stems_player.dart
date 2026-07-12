@@ -14,6 +14,7 @@ class StemsPlayer {
   /// The stems present in the current song (excludes the mixture).
   List<Stem> activeStems = const [];
   Map<Stem, StemState> stemStates = {};
+  Map<Stem, double> stemVolumes = {};
   bool mixtureOn = false;
   int duration = 0;
 
@@ -72,20 +73,21 @@ class StemsPlayer {
             previousStates[stem] ??
             (stem == Stem.vocals ? StemState.mute : StemState.unmute),
     };
-    mixtureOn = allStemsUnmute;
+    stemVolumes = {
+      for (final stem in activeStems)
+        stem:
+            stemVolumes[stem] ?? (getStemState(stem) == StemState.mute ? 0 : 1),
+    };
+    mixtureOn = false;
 
     _player(Stem.mixture).setSource(DeviceFileSource(song.mixture));
     for (final stem in activeStems) {
       final player = _player(stem)
         ..setSource(DeviceFileSource(song.getStem(stem)));
-      if (mixtureOn || getStemState(stem) == StemState.mute) {
-        player.mute();
-      } else {
-        player.unMute();
-      }
+      player.setVolume(stemVolumes[stem]!);
     }
 
-    mixtureOn ? _player(Stem.mixture).unMute() : _player(Stem.mixture).mute();
+    _player(Stem.mixture).mute();
   }
 
   void pause() {
@@ -125,22 +127,17 @@ class StemsPlayer {
   }
 
   void toggleStem(Stem stem) {
-    if (mixtureOn) {
-      mixtureOn = false;
-      unmuteAll();
-      players[Stem.mixture]?.mute();
-    }
-
     final state = getStemState(stem);
-    players[stem]?.muteToggle(state);
+    setStemVolume(stem, state == StemState.mute ? 1 : 0);
+  }
 
-    stemStates[stem] = state.toggle();
+  double getStemVolume(Stem stem) => stemVolumes[stem] ?? 0;
 
-    if (allStemsUnmute) {
-      mixtureOn = true;
-      muteAll();
-      players[Stem.mixture]?.unMute();
-    }
+  void setStemVolume(Stem stem, double volume) {
+    final normalized = volume.clamp(0.0, 1.0);
+    stemVolumes[stem] = normalized;
+    stemStates[stem] = normalized == 0 ? StemState.mute : StemState.unmute;
+    players[stem]?.setVolume(normalized);
   }
 }
 
