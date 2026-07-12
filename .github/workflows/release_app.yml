@@ -69,7 +69,31 @@ jobs:
       - name: Ad-hoc sign and verify app
         run: |
           APP=$(ls -d build/macos/Build/Products/Release/*.app | head -1)
-          codesign --force --deep --sign - --timestamp=none "$APP"
+
+          # FFmpegKit's prebuilt frameworks can contain stale signatures whose
+          # resource seals differ between the Intel and ARM distributions.
+          # `codesign --deep` then aborts while examining the stale seal instead
+          # of replacing it. Remove those signatures and explicitly sign every
+          # nested code bundle from the inside out before signing the app.
+          find "$APP/Contents" -type d -name _CodeSignature -prune -exec rm -rf {} +
+
+          find "$APP/Contents" -type f \
+            \( -name '*.dylib' -o -perm -111 \) \
+            ! -path '*/MacOS/*' -print0 |
+            while IFS= read -r -d '' binary; do
+              if file "$binary" | grep -q 'Mach-O'; then
+                codesign --force --sign - --timestamp=none "$binary"
+              fi
+            done
+
+          while IFS= read -r bundle; do
+            codesign --force --sign - --timestamp=none "$bundle"
+          done < <(
+            find "$APP/Contents" -depth -type d \
+              \( -name '*.framework' -o -name '*.appex' -o -name '*.xpc' \)
+          )
+
+          codesign --force --sign - --timestamp=none "$APP"
           codesign --verify --deep --strict --verbose=2 "$APP"
       # Build a conventional drag-to-install DMG with a positioned app,
       # Applications shortcut, and branded mounted-volume icon. The app is
