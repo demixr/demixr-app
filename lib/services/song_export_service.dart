@@ -26,13 +26,6 @@ class SongExportService {
     final gains = <Stem, double>{
       for (final stem in song.stems) stem: (volumes[stem] ?? 1).clamp(0, 1),
     };
-    if (song.stems.every((stem) => gains[stem] == 1)) {
-      return _saveFile(
-        File(song.mixture),
-        '${sanitizeFilename(song.title)} - remix.wav',
-      );
-    }
-
     final output = File(
       p.join(
         (await getTemporaryDirectory()).path,
@@ -61,9 +54,12 @@ class SongExportService {
     }
 
     try {
+      final profile = song.stems
+          .map((stem) => '${stem.value}${(gains[stem]! * 100).round()}')
+          .join('-');
       return await _saveFile(
         output,
-        '${sanitizeFilename(song.title)} - remix.wav',
+        '${sanitizeFilename(song.title)} - remix-$profile.wav',
       );
     } finally {
       await output.deleteIfExists();

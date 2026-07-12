@@ -123,7 +123,14 @@ class _ExportDialogState extends State<_ExportDialog> {
                   ListTile(
                     leading: const Icon(Icons.tune_rounded),
                     title: const Text('Current remix'),
-                    subtitle: const Text('Uses the current stem levels'),
+                    subtitle: Text(
+                      player.stemVolumes.entries
+                          .map(
+                            (entry) =>
+                                '${entry.key.name} ${(entry.value * 100).round()}%',
+                          )
+                          .join(' · '),
+                    ),
                     onTap: () {
                       final gains = Map<Stem, double>.unmodifiable(
                         player.stemVolumes,
