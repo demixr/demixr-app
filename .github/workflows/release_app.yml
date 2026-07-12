@@ -62,19 +62,41 @@ jobs:
             n=$((n+1)); [ $n -ge 3 ] && exit 1
             echo "::warning::build failed (likely prebuilt download); retry $n"; sleep 20
           done
-      # Build a drag-to-install .dmg (app + Applications shortcut). The app is
-      # ad-hoc signed (no Apple Developer account), so it's NOT notarized: on
-      # first launch users right-click → Open once to pass Gatekeeper. For a
-      # warning-free download, add Developer ID signing + notarization.
+      # Some vendored FFmpeg frameworks arrive with stale nested signatures.
+      # Re-sign the complete bundle after Flutter has assembled it, otherwise
+      # Gatekeeper reports the downloaded app as damaged instead of presenting
+      # the expected unidentified-developer warning.
+      - name: Ad-hoc sign and verify app
+        run: |
+          APP=$(ls -d build/macos/Build/Products/Release/*.app | head -1)
+          codesign --force --deep --sign - --timestamp=none "$APP"
+          codesign --verify --deep --strict --verbose=2 "$APP"
+      # Build a conventional drag-to-install DMG with a positioned app,
+      # Applications shortcut, and branded mounted-volume icon. The app is
+      # ad-hoc signed (no Apple Developer account), so it is NOT notarized:
+      # users must right-click → Open once. For warning-free double-click
+      # launch, configure Developer ID signing and Apple notarization secrets.
       - name: Package .dmg
         run: |
+          brew install create-dmg
           APP=$(ls -d build/macos/Build/Products/Release/*.app | head -1)
           STAGE="$(mktemp -d)/dmg"
           mkdir -p "$STAGE"
           cp -R "$APP" "$STAGE/"
-          ln -s /Applications "$STAGE/Applications"
-          hdiutil create -volname "Demixr" -srcfolder "$STAGE" \
-            -ov -format UDZO build/demixr-macos.dmg
+          APP_NAME=$(basename "$APP")
+          create-dmg \
+            --volname "Demixr" \
+            --volicon "$APP/Contents/Resources/AppIcon.icns" \
+            --window-pos 200 120 \
+            --window-size 660 420 \
+            --text-size 14 \
+            --icon-size 128 \
+            --icon "$APP_NAME" 170 190 \
+            --hide-extension "$APP_NAME" \
+            --app-drop-link 490 190 \
+            --no-internet-enable \
+            build/demixr-macos.dmg \
+            "$STAGE"
       - uses: ncipollo/release-action@v1
         with:
           artifacts: "build/demixr-macos.dmg"
