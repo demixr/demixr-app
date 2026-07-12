@@ -77,6 +77,12 @@ jobs:
           # nested code bundle from the inside out before signing the app.
           find "$APP/Contents" -type d -name _CodeSignature -prune -exec rm -rf {} +
 
+          # The ARM FFmpeg archive also contains AppleDouble `._*` sidecar
+          # files (for example `._Resources`). They are archive metadata, not
+          # runtime files, and codesign otherwise mistakes them for unsigned
+          # nested code/resources.
+          find "$APP/Contents" -name '._*' -delete
+
           find "$APP/Contents" -type f \
             \( -name '*.dylib' -o -perm -111 \) \
             ! -path '*/MacOS/*' -print0 |
