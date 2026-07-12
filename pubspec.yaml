@@ -47,6 +47,7 @@ dependencies:
   get: ^4.7.3
   async: ^2.13.1
   audioplayers: ^6.8.1
+  audio_service: ^0.18.19
   audio_video_progress_bar: ^2.0.3
   url_launcher: ^6.3.2
   percent_indicator: ^4.2.5
@@ -58,6 +59,7 @@ dependencies:
   loadmore: ^2.1.0
   loading_indicator: ^3.1.1
   auto_size_text: ^3.0.0
+  archive: ^4.0.9
   hive_ce: ^2.19.3
   hive_ce_flutter: ^2.3.4
 
