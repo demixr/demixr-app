@@ -10,6 +10,8 @@ import 'package:demixr_app/screens/error/error_screen.dart';
 import 'package:demixr_app/screens/home/home_screen.dart';
 import 'package:demixr_app/screens/player/player_screen.dart';
 import 'package:demixr_app/screens/youtube/youtube_screen.dart';
+import 'package:demixr_app/services/system_media_handler.dart';
+import 'package:audio_service/audio_service.dart';
 import 'package:flutter/material.dart';
 import 'package:demixr_app/constants.dart' show BoxesNames, ColorPalette;
 import 'package:flutter/services.dart';
@@ -27,6 +29,8 @@ import 'models/model.dart';
 import 'repositories/preferences_repository.dart';
 import 'providers/preferences_provider.dart';
 
+late final SystemMediaHandler systemMediaHandler;
+
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -38,6 +42,18 @@ Future<void> main() async {
 
   await Hive.openBox<dynamic>(BoxesNames.preferences);
   await _openLibraryWithLegacyDurationMigration();
+
+  await AudioService.init(
+    builder: () {
+      systemMediaHandler = SystemMediaHandler();
+      return systemMediaHandler;
+    },
+    config: const AudioServiceConfig(
+      androidNotificationChannelId: 'com.demixr.demixrApp.playback',
+      androidNotificationChannelName: 'Music playback',
+      androidNotificationOngoing: true,
+    ),
+  );
 
   runApp(const MyApp());
 
@@ -131,9 +147,9 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
           create: (_) => LibraryProvider(),
         ),
         ChangeNotifierProxyProvider<LibraryProvider, PlayerProvider>(
-          create: (context) => PlayerProvider(),
+          create: (context) => PlayerProvider(systemMediaHandler),
           update: (context, library, player) =>
-              (player ?? PlayerProvider())..update(library),
+              (player ?? PlayerProvider(systemMediaHandler))..update(library),
         ),
       ],
       child: GetMaterialApp(

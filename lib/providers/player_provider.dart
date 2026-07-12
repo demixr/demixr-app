@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:dartz/dartz.dart';
+import 'dart:async';
 
 import '../models/failure/failure.dart';
 import '../models/failure/no_song_selected.dart';
 import '../models/unmixed_song.dart';
 import '../providers/library_provider.dart';
 import '../services/stems_player.dart';
+import '../services/system_media_handler.dart';
 import '../constants.dart';
 
 /// The sate of the music player.
@@ -15,11 +17,33 @@ enum PlayerState { play, pause, off }
 ///
 /// Uses the [StemsPlayer] to play the different stems of the [_song].
 class PlayerProvider extends ChangeNotifier {
+  final SystemMediaHandler _mediaHandler;
   late LibraryProvider _library;
   Either<Failure, UnmixedSong> _song = Left(NoSongSelected());
   final _player = StemsPlayer();
   PlayerState state = PlayerState.off;
   Duration position = Duration.zero;
+  StreamSubscription<Duration>? _positionSubscription;
+
+  PlayerProvider(this._mediaHandler) {
+    _mediaHandler.attach(
+      play: () async => play(),
+      pause: () async => pause(),
+      seek: (position) async => seek(position),
+      next: () async => next(),
+      previous: () async => previous(),
+    );
+    _positionSubscription = positionStream.listen((position) {
+      this.position = position;
+      _publishMediaState();
+    });
+  }
+
+  @override
+  void dispose() {
+    _positionSubscription?.cancel();
+    super.dispose();
+  }
 
   /// The state of the player, playing or not.
   bool get isPlaying => state == PlayerState.play;
@@ -60,8 +84,10 @@ class PlayerProvider extends ChangeNotifier {
       _song.fold((failure) => null, (song) {
         _player.setUrls(song);
         _player.seek(position);
+        _mediaHandler.publishSong(song);
 
         state = PlayerState.pause;
+        _publishMediaState();
 
         _player.onPlayerCompletion.listen((event) {
           toStart(setPause: true);
@@ -104,12 +130,16 @@ class PlayerProvider extends ChangeNotifier {
   void resume() {
     _player.resume();
     state = PlayerState.play;
+    _publishMediaState();
+    notifyListeners();
   }
 
   /// Pauses the current [_song].
   void pause() {
     _player.pause();
     state = PlayerState.pause;
+    _publishMediaState();
+    notifyListeners();
   }
 
   /// Stops playing the current [_song], and unload it.
@@ -124,6 +154,19 @@ class PlayerProvider extends ChangeNotifier {
   void seek(Duration position) {
     this.position = position;
     _player.seek(position);
+    _publishMediaState();
+  }
+
+  void play() {
+    if (state != PlayerState.off) resume();
+  }
+
+  void _publishMediaState() {
+    _mediaHandler.publishState(
+      playing: isPlaying,
+      position: position,
+      bufferedPosition: songDuration,
+    );
   }
 
   /// Play the next song in the [_library].
