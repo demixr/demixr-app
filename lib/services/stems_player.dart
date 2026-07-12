@@ -78,16 +78,16 @@ class StemsPlayer {
         stem:
             stemVolumes[stem] ?? (getStemState(stem) == StemState.mute ? 0 : 1),
     };
-    mixtureOn = false;
+    mixtureOn = stemVolumes.values.every((volume) => volume == 1);
 
     _player(Stem.mixture).setSource(DeviceFileSource(song.mixture));
     for (final stem in activeStems) {
       final player = _player(stem)
         ..setSource(DeviceFileSource(song.getStem(stem)));
-      player.setVolume(stemVolumes[stem]!);
+      player.setVolume(mixtureOn ? 0 : stemVolumes[stem]!);
     }
 
-    _player(Stem.mixture).mute();
+    _player(Stem.mixture).setVolume(mixtureOn ? 1 : 0);
   }
 
   void pause() {
@@ -137,7 +137,22 @@ class StemsPlayer {
     final normalized = volume.clamp(0.0, 1.0);
     stemVolumes[stem] = normalized;
     stemStates[stem] = normalized == 0 ? StemState.mute : StemState.unmute;
-    players[stem]?.setVolume(normalized);
+
+    final shouldUseMixture = activeStems.every(
+      (activeStem) => getStemVolume(activeStem) == 1,
+    );
+    if (shouldUseMixture != mixtureOn) {
+      mixtureOn = shouldUseMixture;
+      _player(Stem.mixture).setVolume(mixtureOn ? 1 : 0);
+      for (final activeStem in activeStems) {
+        _player(
+          activeStem,
+        ).setVolume(mixtureOn ? 0 : getStemVolume(activeStem));
+      }
+      return;
+    }
+
+    if (!mixtureOn) players[stem]?.setVolume(normalized);
   }
 }
 
