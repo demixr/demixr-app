@@ -37,6 +37,17 @@ jobs:
       - name: Build Windows
         shell: pwsh
         run: flutter build windows --release
+      - name: Smoke-test Windows startup
+        shell: pwsh
+        run: |
+          $process = Start-Process `
+            -FilePath build/windows/x64/runner/Release/Demixr.exe `
+            -PassThru
+          Start-Sleep -Seconds 15
+          if ($process.HasExited) {
+            throw "Demixr exited during startup with code $($process.ExitCode)"
+          }
+          Stop-Process -Id $process.Id
       - name: Package portable app
         shell: pwsh
         run: |

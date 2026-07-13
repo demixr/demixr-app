@@ -36,6 +36,15 @@ jobs:
       - name: Package portable Windows app
         shell: pwsh
         run: |
+          $process = Start-Process `
+            -FilePath build/windows/x64/runner/Release/Demixr.exe `
+            -PassThru
+          Start-Sleep -Seconds 15
+          if ($process.HasExited) {
+            throw "Demixr exited during startup with code $($process.ExitCode)"
+          }
+          Stop-Process -Id $process.Id
+
           Compress-Archive `
             -Path build/windows/x64/runner/Release/* `
             -DestinationPath build/demixr-windows-x64.zip
