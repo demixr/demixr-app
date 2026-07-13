@@ -142,6 +142,38 @@ class SongHelper {
     );
   }
 
+  /// Builds download metadata from a YouTube search result that has already
+  /// been resolved successfully. This avoids fetching the same video page a
+  /// second time, which is both unnecessary and more likely to be rejected by
+  /// YouTube than the search request itself.
+  Future<Either<Failure, SongDownload>> getSongInfosFromSearchResult({
+    required String title,
+    required String author,
+    required String url,
+    required Duration duration,
+    String? thumbnailUrl,
+  }) async {
+    String? coverPath;
+    if (thumbnailUrl != null) {
+      try {
+        coverPath = await _downloadThumbnail(thumbnailUrl, title);
+      } catch (_) {
+        // A missing thumbnail must not prevent the audio from downloading.
+        coverPath = null;
+      }
+    }
+
+    return Right(
+      SongDownload(
+        title: title,
+        artists: [author],
+        url: url,
+        coverPath: coverPath,
+        duration: duration,
+      ),
+    );
+  }
+
   /// Downloads the given [song] from Youtube with [YoutubeExplode].
   ///
   /// [onProgress] is called with the download completion ratio (0.0 to 1.0)

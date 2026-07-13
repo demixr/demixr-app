@@ -15,12 +15,14 @@ class ModelGroup extends StatelessWidget {
   final List<Model> models;
   final String imagePath;
   final String? infosUrl;
+  final bool compact;
 
   const ModelGroup({
     required this.title,
     required this.imagePath,
     this.models = const [],
     this.infosUrl,
+    this.compact = false,
     super.key,
   });
 
@@ -39,7 +41,11 @@ class ModelGroup extends StatelessWidget {
               model,
               onDone: () => Get.offAllNamed('/'),
             ),
-            child: ModelCard(model: model, imagePath: imagePath),
+            child: ModelCard(
+              model: model,
+              imagePath: imagePath,
+              compact: compact,
+            ),
           ),
         ),
     ];
@@ -79,6 +85,6 @@ class ModelGroup extends StatelessWidget {
       );
     }
 
-    return SpacedColumn(spacing: 15, children: children);
+    return SpacedColumn(spacing: compact ? 10 : 15, children: children);
   }
 }

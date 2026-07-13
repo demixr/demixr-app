@@ -7,8 +7,14 @@ import '../../../constants.dart';
 class ModelCard extends StatelessWidget {
   final Model model;
   final String imagePath;
+  final bool compact;
 
-  const ModelCard({required this.model, required this.imagePath, super.key});
+  const ModelCard({
+    required this.model,
+    required this.imagePath,
+    this.compact = false,
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -21,13 +27,13 @@ class ModelCard extends StatelessWidget {
         side: const BorderSide(color: ColorPalette.outline),
       ),
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.all(compact ? 12 : 16),
         child: SpacedRow(
           spacing: 10,
           children: [
             CircleAvatar(
               backgroundColor: ColorPalette.surfaceContainerHigh,
-              radius: 30,
+              radius: compact ? 24 : 30,
               backgroundImage: Image.asset(imagePath).image,
             ),
             Expanded(
@@ -68,7 +74,7 @@ class ModelCard extends StatelessWidget {
                       height: 1.35,
                       color: ColorPalette.onSurfaceVariant,
                     ),
-                    maxLines: 3,
+                    maxLines: compact ? 2 : 3,
                     overflow: TextOverflow.ellipsis,
                   ),
                 ],

@@ -4,7 +4,9 @@ import 'package:demixr_app/utils.dart';
 import 'package:flutter/material.dart';
 
 class ModelSelection extends StatelessWidget {
-  const ModelSelection({super.key});
+  final bool compact;
+
+  const ModelSelection({this.compact = false, super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -15,6 +17,7 @@ class ModelSelection extends StatelessWidget {
           title: 'Demucs',
           models: Models.all,
           imagePath: getAssetPath('demucs', AssetType.image),
+          compact: compact,
         ),
       ],
     );

@@ -43,6 +43,16 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets('setup screen fits a short desktop window without overflow', (
+    tester,
+  ) async {
+    await pumpSetupAtSize(tester, const Size(1200, 500));
+
+    expect(find.text('HTDEMUCS'), findsOneWidget);
+    expect(find.text('HTDEMUCS_ONNX'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('new separation renders at fullscreen desktop size', (
     tester,
   ) async {
