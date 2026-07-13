@@ -12,6 +12,7 @@ import 'package:demixr_app/screens/player/player_screen.dart';
 import 'package:demixr_app/screens/youtube/youtube_screen.dart';
 import 'package:demixr_app/services/system_media_handler.dart';
 import 'package:audio_service/audio_service.dart';
+import 'package:audio_session/audio_session.dart';
 import 'package:flutter/material.dart';
 import 'package:demixr_app/constants.dart' show BoxesNames, ColorPalette;
 import 'package:flutter/services.dart';
@@ -54,6 +55,11 @@ Future<void> main() async {
       androidNotificationOngoing: true,
     ),
   );
+
+  // Advertise Demixr as a music player to iOS/Android. In particular, iOS
+  // uses this shared session to decide which app owns Now Playing controls.
+  final audioSession = await AudioSession.instance;
+  await audioSession.configure(const AudioSessionConfiguration.music());
 
   runApp(const MyApp());
 

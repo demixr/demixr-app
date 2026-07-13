@@ -48,6 +48,7 @@ dependencies:
   async: ^2.13.1
   audioplayers: ^6.8.1
   audio_service: ^0.18.19
+  audio_session: ^0.2.4
   audio_video_progress_bar: ^2.0.3
   url_launcher: ^6.3.2
   percent_indicator: ^4.2.5

@@ -100,7 +100,7 @@ class PlayerProvider extends ChangeNotifier {
         });
       });
 
-      if (wasPlaying) playpause();
+      if (wasPlaying) unawaited(playpause());
     }
   }
 
@@ -110,13 +110,13 @@ class PlayerProvider extends ChangeNotifier {
   }
 
   /// Toggle the [state] of the player and plays or pauses accordingly.
-  void playpause() {
+  Future<void> playpause() async {
     switch (state) {
       case PlayerState.play:
         pause();
         break;
       case PlayerState.pause:
-        resume();
+        await resume();
         break;
       case PlayerState.off:
         break;
@@ -133,8 +133,8 @@ class PlayerProvider extends ChangeNotifier {
   }
 
   /// Resumes playing the current [_song].
-  void resume() {
-    _player.resume();
+  Future<void> resume() async {
+    if (!await _player.resume()) return;
     state = PlayerState.play;
     _publishMediaState();
     notifyListeners();
@@ -163,8 +163,8 @@ class PlayerProvider extends ChangeNotifier {
     _publishMediaState();
   }
 
-  void play() {
-    if (state != PlayerState.off) resume();
+  Future<void> play() async {
+    if (state != PlayerState.off) await resume();
   }
 
   void _publishMediaState() {

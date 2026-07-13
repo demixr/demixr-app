@@ -1,4 +1,5 @@
 import 'package:audioplayers/audioplayers.dart';
+import 'package:audio_session/audio_session.dart' as system_audio;
 import 'package:demixr_app/models/unmixed_song.dart';
 
 import '../constants.dart';
@@ -15,23 +16,22 @@ class StemsPlayer {
   List<Stem> activeStems = const [];
   Map<Stem, StemState> stemStates = {};
   Map<Stem, double> stemVolumes = {};
+  final Map<Stem, double> _lastAudibleVolumes = {};
   bool mixtureOn = false;
   int duration = 0;
 
   /// All stems play simultaneously, so the players must NOT request exclusive
-  /// audio focus (the default) — otherwise each one steals focus from the
-  /// others and they all get paused. `none` on Android and `mixWithOthers` on
-  /// iOS let the players mix together.
+  /// audio focus on Android (the default) — otherwise each one steals focus
+  /// from the others and they all get paused. iOS has one shared audio session
+  /// per app, so its normal playback category still lets our players mix while
+  /// allowing Demixr to own the system Now Playing controls.
   static final AudioContext _audioContext = AudioContext(
     android: const AudioContextAndroid(
       contentType: AndroidContentType.music,
       usageType: AndroidUsageType.media,
       audioFocus: AndroidAudioFocus.none,
     ),
-    iOS: AudioContextIOS(
-      category: AVAudioSessionCategory.playback,
-      options: const {AVAudioSessionOptions.mixWithOthers},
-    ),
+    iOS: AudioContextIOS(category: AVAudioSessionCategory.playback),
   );
 
   StemsPlayer() {
@@ -78,6 +78,9 @@ class StemsPlayer {
         stem:
             stemVolumes[stem] ?? (getStemState(stem) == StemState.mute ? 0 : 1),
     };
+    for (final entry in stemVolumes.entries) {
+      if (entry.value > 0) _lastAudibleVolumes[entry.key] = entry.value;
+    }
     mixtureOn = stemVolumes.values.every((volume) => volume == 1);
 
     _player(Stem.mixture).setSource(DeviceFileSource(song.mixture));
@@ -96,10 +99,11 @@ class StemsPlayer {
     }
   }
 
-  void resume() {
-    for (final player in _activePlayers) {
-      player.resume();
-    }
+  Future<bool> resume() async {
+    final session = await system_audio.AudioSession.instance;
+    if (!await session.setActive(true)) return false;
+    await Future.wait(_activePlayers.map((player) => player.resume()));
+    return true;
   }
 
   void stop() {
@@ -127,8 +131,8 @@ class StemsPlayer {
   }
 
   void toggleStem(Stem stem) {
-    final state = getStemState(stem);
-    setStemVolume(stem, state == StemState.mute ? 1 : 0);
+    final volume = getStemVolume(stem);
+    setStemVolume(stem, volume == 0 ? (_lastAudibleVolumes[stem] ?? 1) : 0);
   }
 
   double getStemVolume(Stem stem) => stemVolumes[stem] ?? 0;
@@ -136,6 +140,7 @@ class StemsPlayer {
   void setStemVolume(Stem stem, double volume) {
     final normalized = volume.clamp(0.0, 1.0);
     stemVolumes[stem] = normalized;
+    if (normalized > 0) _lastAudibleVolumes[stem] = normalized;
     stemStates[stem] = normalized == 0 ? StemState.mute : StemState.unmute;
 
     final shouldUseMixture = activeStems.every(
