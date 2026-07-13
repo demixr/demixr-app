@@ -14,41 +14,56 @@ class SetupScreen extends StatelessWidget {
         child: LayoutBuilder(
           builder: (context, constraints) {
             final isDesktop = constraints.maxWidth >= LayoutBreakpoints.desktop;
+            final isCompact = constraints.maxHeight < 700;
+            final horizontalPadding = isDesktop ? 48.0 : 20.0;
+            final verticalPadding = isCompact
+                ? 20.0
+                : (isDesktop ? 40.0 : 28.0);
             return SingleChildScrollView(
               padding: EdgeInsets.symmetric(
-                horizontal: isDesktop ? 48 : 20,
-                vertical: isDesktop ? 48 : 28,
+                horizontal: horizontalPadding,
+                vertical: verticalPadding,
               ),
-              child: Center(
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 1120),
-                  child: isDesktop
-                      ? const Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  SetupTitle(),
-                                  SizedBox(height: 32),
-                                  Instructions(),
-                                ],
+              child: ConstrainedBox(
+                constraints: BoxConstraints(
+                  minHeight: constraints.maxHeight - (verticalPadding * 2),
+                ),
+                child: Center(
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 1200),
+                    child: isDesktop
+                        ? Row(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Expanded(
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    SetupTitle(compact: isCompact),
+                                    SizedBox(height: isCompact ? 20 : 32),
+                                    Instructions(compact: isCompact),
+                                  ],
+                                ),
                               ),
-                            ),
-                            SizedBox(width: 64),
-                            Expanded(child: ModelSelection()),
-                          ],
-                        )
-                      : const Column(
-                          children: [
-                            SetupTitle(),
-                            SizedBox(height: 32),
-                            Instructions(),
-                            SizedBox(height: 32),
-                            ModelSelection(),
-                          ],
-                        ),
+                              SizedBox(width: isCompact ? 40 : 64),
+                              Expanded(
+                                child: ModelSelection(compact: isCompact),
+                              ),
+                            ],
+                          )
+                        : Column(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              SetupTitle(compact: isCompact),
+                              SizedBox(height: isCompact ? 20 : 30),
+                              Instructions(compact: isCompact),
+                              SizedBox(height: isCompact ? 20 : 28),
+                              ModelSelection(compact: isCompact),
+                            ],
+                          ),
+                  ),
                 ),
               ),
             );

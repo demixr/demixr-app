@@ -40,10 +40,24 @@ class SongProvider extends ChangeNotifier {
   }
 
   /// Downloads a song from youtube with the given [url] using the [SongHelper].
-  Future<void> downloadFromYoutube(String url) async {
+  Future<void> downloadFromYoutube(
+    String url, {
+    String? title,
+    String? author,
+    String? thumbnailUrl,
+    Duration? duration,
+  }) async {
     _song = Left(NoSongSelected());
     _downloadProgress = 0;
-    _songDownload = await _helper.getSongInfosFromYoutube(url);
+    _songDownload = title != null && author != null
+        ? await _helper.getSongInfosFromSearchResult(
+            title: title,
+            author: author,
+            url: url,
+            thumbnailUrl: thumbnailUrl,
+            duration: duration ?? Duration.zero,
+          )
+        : await _helper.getSongInfosFromYoutube(url);
 
     await _songDownload.fold(
       (failure) async => errorSnackbar(

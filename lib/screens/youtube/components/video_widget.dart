@@ -143,7 +143,13 @@ class VideoWidget extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         clipBehavior: Clip.antiAlias,
         child: InkWell(
-          onTap: () => youtubeProvider.download(url),
+          onTap: () => youtubeProvider.download(
+            url: url,
+            title: title,
+            author: author,
+            thumbnailUrl: coverUrl,
+            duration: duration,
+          ),
           child: Padding(
             padding: const EdgeInsets.all(12),
             child: Row(

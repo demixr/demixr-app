@@ -73,8 +73,20 @@ class YoutubeProvider extends ChangeNotifier {
   /// Downloads the audio of the Youtube video at the given [url].
   ///
   /// Calls the [songProvider] to start the download.
-  void download(String url) {
-    songProvider.downloadFromYoutube(url);
+  void download({
+    required String url,
+    required String title,
+    required String author,
+    required String? thumbnailUrl,
+    required Duration? duration,
+  }) {
+    songProvider.downloadFromYoutube(
+      url,
+      title: title,
+      author: author,
+      thumbnailUrl: thumbnailUrl,
+      duration: duration,
+    );
     Get.back();
   }
 }

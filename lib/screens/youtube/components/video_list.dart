@@ -45,8 +45,9 @@ class EmptySearch extends StatelessWidget {
           SizedBox(
             width: 250,
             child: Image.asset(
-              getAssetPath('search_astronaut', AssetType.image),
-              fit: BoxFit.cover,
+              getAssetPath('empty_search', AssetType.image),
+              fit: BoxFit.contain,
+              semanticLabel: 'A magnifying glass discovering music results',
             ),
           ),
           const SizedBox(

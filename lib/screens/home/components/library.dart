@@ -132,8 +132,9 @@ class EmptyLibrary extends StatelessWidget {
           child: FractionallySizedBox(
             widthFactor: 0.6,
             child: Image.asset(
-              getAssetPath('astronaut', AssetType.image),
+              getAssetPath('empty_library', AssetType.image),
               fit: BoxFit.contain,
+              semanticLabel: 'A collection of albums in a music library',
             ),
           ),
         ),
