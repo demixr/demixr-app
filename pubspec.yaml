@@ -69,6 +69,11 @@ dependencies:
 dependency_overrides:
   flutter_onnxruntime:
     path: third_party/flutter_onnxruntime
+  # Windows CMake must unpack FFmpeg outside Flutter's ephemeral plugin
+  # symlink. This local wrapper contains that fix while retaining all mobile
+  # implementations from upstream.
+  ffmpeg_kit_flutter_new_audio:
+    path: third_party/ffmpeg_kit_flutter_new_audio
 
 dev_dependencies:
   flutter_test:

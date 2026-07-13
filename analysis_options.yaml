@@ -9,6 +9,12 @@
 # packages, and plugins designed to encourage good coding practices.
 include: package:flutter_lints/flutter.yaml
 
+analyzer:
+  # Vendored upstream wrapper patched only at the native CMake layer. Keep its
+  # legacy Dart style from polluting Demixr's application analysis.
+  exclude:
+    - third_party/ffmpeg_kit_flutter_new_audio/**
+
 linter:
   # The lint rules applied to this project can be customized in the
   # section below to disable rules from the `package:flutter_lints/flutter.yaml`
