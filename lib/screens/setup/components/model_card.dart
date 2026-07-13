@@ -54,7 +54,7 @@ class ModelCard extends StatelessWidget {
                           ),
                         ),
                       ),
-                      if (model.isDefault) ...[
+                      if (model == Models.recommended) ...[
                         const SizedBox(width: 6),
                         const Tooltip(
                           message: 'Recommended',
