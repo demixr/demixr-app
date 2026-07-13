@@ -1,3 +1,4 @@
+import 'package:demixr_app/constants.dart';
 import 'package:demixr_app/providers/model_provider.dart';
 import 'package:demixr_app/screens/demixing/components/selection_screen.dart';
 import 'package:demixr_app/screens/setup/setup_screen.dart';
@@ -48,8 +49,9 @@ void main() {
   ) async {
     await pumpSetupAtSize(tester, const Size(1200, 500));
 
-    expect(find.text('HTDEMUCS'), findsOneWidget);
-    expect(find.text('HTDEMUCS_ONNX'), findsOneWidget);
+    for (final model in Models.supported) {
+      expect(find.text(model.name.toUpperCase()), findsOneWidget);
+    }
     expect(tester.takeException(), isNull);
   });
 

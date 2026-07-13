@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:demixr_app/constants.dart';
@@ -39,13 +41,15 @@ void main() {
       expect(() => Models.fromName('nope'), throwsArgumentError);
     });
 
-    test(
-      'GPU model resolves the Apple .pte on this host (macOS test runner)',
-      () {
-        // The unit-test host is macOS, so the executorch model resolves the
-        // CoreML download. (Android resolution is covered on-device.)
+    test('GPU model resolves only on supported hosts', () {
+      if (Platform.isMacOS || Platform.isIOS) {
         expect(Models.htdemucs.downloadUrl, Models.htdemucs.appleUrl);
-      },
-    );
+      } else if (Platform.isAndroid) {
+        expect(Models.htdemucs.downloadUrl, Models.htdemucs.androidUrl);
+      } else {
+        expect(Models.htdemucs.downloadUrl, isNull);
+        expect(Models.recommended, Models.htdemucsOnnx);
+      }
+    });
   });
 }
