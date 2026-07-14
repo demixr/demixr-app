@@ -11,7 +11,7 @@ set(PLUGIN_NAME "flutter_onnxruntime_plugin")
 
 # === ONNX Runtime Configuration ===
 # Option 1: Use pre-installed ONNX Runtime (preferred for system packages)
-option(USE_SYSTEM_ONNXRUNTIME "Use system-installed ONNX Runtime" ON)
+option(USE_SYSTEM_ONNXRUNTIME "Use system-installed ONNX Runtime" OFF)
 
 if(USE_SYSTEM_ONNXRUNTIME)
   # Try to find ONNX Runtime manually since pkg-config is less common on Windows
@@ -75,9 +75,10 @@ if(NOT USE_SYSTEM_ONNXRUNTIME)
     set(ONNXRUNTIME_ARCH "x86")
   endif()
 
-  # Set download URL with correct naming pattern for Windows
+  # The DirectML NuGet package contains the standard CPU provider as well as
+  # DirectML. This lets unsupported GPUs transparently fall back to CPU.
   set(ONNXRUNTIME_URL
-      "https://github.com/microsoft/onnxruntime/releases/download/v${ONNXRUNTIME_VERSION}/onnxruntime-win-${ONNXRUNTIME_ARCH}-${ONNXRUNTIME_VERSION}.zip"
+      "https://api.nuget.org/v3-flatcontainer/microsoft.ml.onnxruntime.directml/${ONNXRUNTIME_VERSION}/microsoft.ml.onnxruntime.directml.${ONNXRUNTIME_VERSION}.nupkg"
   )
 
   message(STATUS "Downloading ONNX Runtime from: ${ONNXRUNTIME_URL}")
@@ -88,10 +89,11 @@ if(NOT USE_SYSTEM_ONNXRUNTIME)
   # Download and extract ONNX Runtime - using file(DOWNLOAD) for more direct control
   if(NOT
      EXISTS
-     "${ONNXRUNTIME_DOWNLOAD_DIR}/onnxruntime-win-${ONNXRUNTIME_ARCH}-${ONNXRUNTIME_VERSION}/include/onnxruntime_cxx_api.h"
+     "${ONNXRUNTIME_DOWNLOAD_DIR}/package/build/native/include/onnxruntime_cxx_api.h"
   )
     message(STATUS "Downloading ONNX Runtime...")
     file(MAKE_DIRECTORY ${ONNXRUNTIME_DOWNLOAD_DIR})
+    file(MAKE_DIRECTORY ${ONNXRUNTIME_DOWNLOAD_DIR}/package)
 
     # Download the zipfile
     set(ONNXRUNTIME_ZIPFILE "${ONNXRUNTIME_DOWNLOAD_DIR}/onnxruntime.zip")
@@ -100,14 +102,14 @@ if(NOT USE_SYSTEM_ONNXRUNTIME)
     # Extract the zipfile
     message(STATUS "Extracting ONNX Runtime...")
     execute_process(COMMAND ${CMAKE_COMMAND} -E tar xf ${ONNXRUNTIME_ZIPFILE}
-                    WORKING_DIRECTORY ${ONNXRUNTIME_DOWNLOAD_DIR})
+                    WORKING_DIRECTORY ${ONNXRUNTIME_DOWNLOAD_DIR}/package)
 
     # Clean up the zipfile
     file(REMOVE ${ONNXRUNTIME_ZIPFILE})
   endif()
 
   # Set paths to the extracted files
-  set(ONNXRUNTIME_EXTRACT_DIR "${ONNXRUNTIME_DOWNLOAD_DIR}/onnxruntime-win-${ONNXRUNTIME_ARCH}-${ONNXRUNTIME_VERSION}")
+  set(ONNXRUNTIME_EXTRACT_DIR "${ONNXRUNTIME_DOWNLOAD_DIR}/package")
 
   # Verify the directory exists
   if(NOT EXISTS ${ONNXRUNTIME_EXTRACT_DIR})
@@ -115,7 +117,7 @@ if(NOT USE_SYSTEM_ONNXRUNTIME)
   endif()
 
   # Set include and library directories
-  set(ONNXRUNTIME_INCLUDE_DIRS "${ONNXRUNTIME_EXTRACT_DIR}/include")
+  set(ONNXRUNTIME_INCLUDE_DIRS "${ONNXRUNTIME_EXTRACT_DIR}/build/native/include")
 
   # Log directory contents to help with debugging
   message(STATUS "ONNX Runtime extract directory: ${ONNXRUNTIME_EXTRACT_DIR}")
@@ -125,9 +127,11 @@ if(NOT USE_SYSTEM_ONNXRUNTIME)
   endforeach()
 
   # Find the library files (.dll and .lib)
-  if(EXISTS "${ONNXRUNTIME_EXTRACT_DIR}/lib/onnxruntime.lib")
-    set(ONNXRUNTIME_LIBRARY "${ONNXRUNTIME_EXTRACT_DIR}/lib/onnxruntime.lib")
-    set(ONNXRUNTIME_DLL "${ONNXRUNTIME_EXTRACT_DIR}/lib/onnxruntime.dll")
+  set(ONNXRUNTIME_NATIVE_DIR "${ONNXRUNTIME_EXTRACT_DIR}/runtimes/win-${ONNXRUNTIME_ARCH}/native")
+  if(EXISTS "${ONNXRUNTIME_NATIVE_DIR}/onnxruntime.lib")
+    set(ONNXRUNTIME_LIBRARY "${ONNXRUNTIME_NATIVE_DIR}/onnxruntime.lib")
+    set(ONNXRUNTIME_DLL "${ONNXRUNTIME_NATIVE_DIR}/onnxruntime.dll")
+    set(ONNXRUNTIME_PROVIDERS_SHARED_DLL "${ONNXRUNTIME_NATIVE_DIR}/onnxruntime_providers_shared.dll")
   else()
     # Try to find the library in case the structure changed
     file(GLOB_RECURSE ONNXRUNTIME_LIB_CANDIDATES "${ONNXRUNTIME_EXTRACT_DIR}/*onnxruntime*.lib")
@@ -150,7 +154,7 @@ if(NOT USE_SYSTEM_ONNXRUNTIME)
   set(ONNXRUNTIME_LIBRARIES ${ONNXRUNTIME_LIBRARY})
 
   # Add to bundled libraries for distribution
-  set(flutter_onnxruntime_bundled_libraries ${ONNXRUNTIME_DLL})
+  set(flutter_onnxruntime_bundled_libraries ${ONNXRUNTIME_DLL} ${ONNXRUNTIME_PROVIDERS_SHARED_DLL})
 endif()
 
 # Define Windows-specific preprocessor macros
@@ -229,6 +233,11 @@ if(NOT USE_SYSTEM_ONNXRUNTIME AND ONNXRUNTIME_DLL)
     POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_if_different ${ONNXRUNTIME_DLL} $<TARGET_FILE_DIR:${PLUGIN_NAME}>
     COMMENT "Copying ONNX Runtime DLL to build directory")
+  add_custom_command(
+    TARGET ${PLUGIN_NAME}
+    POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different ${ONNXRUNTIME_PROVIDERS_SHARED_DLL} $<TARGET_FILE_DIR:${PLUGIN_NAME}>
+    COMMENT "Copying ONNX Runtime provider DLL to build directory")
 endif()
 
 # List of absolute paths to libraries that should be bundled with the plugin. This list could contain prebuilt

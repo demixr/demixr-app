@@ -20,6 +20,8 @@
 #include <memory>
 #include <sstream>
 
+#include <dml_provider_factory.h>
+
 // Include our implementation headers
 #include "src/session_manager.h"
 #include "src/tensor_manager.h"
@@ -487,6 +489,19 @@ void FlutterOnnxruntimePlugin::HandleCreateSession(
             // CPU is implicitly added if no others are, or can be explicitly added.
             // No specific options needed here usually.
             continue;
+          } else if (provider == "DIRECT_ML") {
+            // DirectML requires sequential execution and does not support the
+            // ONNX Runtime memory-pattern optimization.
+            session_options.DisableMemPattern();
+            session_options.SetExecutionMode(ExecutionMode::ORT_SEQUENTIAL);
+            OrtStatus *status = OrtSessionOptionsAppendExecutionProvider_DML(session_options, device_id);
+            if (status != nullptr) {
+              std::string error_message = "Failed to enable DirectML: ";
+              error_message += Ort::GetApi().GetErrorMessage(status);
+              Ort::GetApi().ReleaseStatus(status);
+              result->Error("PROVIDER_ERROR", error_message.c_str(), nullptr);
+              return;
+            }
           } else if (provider == "CUDA") {
             // Use CUDA if available
             OrtCUDAProviderOptionsV2 *cuda_options = nullptr;

@@ -66,8 +66,10 @@ class DemucsConfig {
   /// Ordered execution-provider preference for [platform], filtered to those
   /// actually [available] on the device. CPU is always appended as a fallback.
   ///
-  /// We default to **XNNPACK (a multi-threaded CPU accelerator) then CPU** on
-  /// every platform. CoreML/NNAPI are deliberately *not* in the default list:
+  /// Windows prefers **DirectML then CPU**, allowing the same ONNX model to use
+  /// any supported DirectX 12 GPU. Other platforms default to **XNNPACK (a
+  /// multi-threaded CPU accelerator) then CPU**. CoreML/NNAPI are deliberately
+  /// *not* in the default list:
   /// htdemucs is a ~24k-node transformer graph, and on Apple the CoreML
   /// graph-compile alone costs ~16 s per session (measured: CPU 3.9 s vs
   /// CoreML 20 s for a 12 s clip on an M-series Mac) which a one-shot
@@ -79,7 +81,9 @@ class DemucsConfig {
     String platform,
     List<OrtProvider> available,
   ) {
-    final wishlist = [OrtProvider.XNNPACK, OrtProvider.CPU];
+    final wishlist = platform == 'windows'
+        ? [OrtProvider.DIRECT_ML, OrtProvider.CPU]
+        : [OrtProvider.XNNPACK, OrtProvider.CPU];
     final ordered = wishlist.where(available.contains).toList();
     if (!ordered.contains(OrtProvider.CPU)) ordered.add(OrtProvider.CPU);
     return ordered;
