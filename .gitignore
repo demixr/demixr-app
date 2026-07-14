@@ -108,10 +108,8 @@ macos/Runner.xcworkspace/xcuserdata/
 macos/Runner/xcuserdata/
 macos/build/
 
-# Platform directories (linux, web, windows)
-linux/
+# Unsupported platform directory
 web/
-windows/
 
 # Android build outputs
 **/android/app/build/
