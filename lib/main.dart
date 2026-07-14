@@ -71,7 +71,7 @@ Future<void> main() async {
     systemMediaHandler = SystemMediaHandler();
   }
 
-  runApp(const MyApp());
+  runApp(const DemixrApp());
 
   // Warm up the GPU engine for an already-downloaded model so the first demix
   // of the session isn't stalled by the one-time CoreML compile. Background +
@@ -113,14 +113,14 @@ Future<void> _warmUpSelectedModel() async {
   }
 }
 
-class MyApp extends StatefulWidget {
-  const MyApp({super.key});
+class DemixrApp extends StatefulWidget {
+  const DemixrApp({super.key});
 
   @override
-  State<MyApp> createState() => _MyAppState();
+  State<DemixrApp> createState() => _DemixrAppState();
 }
 
-class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
+class _DemixrAppState extends State<DemixrApp> with WidgetsBindingObserver {
   @override
   void initState() {
     super.initState();
