@@ -20,8 +20,6 @@
 #include <memory>
 #include <sstream>
 
-#include <dml_provider_factory.h>
-
 // Include our implementation headers
 #include "src/session_manager.h"
 #include "src/tensor_manager.h"
@@ -29,6 +27,12 @@
 #include "src/windows_utils.h"
 
 #include "include/flutter_onnxruntime/export.h"
+
+// The full DirectML provider header exposes unscoped enum values such as
+// `Default`, which collide with Flutter's Windows headers. The legacy factory
+// function is a stable C export, so declare only the symbol we use.
+extern "C" ORT_API_STATUS(OrtSessionOptionsAppendExecutionProvider_DML,
+                          OrtSessionOptions *options, int device_id);
 
 namespace flutter_onnxruntime {
 
