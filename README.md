@@ -46,7 +46,7 @@ bass, drums and other instruments.
 
 ## Demixing
 
-The **demixing** uses [Demucs v4 (htdemucs)](https://github.com/facebookresearch/demucs),
+The **demixing** uses [Demucs v4 (htdemucs)](https://github.com/adefossez/demucs),
 a hybrid-transformer source separation model. Separation runs locally on the
 device across Android, iOS, macOS, Windows and Linux. Audio decoding, chunked
 overlap-add and inverse STFT run in shared Dart code; the neural-network core
@@ -160,7 +160,7 @@ You can report bugs through GitHub Issues. Please include:
 
 ## References
 
-* [Demucs](https://github.com/facebookresearch/demucs)
+* [Demucs](https://github.com/adefossez/demucs)
 * [ExecuTorch](https://pytorch.org/executorch/)
 * [ONNX Runtime](https://onnxruntime.ai/)
 * [FFmpeg](https://ffmpeg.org/)
