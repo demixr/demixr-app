@@ -16,6 +16,7 @@ import 'package:audio_session/audio_session.dart';
 import 'package:flutter/material.dart';
 import 'package:demixr_app/constants.dart' show BoxesNames, ColorPalette;
 import 'package:flutter/services.dart';
+import 'package:ffmpeg_kit_extended_flutter/ffmpeg_kit_extended_flutter.dart';
 import 'package:hive_ce_flutter/hive_ce_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:get/get.dart';
@@ -37,6 +38,7 @@ bool get _supportsSystemMediaControls =>
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await FFmpegKitExtended.initialize();
 
   await Hive.initFlutter();
 

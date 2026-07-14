@@ -1,8 +1,7 @@
 import 'dart:io';
 
 import 'package:archive/archive_io.dart';
-import 'package:ffmpeg_kit_flutter_new_audio/ffmpeg_kit.dart';
-import 'package:ffmpeg_kit_flutter_new_audio/return_code.dart';
+import 'package:ffmpeg_kit_extended_flutter/ffmpeg_kit_extended_flutter.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
@@ -44,10 +43,10 @@ class SongExportService {
         .join(' ');
     final filter =
         '${labels.join()}amix=inputs=${song.stems.length}:weights=\'$weights\':normalize=0:dropout_transition=0[out]';
-    final session = await FFmpegKit.execute(
+    final session = await FFmpegKit.executeAsync(
       '${inputs.join(' ')} -filter_complex ${_quote(filter)} -map "[out]" -c:a pcm_s16le -y ${_quote(output.path)}',
     );
-    final returnCode = await session.getReturnCode();
+    final returnCode = session.getReturnCode();
     if (!ReturnCode.isSuccess(returnCode)) {
       await output.deleteIfExists();
       throw StateError('Could not render the remix.');

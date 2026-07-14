@@ -33,7 +33,9 @@ jobs:
       - name: Analyze
         run: flutter analyze
       - name: Test
-        run: flutter test
+        # Native asset hooks currently race when multiple Flutter test suites
+        # initialize them concurrently.
+        run: flutter test --concurrency=1
       - name: Build Windows
         shell: pwsh
         run: flutter build windows --release

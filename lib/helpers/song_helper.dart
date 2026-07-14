@@ -1,9 +1,7 @@
 import 'dart:io';
 
 import 'package:dartz/dartz.dart';
-import 'package:ffmpeg_kit_flutter_new_audio/ffmpeg_kit.dart';
-import 'package:ffmpeg_kit_flutter_new_audio/ffprobe_kit.dart';
-import 'package:ffmpeg_kit_flutter_new_audio/return_code.dart';
+import 'package:ffmpeg_kit_extended_flutter/ffmpeg_kit_extended_flutter.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:audio_metadata_reader/audio_metadata_reader.dart';
 import 'package:youtube_explode_dart/youtube_explode_dart.dart';
@@ -283,10 +281,11 @@ class SongHelper {
 /// Throws a [ConvertionException] if the format could not be found, or if the
 /// convertion failed.
 Future<String> convertToWav(String path) async {
-  final session = await FFprobeKit.getMediaInformation(path);
-  final information = session.getMediaInformation();
+  final session = await FFprobeKit.getMediaInformationAsync(path);
+  final information = (session as MediaInformationSession)
+      .getMediaInformation();
 
-  String? format = information?.getFormat();
+  String? format = information?.format;
 
   if (format == null) {
     throw ConversionException('SongLoader: Failed to get the file format');
@@ -296,10 +295,10 @@ Future<String> convertToWav(String path) async {
 
     // 16-bit PCM, not 8-bit (pcm_u8): the demixing models read this file as
     // their input, and 8-bit quantization audibly degrades the separation.
-    final convertSession = await FFmpegKit.execute(
+    final convertSession = await FFmpegKit.executeAsync(
       '-i "$path" -acodec pcm_s16le "$outputPath"',
     );
-    final convertRc = await convertSession.getReturnCode();
+    final convertRc = convertSession.getReturnCode();
 
     if (ReturnCode.isSuccess(convertRc)) {
       path = outputPath;
