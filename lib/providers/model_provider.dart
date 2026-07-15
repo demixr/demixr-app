@@ -104,19 +104,13 @@ class ModelProvider extends ChangeNotifier {
       );
 
       if (model.engine == DemixingEngine.coreml) {
-        final archive = ZipDecoder().decodeBytes(
-          await File(downloadPath).readAsBytes(),
-        );
-        await extractArchiveToDisk(archive, directory);
-        final extracted = Directory(p.join(directory, 'scnet_coreml.mlmodelc'));
         final destination = Directory(
           p.join(directory, '${model.name}${model.fileExtension}'),
         );
-        if (await destination.exists()) {
-          await destination.delete(recursive: true);
-        }
-        await extracted.rename(destination.path);
-        await File(downloadPath).delete();
+        await installCoreMlArchive(
+          archivePath: downloadPath,
+          destination: destination,
+        );
         path = destination.path;
       }
 
@@ -196,5 +190,60 @@ class ModelProvider extends ChangeNotifier {
     errorMessage = null;
     currentUrl = null;
     _cancelToken = null;
+  }
+}
+
+/// Installs the single compiled Core ML model contained in [archivePath].
+///
+/// Extraction happens in a staging directory so failed or malformed downloads
+/// cannot leave metadata and partial model files in the models directory.
+@visibleForTesting
+Future<void> installCoreMlArchive({
+  required String archivePath,
+  required Directory destination,
+}) async {
+  final archiveFile = File(archivePath);
+  final staging = Directory(
+    p.join(
+      destination.parent.path,
+      '.${p.basename(destination.path)}-install-${DateTime.now().microsecondsSinceEpoch}',
+    ),
+  );
+
+  try {
+    await staging.create(recursive: true);
+    final archive = ZipDecoder().decodeBytes(await archiveFile.readAsBytes());
+    await extractArchiveToDisk(archive, staging.path);
+
+    final candidates = <Directory>[];
+    await for (final entity in staging.list(recursive: true)) {
+      if (entity is! Directory || !entity.path.endsWith('.mlmodelc')) {
+        continue;
+      }
+      final relativePath = p.relative(entity.path, from: staging.path);
+      if (!p.split(relativePath).contains('__MACOSX')) {
+        candidates.add(entity);
+      }
+    }
+
+    if (candidates.length != 1) {
+      throw FileSystemException(
+        'The model archive must contain exactly one compiled Core ML model; '
+        'found ${candidates.length}',
+        archivePath,
+      );
+    }
+
+    if (await destination.exists()) {
+      await destination.delete(recursive: true);
+    }
+    await candidates.single.rename(destination.path);
+  } finally {
+    if (await staging.exists()) {
+      await staging.delete(recursive: true);
+    }
+    if (await archiveFile.exists()) {
+      await archiveFile.delete();
+    }
   }
 }
