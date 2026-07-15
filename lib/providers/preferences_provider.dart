@@ -42,7 +42,12 @@ class PreferencesProvider extends ChangeNotifier {
     // OpenUnmix model carried over from an older install) is treated as no
     // selection, so the user is routed to pick a current one.
     try {
-      _model = Right(Models.fromName(modelName));
+      final model = Models.fromName(modelName);
+      // A shadowed architecture remains resolvable for old library records,
+      // but must not silently stay selected when the rollout flag changes.
+      _model = Models.all.contains(model)
+          ? Right(model)
+          : Left(NoModelSelected());
     } on ArgumentError {
       _model = Left(NoModelSelected());
     }

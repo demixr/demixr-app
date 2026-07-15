@@ -49,12 +49,39 @@ class Paths {
 
 const songArtistTitleSeparator = '-';
 
+/// Temporary rollout switch. Set this to false to put HTDemucs back in the
+/// picker without deleting either implementation or invalidating saved songs.
+const bool useScnetPipeline = true;
+
 class BoxesNames {
   static const library = 'library';
   static const preferences = 'preferences';
 }
 
 class Models {
+  static const scnet = Model(
+    name: 'scnet',
+    description:
+        'SCNet, GPU-accelerated on Android (Vulkan).\nNew separation pipeline.\n(~63 MB)',
+    engine: DemixingEngine.executorch,
+    architecture: SeparationArchitecture.scnet,
+    androidUrl:
+        'https://github.com/demixr/scnet-executorch/releases/latest/download/scnet_vulkan.pte',
+    stems: ['drums', 'bass', 'other', 'vocals'],
+    isDefault: true,
+  );
+
+  static const scnetOnnx = Model(
+    name: 'scnet_onnx',
+    description: 'SCNet, CPU (ONNX).\nWorks on every device.\n(~63 MB)',
+    engine: DemixingEngine.onnx,
+    architecture: SeparationArchitecture.scnet,
+    onnxUrl:
+        'https://github.com/demixr/scnet-executorch/releases/latest/download/scnet_cpu.onnx',
+    stems: ['drums', 'bass', 'other', 'vocals'],
+    isDefault: true,
+  );
+
   /// htdemucs (Demucs v4), 4-stem, on the **GPU** via ExecuTorch — CoreML on
   /// Apple, Vulkan on Android. Same model weights as [htdemucsOnnx], just a
   /// GPU-accelerated backend (much faster on Apple). The mask + iSTFT run in
@@ -88,13 +115,19 @@ class Models {
   // Hive schema compatibility with any previously-saved libraries.)
 
   static Model fromName(String name) {
+    if (name == scnet.name) return scnet;
+    if (name == scnetOnnx.name) return scnetOnnx;
     if (name == htdemucs.name) return htdemucs;
     if (name == htdemucsOnnx.name) return htdemucsOnnx;
 
     throw ArgumentError('Models: The given model name does not exist');
   }
 
-  static const List<Model> all = [htdemucs, htdemucsOnnx];
+  static const List<Model> scnetModels = [scnet, scnetOnnx];
+  static const List<Model> htdemucsModels = [htdemucs, htdemucsOnnx];
+  static const List<Model> all = useScnetPipeline
+      ? scnetModels
+      : htdemucsModels;
 
   /// Models that have a downloadable runtime artifact for this platform.
   static List<Model> get supported =>
@@ -104,7 +137,7 @@ class Models {
   /// cross-platform ONNX model. Windows therefore starts with CPU inference.
   static Model get recommended => supported.firstWhere(
     (model) => model.isDefault,
-    orElse: () => htdemucsOnnx,
+    orElse: () => useScnetPipeline ? scnetOnnx : htdemucsOnnx,
   );
 }
 

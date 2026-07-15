@@ -26,6 +26,7 @@ import 'dart:io';
 
 import 'constants.dart' show Models;
 import 'helpers/separation/executorch_demixing_engine.dart';
+import 'helpers/separation/scnet_demixing_engine.dart';
 import 'hive_registrar.g.dart';
 import 'models/model.dart';
 import 'repositories/preferences_repository.dart';
@@ -107,7 +108,11 @@ Future<void> _warmUpSelectedModel() async {
     if (model.engine != DemixingEngine.executorch) return;
     final path = repo.getModelPath(name);
     if (path == null || !File(path).existsSync()) return;
-    await ExecuTorchDemixingEngine.warmUp(path);
+    if (model.architecture == SeparationArchitecture.scnet) {
+      await ScnetDemixingEngine.warmUp(path);
+    } else {
+      await ExecuTorchDemixingEngine.warmUp(path);
+    }
   } catch (_) {
     // best-effort; the first demix will compile on demand
   }

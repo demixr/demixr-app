@@ -1,0 +1,47 @@
+{
+  "dataset": {
+    "name": "MUSDB18-7 official STEMS test excerpts",
+    "tracks": 50,
+    "audio_seconds": 340.16999999999973,
+    "quality_metric": "Median one-second non-silent chunk SDR per track and stem, then median across tracks"
+  },
+  "htdemucs_onnx_cpu": {
+    "artifact_bytes": 165612636,
+    "inference_seconds": 49.8659,
+    "median_sdr": {
+      "drums": 9.7741,
+      "bass": 9.71675,
+      "other": 5.55944,
+      "vocals": 8.11398
+    },
+    "average_median_sdr": 8.29106
+  },
+  "scnet_7_8s_onnx_cpu": {
+    "artifact_bytes": 52179562,
+    "inference_seconds": 37.3801,
+    "median_sdr": {
+      "drums": 10.02623,
+      "bass": 8.9773,
+      "other": 6.12488,
+      "vocals": 9.39663
+    },
+    "average_median_sdr": 8.63126
+  },
+  "scnet_7_8s_direct_torch": {
+    "cpu_median_seconds": 2.386646,
+    "mps_median_seconds": 0.10261,
+    "scope": "One normalized spectral core tensor; excludes STFT and iSTFT"
+  },
+  "scnet_executorch_coreml": {
+    "artifact_bytes": 77352239,
+    "delegated_partitions": 1,
+    "remaining_cpu_calls": 1,
+    "runtime_result": "First compilation did not finish after five minutes; no inference result"
+  },
+  "scnet_executorch_vulkan": {
+    "artifact_bytes": 52219728,
+    "delegated_partitions": 2,
+    "remaining_cpu_calls": 6,
+    "runtime_result": "Export validated; real Android hardware inference not yet validated"
+  }
+}

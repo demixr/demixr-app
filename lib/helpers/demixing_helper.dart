@@ -9,6 +9,7 @@ import '../models/exceptions/demixing_exception.dart';
 import 'separation/demucs_config.dart';
 import 'separation/executorch_demixing_engine.dart';
 import 'separation/onnx_demixing_engine.dart';
+import 'separation/scnet_demixing_engine.dart';
 import '../utils.dart';
 import '../constants.dart';
 
@@ -40,22 +41,34 @@ class DemixingHelper {
 
     Map<String, String> separated;
     try {
-      separated = switch (model.engine) {
-        DemixingEngine.executorch => await ExecuTorchDemixingEngine().separate(
-          corePath: modelPath,
-          inputPath: song.path,
-          outputDir: outputDir,
-          sources: sources,
-          onProgress: onProgress,
-        ),
-        DemixingEngine.onnx => await OnnxDemixingEngine().separate(
+      if (model.architecture == SeparationArchitecture.scnet) {
+        separated = await ScnetDemixingEngine().separate(
           modelPath: modelPath,
+          engine: model.engine,
           inputPath: song.path,
           outputDir: outputDir,
-          sources: sources,
+          sources: model.stems,
           onProgress: onProgress,
-        ),
-      };
+        );
+      } else {
+        separated = switch (model.engine) {
+          DemixingEngine.executorch =>
+            await ExecuTorchDemixingEngine().separate(
+              corePath: modelPath,
+              inputPath: song.path,
+              outputDir: outputDir,
+              sources: sources,
+              onProgress: onProgress,
+            ),
+          DemixingEngine.onnx => await OnnxDemixingEngine().separate(
+            modelPath: modelPath,
+            inputPath: song.path,
+            outputDir: outputDir,
+            sources: sources,
+            onProgress: onProgress,
+          ),
+        };
+      }
     } on DemixingException {
       rethrow;
     } catch (e) {

@@ -1,6 +1,7 @@
 import 'package:demixr_app/components/buttons.dart';
 import 'package:demixr_app/components/extended_widgets.dart';
 import 'package:demixr_app/helpers/separation/executorch_demixing_engine.dart';
+import 'package:demixr_app/helpers/separation/scnet_demixing_engine.dart';
 import 'package:demixr_app/models/model.dart';
 import 'package:demixr_app/providers/model_provider.dart';
 import 'package:demixr_app/providers/preferences_provider.dart';
@@ -21,7 +22,13 @@ class ModelSelection extends StatelessWidget {
     preferences.setModel(model);
     if (model.engine == DemixingEngine.executorch) {
       final path = preferences.repository.getModelPath(model.name);
-      if (path != null) ExecuTorchDemixingEngine.warmUp(path);
+      if (path != null) {
+        if (model.architecture == SeparationArchitecture.scnet) {
+          ScnetDemixingEngine.warmUp(path);
+        } else {
+          ExecuTorchDemixingEngine.warmUp(path);
+        }
+      }
     }
   }
 

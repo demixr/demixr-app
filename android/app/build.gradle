@@ -45,7 +45,8 @@ android {
 
     defaultConfig {
         applicationId = "com.demixr.demixr_app"
-        minSdk = 24
+        // ffmpeg_kit_extended_flutter requires Android 8.0 (API 26).
+        minSdk = 26
         targetSdk = flutter.targetSdkVersion
         versionCode = flutterVersionCode.toInteger()
         versionName = flutterVersionName

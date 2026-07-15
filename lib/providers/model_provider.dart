@@ -6,6 +6,7 @@ import 'package:get/get.dart';
 import 'package:path/path.dart' as p;
 
 import '../helpers/separation/executorch_demixing_engine.dart';
+import '../helpers/separation/scnet_demixing_engine.dart';
 import '../models/model.dart';
 import '../providers/preferences_provider.dart';
 import '../constants.dart';
@@ -109,7 +110,11 @@ class ModelProvider extends ChangeNotifier {
         warmingUp = true;
         notifyListeners();
         try {
-          await ExecuTorchDemixingEngine.warmUp(path);
+          if (model.architecture == SeparationArchitecture.scnet) {
+            await ScnetDemixingEngine.warmUp(path);
+          } else {
+            await ExecuTorchDemixingEngine.warmUp(path);
+          }
         } catch (e) {
           debugPrint('Model warm-up failed (non-fatal): $e');
         }

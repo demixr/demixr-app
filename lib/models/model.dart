@@ -10,6 +10,9 @@ enum DemixingEngine {
   onnx,
 }
 
+/// The signal-processing pipeline surrounding the inference artifact.
+enum SeparationArchitecture { htdemucs, scnet }
+
 class Model {
   final String name;
   final String description;
@@ -17,6 +20,8 @@ class Model {
 
   /// Which engine runs this model (decides the download + the demixing path).
   final DemixingEngine engine;
+
+  final SeparationArchitecture architecture;
 
   /// ONNX download (cross-platform). Used when [engine] is [DemixingEngine.onnx].
   final String? onnxUrl;
@@ -34,6 +39,7 @@ class Model {
     required this.name,
     required this.description,
     required this.engine,
+    this.architecture = SeparationArchitecture.htdemucs,
     this.isDefault = false,
     this.onnxUrl,
     this.appleUrl,

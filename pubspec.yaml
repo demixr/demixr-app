@@ -77,6 +77,15 @@ ffmpeg_kit_extended_config:
   gpl: false
   small: true
 
+# SCNet GPU experiments need the opt-in Vulkan delegate on Android. XNNPACK
+# remains available as the stable CPU fallback.
+hooks:
+  user_defines:
+    executorch_flutter:
+      backends:
+        - xnnpack
+        - vulkan
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
