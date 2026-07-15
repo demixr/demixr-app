@@ -35,9 +35,9 @@ void main() {
     });
 
     test(
-      'rollout catalog exposes SCNet while both families stay resolvable',
+      'active catalog exposes SCNet while both families stay resolvable',
       () {
-        expect(useScnetPipeline, isTrue);
+        expect(activeSeparationArchitecture, SeparationArchitecture.scnet);
         expect(Models.all, Models.scnetModels);
         expect(Models.fromName(Models.scnet.name), Models.scnet);
         expect(Models.fromName(Models.htdemucs.name), Models.htdemucs);

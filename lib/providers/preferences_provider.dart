@@ -43,8 +43,9 @@ class PreferencesProvider extends ChangeNotifier {
     // selection, so the user is routed to pick a current one.
     try {
       final model = Models.fromName(modelName);
-      // A shadowed architecture remains resolvable for old library records,
-      // but must not silently stay selected when the rollout flag changes.
+      // An inactive architecture remains resolvable for old library records,
+      // but it is not selectable or silently retained after the build choice
+      // changes.
       _model = Models.all.contains(model)
           ? Right(model)
           : Left(NoModelSelected());

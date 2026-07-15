@@ -49,9 +49,10 @@ class Paths {
 
 const songArtistTitleSeparator = '-';
 
-/// Temporary rollout switch. Set this to false to put HTDemucs back in the
-/// picker without deleting either implementation or invalidating saved songs.
-const bool useScnetPipeline = true;
+/// Developer-only build choice. Only this model family is exposed in setup and
+/// settings; changing it requires rebuilding the app.
+const SeparationArchitecture activeSeparationArchitecture =
+    SeparationArchitecture.scnet;
 
 class BoxesNames {
   static const library = 'library';
@@ -125,7 +126,8 @@ class Models {
 
   static const List<Model> scnetModels = [scnet, scnetOnnx];
   static const List<Model> htdemucsModels = [htdemucs, htdemucsOnnx];
-  static const List<Model> all = useScnetPipeline
+  static const List<Model> all =
+      activeSeparationArchitecture == SeparationArchitecture.scnet
       ? scnetModels
       : htdemucsModels;
 
@@ -137,7 +139,9 @@ class Models {
   /// cross-platform ONNX model. Windows therefore starts with CPU inference.
   static Model get recommended => supported.firstWhere(
     (model) => model.isDefault,
-    orElse: () => useScnetPipeline ? scnetOnnx : htdemucsOnnx,
+    orElse: () => activeSeparationArchitecture == SeparationArchitecture.scnet
+        ? scnetOnnx
+        : htdemucsOnnx,
   );
 }
 
