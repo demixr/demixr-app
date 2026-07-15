@@ -8,6 +8,7 @@ import 'package:demixr_app/helpers/separation/scnet_demixing_engine.dart';
 import 'package:demixr_app/models/model.dart';
 import 'package:ffmpeg_kit_extended_flutter/ffmpeg_kit_extended_flutter.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter_onnxruntime/flutter_onnxruntime.dart';
 import 'package:integration_test/integration_test.dart';
 
 /// Runs the released SCNet core through the complete app pipeline.
@@ -23,8 +24,13 @@ void main() {
     (tester) async {
       await FFmpegKitExtended.initialize();
       const modelPath = String.fromEnvironment('SCNET_MODEL_PATH');
-      if (modelPath.isEmpty || !File(modelPath).existsSync()) {
-        markTestSkipped('Set SCNET_MODEL_PATH to the released scnet_cpu.onnx');
+      const engineName = String.fromEnvironment(
+        'SCNET_ENGINE',
+        defaultValue: 'onnx',
+      );
+      final modelEntity = FileSystemEntity.typeSync(modelPath);
+      if (modelPath.isEmpty || modelEntity == FileSystemEntityType.notFound) {
+        markTestSkipped('Set SCNET_MODEL_PATH to a released SCNet artifact');
         return;
       }
 
@@ -33,8 +39,11 @@ void main() {
       // The macOS native ONNX plugin runs inside the app sandbox and cannot
       // open an arbitrary host /tmp path. Copy the fixture into this test
       // process's sandbox before handing the path to the native session.
-      final sandboxedModelPath = '${directory.path}/scnet_cpu.onnx';
-      await File(modelPath).copy(sandboxedModelPath);
+      var sandboxedModelPath = modelPath;
+      if (modelEntity == FileSystemEntityType.file) {
+        sandboxedModelPath = '${directory.path}/scnet_cpu.onnx';
+        await File(modelPath).copy(sandboxedModelPath);
+      }
       final inputPath = '${directory.path}/input.wav';
       final writer = await WavWriter.create(
         inputPath,
@@ -59,12 +68,17 @@ void main() {
       writer.addFrames(channels, 0, ScnetConfig.sampleRate);
       await writer.close();
 
+      // ignore: avoid_print
+      print('SCNET PIPELINE: starting $engineName separation');
       final stems = await ScnetDemixingEngine().separate(
         modelPath: sandboxedModelPath,
-        engine: DemixingEngine.onnx,
+        engine: engineName == 'coreml'
+            ? DemixingEngine.coreml
+            : DemixingEngine.onnx,
         inputPath: inputPath,
         outputDir: directory.path,
         sources: ScnetConfig.sourceNames,
+        providerOverride: engineName == 'onnx' ? const [OrtProvider.CPU] : null,
       );
       expect(stems.keys, containsAll(ScnetConfig.sourceNames));
       for (final path in stems.values) {

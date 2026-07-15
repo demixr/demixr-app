@@ -1,12 +1,14 @@
 import 'dart:io';
 
 import 'package:dio/dio.dart';
+import 'package:archive/archive_io.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:path/path.dart' as p;
 
 import '../helpers/separation/executorch_demixing_engine.dart';
 import '../helpers/separation/scnet_demixing_engine.dart';
+import '../helpers/separation/scnet_coreml_bridge.dart';
 import '../models/model.dart';
 import '../providers/preferences_provider.dart';
 import '../constants.dart';
@@ -43,9 +45,10 @@ class ModelProvider extends ChangeNotifier {
 
     Get.toNamed('/model/download');
 
-    final filename = '${model.name}${model.fileExtension}';
+    final filename = '${model.name}${model.downloadFileExtension}';
     final directory = await _preferences.repository.modelsPath;
-    final path = p.join(directory, filename);
+    final downloadPath = p.join(directory, filename);
+    var path = downloadPath;
 
     // Verify the directory is writable
     final dir = Directory(directory);
@@ -86,7 +89,7 @@ class ModelProvider extends ChangeNotifier {
     try {
       await dio.download(
         url,
-        path,
+        downloadPath,
         onReceiveProgress: (received, total) {
           if (total > 0) {
             final newProgress = received / total;
@@ -99,6 +102,23 @@ class ModelProvider extends ChangeNotifier {
         },
         cancelToken: _cancelToken,
       );
+
+      if (model.engine == DemixingEngine.coreml) {
+        final archive = ZipDecoder().decodeBytes(
+          await File(downloadPath).readAsBytes(),
+        );
+        await extractArchiveToDisk(archive, directory);
+        final extracted = Directory(p.join(directory, 'scnet_coreml.mlmodelc'));
+        final destination = Directory(
+          p.join(directory, '${model.name}${model.fileExtension}'),
+        );
+        if (await destination.exists()) {
+          await destination.delete(recursive: true);
+        }
+        await extracted.rename(destination.path);
+        await File(downloadPath).delete();
+        path = destination.path;
+      }
 
       // Download completed successfully
       _preferences.repository.setModelPath(path, model.name);
@@ -119,13 +139,22 @@ class ModelProvider extends ChangeNotifier {
           debugPrint('Model warm-up failed (non-fatal): $e');
         }
         warmingUp = false;
+      } else if (model.engine == DemixingEngine.coreml) {
+        warmingUp = true;
+        notifyListeners();
+        try {
+          await ScnetCoreMlBridge.load(path);
+        } catch (e) {
+          debugPrint('Core ML warm-up failed (non-fatal): $e');
+        }
+        warmingUp = false;
       }
 
       _clearDownload();
       onDone();
     } on DioException catch (e) {
       if (e.type == DioExceptionType.cancel) {
-        final file = File(path);
+        final file = File(downloadPath);
         if (await file.exists()) {
           await file.delete();
         }

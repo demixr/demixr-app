@@ -60,8 +60,9 @@ class BoxesNames {
 }
 
 class Models {
-  static const scnet = Model(
-    name: 'scnet',
+  static const scnetVulkan = Model(
+    name: 'scnet_vulkan',
+    displayName: 'SCNet',
     description:
         'SCNet, GPU-accelerated on Android (Vulkan).\nNew separation pipeline.\n(~63 MB)',
     engine: DemixingEngine.executorch,
@@ -69,18 +70,48 @@ class Models {
     androidUrl:
         'https://github.com/demixr/scnet-executorch/releases/latest/download/scnet_vulkan.pte',
     stems: ['drums', 'bass', 'other', 'vocals'],
+    supportedOperatingSystems: ['android'],
+    isDefault: true,
+  );
+
+  static const scnetCoreMl = Model(
+    name: 'scnet_coreml',
+    displayName: 'SCNet',
+    description:
+        'SCNet, GPU-accelerated (Core ML).\nFastest on Apple devices.\n(~35 MB)',
+    engine: DemixingEngine.coreml,
+    architecture: SeparationArchitecture.scnet,
+    macosUrl:
+        'https://github.com/demixr/scnet-executorch/releases/latest/download/scnet_coreml_macos.mlmodelc.zip',
+    iosUrl:
+        'https://github.com/demixr/scnet-executorch/releases/latest/download/scnet_coreml_ios.mlmodelc.zip',
+    stems: ['drums', 'bass', 'other', 'vocals'],
+    isDefault: true,
+  );
+
+  static const scnetDirectMl = Model(
+    name: 'scnet_directml',
+    displayName: 'SCNet',
+    description:
+        'SCNet, GPU-accelerated (DirectML).\nFor Windows GPUs.\n(~52 MB)',
+    engine: DemixingEngine.onnx,
+    architecture: SeparationArchitecture.scnet,
+    onnxUrl:
+        'https://github.com/demixr/scnet-executorch/releases/latest/download/scnet_cpu.onnx',
+    stems: ['drums', 'bass', 'other', 'vocals'],
+    supportedOperatingSystems: ['windows'],
     isDefault: true,
   );
 
   static const scnetOnnx = Model(
     name: 'scnet_onnx',
+    displayName: 'SCNet CPU',
     description: 'SCNet, CPU (ONNX).\nWorks on every device.\n(~63 MB)',
     engine: DemixingEngine.onnx,
     architecture: SeparationArchitecture.scnet,
     onnxUrl:
         'https://github.com/demixr/scnet-executorch/releases/latest/download/scnet_cpu.onnx',
     stems: ['drums', 'bass', 'other', 'vocals'],
-    isDefault: true,
   );
 
   /// htdemucs (Demucs v4), 4-stem, on the **GPU** via ExecuTorch — CoreML on
@@ -116,7 +147,9 @@ class Models {
   // Hive schema compatibility with any previously-saved libraries.)
 
   static Model fromName(String name) {
-    if (name == scnet.name) return scnet;
+    if (name == scnetVulkan.name) return scnetVulkan;
+    if (name == scnetCoreMl.name) return scnetCoreMl;
+    if (name == scnetDirectMl.name) return scnetDirectMl;
     if (name == scnetOnnx.name) return scnetOnnx;
     if (name == htdemucs.name) return htdemucs;
     if (name == htdemucsOnnx.name) return htdemucsOnnx;
@@ -124,7 +157,12 @@ class Models {
     throw ArgumentError('Models: The given model name does not exist');
   }
 
-  static const List<Model> scnetModels = [scnet, scnetOnnx];
+  static const List<Model> scnetModels = [
+    scnetCoreMl,
+    scnetVulkan,
+    scnetDirectMl,
+    scnetOnnx,
+  ];
   static const List<Model> htdemucsModels = [htdemucs, htdemucsOnnx];
   static const List<Model> all =
       activeSeparationArchitecture == SeparationArchitecture.scnet

@@ -2,6 +2,7 @@ import 'package:demixr_app/components/buttons.dart';
 import 'package:demixr_app/components/extended_widgets.dart';
 import 'package:demixr_app/helpers/separation/executorch_demixing_engine.dart';
 import 'package:demixr_app/helpers/separation/scnet_demixing_engine.dart';
+import 'package:demixr_app/helpers/separation/scnet_coreml_bridge.dart';
 import 'package:demixr_app/models/model.dart';
 import 'package:demixr_app/providers/model_provider.dart';
 import 'package:demixr_app/providers/preferences_provider.dart';
@@ -20,10 +21,13 @@ class ModelSelection extends StatelessWidget {
   /// the first demix on the one-time compile.
   void _useModel(PreferencesProvider preferences, Model model) {
     preferences.setModel(model);
-    if (model.engine == DemixingEngine.executorch) {
+    if (model.engine == DemixingEngine.executorch ||
+        model.engine == DemixingEngine.coreml) {
       final path = preferences.repository.getModelPath(model.name);
       if (path != null) {
-        if (model.architecture == SeparationArchitecture.scnet) {
+        if (model.engine == DemixingEngine.coreml) {
+          ScnetCoreMlBridge.load(path);
+        } else if (model.architecture == SeparationArchitecture.scnet) {
           ScnetDemixingEngine.warmUp(path);
         } else {
           ExecuTorchDemixingEngine.warmUp(path);
@@ -87,7 +91,7 @@ class ModelSelection extends StatelessWidget {
                 spacing: 5,
                 children: [
                   Text(
-                    model.name.toUpperCase() +
+                    (model.displayName ?? model.name).toUpperCase() +
                         (model == Models.recommended ? ' (recommended)' : ''),
                     style: const TextStyle(
                       fontSize: 16,

@@ -45,7 +45,7 @@ class ModelCard extends StatelessWidget {
                     children: [
                       Flexible(
                         child: Text(
-                          model.name.toUpperCase(),
+                          (model.displayName ?? model.name).toUpperCase(),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: const TextStyle(

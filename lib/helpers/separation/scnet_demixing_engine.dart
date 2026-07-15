@@ -1,4 +1,4 @@
-import 'dart:typed_data';
+import 'dart:io';
 
 import 'package:executorch_flutter/executorch_flutter.dart';
 import 'package:flutter_onnxruntime/flutter_onnxruntime.dart';
@@ -8,6 +8,7 @@ import '../../models/exceptions/demixing_exception.dart';
 import '../../models/model.dart';
 import 'audio_io.dart';
 import 'scnet_config.dart';
+import 'scnet_coreml_bridge.dart';
 import 'scnet_spectral_transform.dart';
 
 /// End-to-end SCNet pipeline shared by its ONNX CPU and ExecuTorch Vulkan
@@ -37,6 +38,8 @@ class ScnetDemixingEngine {
     required String inputPath,
     required String outputDir,
     required List<String> sources,
+    bool preferGpu = false,
+    List<OrtProvider>? providerOverride,
     void Function(double progress)? onProgress,
   }) async {
     final channels = await decodeToFloatPcm(
@@ -51,16 +54,26 @@ class ScnetDemixingEngine {
     OrtSession? onnxSession;
     ExecuTorchModel? executorchModel;
     if (engine == DemixingEngine.onnx) {
+      final available = await OnnxRuntime().getAvailableProviders();
+      final providers =
+          providerOverride ??
+          (preferGpu && (Platform.isMacOS || Platform.isIOS)
+              ? [OrtProvider.CORE_ML, OrtProvider.CPU]
+              : preferGpu && Platform.isWindows
+              ? [OrtProvider.DIRECT_ML, OrtProvider.CPU]
+              : [OrtProvider.CPU]);
       onnxSession = await OnnxRuntime().createSession(
         modelPath,
         options: OrtSessionOptions(
-          providers: [OrtProvider.CPU],
+          providers: providers.where(available.contains).toList(),
           graphOptimizationLevel: OrtGraphOptimizationLevel.all,
           useArena: false,
         ),
       );
-    } else {
+    } else if (engine == DemixingEngine.executorch) {
       executorchModel = await _loadExecuTorch(modelPath);
+    } else {
+      await ScnetCoreMlBridge.load(modelPath);
     }
 
     try {
@@ -69,13 +82,22 @@ class ScnetDemixingEngine {
         outputDir: outputDir,
         sources: sources,
         onProgress: onProgress,
-        infer: (input) => onnxSession != null
-            ? _inferOnnx(onnxSession, input)
-            : _inferExecuTorch(executorchModel!, input),
+        infer: (input) {
+          if (onnxSession != null) return _inferOnnx(onnxSession, input);
+          if (executorchModel != null) {
+            return _inferExecuTorch(executorchModel, input);
+          }
+          return _inferCoreMl(input);
+        },
       );
     } finally {
       await onnxSession?.close();
     }
+  }
+
+  Future<Float32List> _inferCoreMl(ScnetSpectrum spectrum) async {
+    final values = await ScnetCoreMlBridge.run(spectrum.values);
+    return _spectral.inverse(values, spectrum.mean, spectrum.std);
   }
 
   Future<Float32List> _inferOnnx(
@@ -176,7 +198,8 @@ class ScnetDemixingEngine {
             start,
           );
         }
-        final stems = await infer(_spectral.forward(waveform));
+        final spectrum = _spectral.forward(waveform);
+        final stems = await infer(spectrum);
         for (var source = 0; source < sources.length; source++) {
           for (var channel = 0; channel < channels; channel++) {
             final destination = accumulators[sources[source]]![channel];

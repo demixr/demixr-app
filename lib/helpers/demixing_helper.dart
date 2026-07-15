@@ -48,6 +48,7 @@ class DemixingHelper {
           inputPath: song.path,
           outputDir: outputDir,
           sources: model.stems,
+          preferGpu: model.isDefault,
           onProgress: onProgress,
         );
       } else {
@@ -66,6 +67,9 @@ class DemixingHelper {
             outputDir: outputDir,
             sources: sources,
             onProgress: onProgress,
+          ),
+          DemixingEngine.coreml => throw DemixingException(
+            'Core ML is only supported by the SCNet pipeline',
           ),
         };
       }

@@ -27,6 +27,7 @@ import 'dart:io';
 import 'constants.dart' show Models;
 import 'helpers/separation/executorch_demixing_engine.dart';
 import 'helpers/separation/scnet_demixing_engine.dart';
+import 'helpers/separation/scnet_coreml_bridge.dart';
 import 'hive_registrar.g.dart';
 import 'models/model.dart';
 import 'repositories/preferences_repository.dart';
@@ -105,10 +106,15 @@ Future<void> _warmUpSelectedModel() async {
     final name = repo.getModel();
     if (name == null) return;
     final model = Models.fromName(name);
-    if (model.engine != DemixingEngine.executorch) return;
+    if (model.engine != DemixingEngine.executorch &&
+        model.engine != DemixingEngine.coreml) {
+      return;
+    }
     final path = repo.getModelPath(name);
     if (path == null || !File(path).existsSync()) return;
-    if (model.architecture == SeparationArchitecture.scnet) {
+    if (model.engine == DemixingEngine.coreml) {
+      await ScnetCoreMlBridge.load(path);
+    } else if (model.architecture == SeparationArchitecture.scnet) {
       await ScnetDemixingEngine.warmUp(path);
     } else {
       await ExecuTorchDemixingEngine.warmUp(path);
