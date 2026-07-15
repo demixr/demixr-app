@@ -111,7 +111,10 @@ Future<void> _warmUpSelectedModel() async {
       return;
     }
     final path = repo.getModelPath(name);
-    if (path == null || !File(path).existsSync()) return;
+    if (path == null ||
+        FileSystemEntity.typeSync(path) == FileSystemEntityType.notFound) {
+      return;
+    }
     if (model.engine == DemixingEngine.coreml) {
       await ScnetCoreMlBridge.load(path);
     } else if (model.architecture == SeparationArchitecture.scnet) {

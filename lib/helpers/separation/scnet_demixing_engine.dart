@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:executorch_flutter/executorch_flutter.dart';
 import 'package:flutter_onnxruntime/flutter_onnxruntime.dart';

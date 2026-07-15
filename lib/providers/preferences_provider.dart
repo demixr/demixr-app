@@ -91,8 +91,8 @@ class PreferencesProvider extends ChangeNotifier {
     // file of the wrong type must be re-downloaded, not loaded.
     if (!modelPath.endsWith(model.fileExtension)) return false;
 
-    final file = File(modelPath);
-    return await file.exists();
+    return await FileSystemEntity.type(modelPath) !=
+        FileSystemEntityType.notFound;
   }
 
   /// Get the selected [_model] path.
