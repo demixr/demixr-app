@@ -1,8 +1,7 @@
 import 'dart:io';
 import 'dart:typed_data';
 
-import 'package:ffmpeg_kit_flutter_new_audio/ffmpeg_kit.dart';
-import 'package:ffmpeg_kit_flutter_new_audio/return_code.dart';
+import 'package:ffmpeg_kit_extended_flutter/ffmpeg_kit_extended_flutter.dart';
 import 'package:path/path.dart' as p;
 
 import '../../models/exceptions/demixing_exception.dart';
@@ -25,11 +24,11 @@ Future<List<Float32List>> decodeToFloatPcm(
   // `-f f32le` writes raw little-endian float samples with no header, which we
   // can map straight into a Float32List on every (little-endian) target.
   try {
-    final session = await FFmpegKit.execute(
+    final session = await FFmpegKit.executeAsync(
       '-y -i "$inputPath" -ac $channels -ar $sampleRate '
       '-f f32le -acodec pcm_f32le "$rawPath"',
     );
-    if (!ReturnCode.isSuccess(await session.getReturnCode())) {
+    if (!ReturnCode.isSuccess(session.getReturnCode())) {
       throw DemixingException('Failed to decode audio for demixing');
     }
 

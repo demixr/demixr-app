@@ -81,7 +81,7 @@ class ModelSelection extends StatelessWidget {
                 children: [
                   Text(
                     model.name.toUpperCase() +
-                        (model.isDefault ? ' (default)' : ''),
+                        (model == Models.recommended ? ' (recommended)' : ''),
                     style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w700,
@@ -129,7 +129,7 @@ class ModelSelection extends StatelessWidget {
     );
 
     List<Widget> children = [
-      for (var model in Models.all)
+      for (var model in Models.supported)
         buildModelTile(context, model, getAssetPath('demucs', AssetType.image)),
     ];
 

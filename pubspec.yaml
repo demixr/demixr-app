@@ -52,7 +52,7 @@ dependencies:
   audio_video_progress_bar: ^2.0.3
   url_launcher: ^6.3.2
   percent_indicator: ^4.2.5
-  ffmpeg_kit_flutter_new_audio: ^2.2.2
+  ffmpeg_kit_extended_flutter: ^0.5.10
   flutter_onnxruntime: ^1.8.0
   executorch_flutter: ^0.4.1
   youtube_explode_dart: ^3.1.0
@@ -67,8 +67,15 @@ dependencies:
 # Local patched copy of flutter_onnxruntime that exposes graphOptimizationLevel
 # (upstream doesn't), so we can lower it to cut peak memory ~2x on mobile.
 dependency_overrides:
+  # FFmpegKit Extended uses hooks v2; verify ExecuTorch remains source-compatible.
+  hooks: ^2.0.2
   flutter_onnxruntime:
     path: third_party/flutter_onnxruntime
+
+ffmpeg_kit_extended_config:
+  type: audio
+  gpl: false
+  small: true
 
 dev_dependencies:
   flutter_test:

@@ -1,10 +1,9 @@
 import 'dart:io';
 
 import 'package:dartz/dartz.dart';
-import 'package:ffmpeg_kit_flutter_new_audio/ffmpeg_kit.dart';
-import 'package:ffmpeg_kit_flutter_new_audio/ffprobe_kit.dart';
-import 'package:ffmpeg_kit_flutter_new_audio/return_code.dart';
+import 'package:ffmpeg_kit_extended_flutter/ffmpeg_kit_extended_flutter.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:flutter/foundation.dart';
 import 'package:audio_metadata_reader/audio_metadata_reader.dart';
 import 'package:youtube_explode_dart/youtube_explode_dart.dart';
 import 'package:path/path.dart' as p;
@@ -206,7 +205,12 @@ class SongHelper {
 
       final stream = yt.videos.streamsClient.get(streamInfo);
 
-      file = File(p.join(await getAppTemp(), sanitizeFilename(song.title)));
+      file = File(
+        p.join(
+          await getAppTemp(),
+          '${sanitizeFilename(song.title)}.${streamInfo.container.name}',
+        ),
+      );
       final fileStream = file.openWrite();
 
       // Write the stream chunk by chunk, reporting progress (throttled to ~1%).
@@ -278,37 +282,42 @@ class SongHelper {
 
 /// Converts the song at the given [path] to the Waveform format (`wav`).
 ///
-/// Uses FFmpeg via [FFmpegKit] to retrieve the format of the current file and
-/// convert it if needed.
-/// Throws a [ConvertionException] if the format could not be found, or if the
-/// convertion failed.
+/// Uses FFmpeg via [FFmpegKit] to convert the input when needed.
+/// Throws a [ConversionException] if the conversion fails.
 Future<String> convertToWav(String path) async {
-  final session = await FFprobeKit.getMediaInformation(path);
-  final information = session.getMediaInformation();
+  if (p.extension(path).toLowerCase() == '.wav') return path;
 
-  String? format = information?.getFormat();
+  final outputPath = '${p.withoutExtension(path)}.wav';
+  await File(outputPath).deleteIfExists();
 
-  if (format == null) {
-    throw ConversionException('SongLoader: Failed to get the file format');
-  } else if (format != 'wav') {
-    final outputPath = '${p.withoutExtension(path)}.wav';
-    File(outputPath).deleteIfExists();
+  // Do not probe first: some slim FFmpegKit builds can decode a container even
+  // when their bundled FFprobe cannot return MediaInformation for it.
+  final convertSession = FFmpegKit.createSessionFromArguments([
+    '-y',
+    '-i',
+    path,
+    '-vn',
+    '-ac',
+    '2',
+    '-ar',
+    '44100',
+    '-acodec',
+    'pcm_s16le',
+    outputPath,
+  ]);
+  await convertSession.executeAsync();
+  final convertRc = convertSession.getReturnCode();
 
-    // 16-bit PCM, not 8-bit (pcm_u8): the demixing models read this file as
-    // their input, and 8-bit quantization audibly degrades the separation.
-    final convertSession = await FFmpegKit.execute(
-      '-i "$path" -acodec pcm_s16le "$outputPath"',
+  if (!ReturnCode.isSuccess(convertRc)) {
+    final logs = convertSession.getLogsAsString();
+    debugPrint(
+      'SongLoader: FFmpeg conversion failed (return code $convertRc): $logs',
     );
-    final convertRc = await convertSession.getReturnCode();
-
-    if (ReturnCode.isSuccess(convertRc)) {
-      path = outputPath;
-    } else {
-      throw ConversionException(
-        'SongLoader: Failed to convert audio file to wav',
-      );
-    }
+    await File(outputPath).deleteIfExists();
+    throw ConversionException(
+      'SongLoader: Failed to convert audio file to wav',
+    );
   }
 
-  return path;
+  return outputPath;
 }

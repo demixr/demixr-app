@@ -10,11 +10,55 @@ env:
   FLUTTER_VERSION: "3.44.2"
 
 jobs:
+  windows:
+    name: Build Windows app
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+      - run: flutter pub get
+      - name: Build Windows
+        shell: pwsh
+        run: |
+          $attempt = 0
+          do {
+            flutter build windows --release
+            if ($LASTEXITCODE -eq 0) { break }
+            $attempt++
+            if ($attempt -ge 3) { exit $LASTEXITCODE }
+            Write-Warning "Build failed (likely a prebuilt download); retry $attempt"
+            Start-Sleep -Seconds 20
+          } while ($true)
+      - name: Package portable Windows app
+        shell: pwsh
+        run: |
+          $process = Start-Process `
+            -FilePath build/windows/x64/runner/Release/Demixr.exe `
+            -PassThru
+          Start-Sleep -Seconds 15
+          if ($process.HasExited) {
+            throw "Demixr exited during startup with code $($process.ExitCode)"
+          }
+          Stop-Process -Id $process.Id
+
+          Compress-Archive `
+            -Path build/windows/x64/runner/Release/* `
+            -DestinationPath build/demixr-windows-x64.zip
+      - uses: ncipollo/release-action@v1
+        with:
+          artifacts: "build/demixr-windows-x64.zip"
+          allowUpdates: true
+          token: ${{ secrets.GITHUB_TOKEN }}
+
   android:
     name: Build Android APK
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
@@ -49,7 +93,7 @@ jobs:
     # to an Intel runner -> x86_64 prebuilt 404. So the .dmg is Apple-Silicon-only.
     runs-on: macos-14
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: subosito/flutter-action@v2
         with:
           flutter-version: ${{ env.FLUTTER_VERSION }}
@@ -140,7 +184,7 @@ jobs:
     name: Build iOS app (build-check, unsigned)
     runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: subosito/flutter-action@v2
         with:
           flutter-version: ${{ env.FLUTTER_VERSION }}

@@ -95,6 +95,17 @@ class Models {
   }
 
   static const List<Model> all = [htdemucs, htdemucsOnnx];
+
+  /// Models that have a downloadable runtime artifact for this platform.
+  static List<Model> get supported =>
+      all.where((model) => model.isSupportedOnCurrentPlatform).toList();
+
+  /// Prefer the platform's default GPU model when available, otherwise the
+  /// cross-platform ONNX model. Windows therefore starts with CPU inference.
+  static Model get recommended => supported.firstWhere(
+    (model) => model.isDefault,
+    orElse: () => htdemucsOnnx,
+  );
 }
 
 enum Stem { mixture, vocals, drums, bass, other, guitar, piano }

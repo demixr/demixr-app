@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:audioplayers/audioplayers.dart';
 import 'package:audio_session/audio_session.dart' as system_audio;
 import 'package:demixr_app/models/unmixed_song.dart';
@@ -100,8 +102,10 @@ class StemsPlayer {
   }
 
   Future<bool> resume() async {
-    final session = await system_audio.AudioSession.instance;
-    if (!await session.setActive(true)) return false;
+    if (Platform.isAndroid || Platform.isIOS || Platform.isMacOS) {
+      final session = await system_audio.AudioSession.instance;
+      if (!await session.setActive(true)) return false;
+    }
     await Future.wait(_activePlayers.map((player) => player.resume()));
     return true;
   }

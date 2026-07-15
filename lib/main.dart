@@ -16,6 +16,7 @@ import 'package:audio_session/audio_session.dart';
 import 'package:flutter/material.dart';
 import 'package:demixr_app/constants.dart' show BoxesNames, ColorPalette;
 import 'package:flutter/services.dart';
+import 'package:ffmpeg_kit_extended_flutter/ffmpeg_kit_extended_flutter.dart';
 import 'package:hive_ce_flutter/hive_ce_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:get/get.dart';
@@ -32,8 +33,12 @@ import 'providers/preferences_provider.dart';
 
 late final SystemMediaHandler systemMediaHandler;
 
+bool get _supportsSystemMediaControls =>
+    Platform.isAndroid || Platform.isIOS || Platform.isMacOS;
+
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await FFmpegKitExtended.initialize();
 
   await Hive.initFlutter();
 
@@ -44,22 +49,27 @@ Future<void> main() async {
   await Hive.openBox<dynamic>(BoxesNames.preferences);
   await _openLibraryWithLegacyDurationMigration();
 
-  await AudioService.init(
-    builder: () {
-      systemMediaHandler = SystemMediaHandler();
-      return systemMediaHandler;
-    },
-    config: const AudioServiceConfig(
-      androidNotificationChannelId: 'com.demixr.demixrApp.playback',
-      androidNotificationChannelName: 'Music playback',
-      androidNotificationOngoing: true,
-    ),
-  );
+  if (_supportsSystemMediaControls) {
+    await AudioService.init(
+      builder: () {
+        systemMediaHandler = SystemMediaHandler();
+        return systemMediaHandler;
+      },
+      config: const AudioServiceConfig(
+        androidNotificationChannelId: 'com.demixr.demixrApp.playback',
+        androidNotificationChannelName: 'Music playback',
+        androidNotificationOngoing: true,
+      ),
+    );
 
-  // Advertise Demixr as a music player to iOS/Android. In particular, iOS
-  // uses this shared session to decide which app owns Now Playing controls.
-  final audioSession = await AudioSession.instance;
-  await audioSession.configure(const AudioSessionConfiguration.music());
+    // Advertise Demixr as a music player on platforms where audio_service and
+    // audio_session provide a native implementation. Windows still gets the
+    // in-app handler below, but system media controls are a later integration.
+    final audioSession = await AudioSession.instance;
+    await audioSession.configure(const AudioSessionConfiguration.music());
+  } else {
+    systemMediaHandler = SystemMediaHandler();
+  }
 
   runApp(const MyApp());
 

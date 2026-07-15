@@ -1,0 +1,63 @@
+name: Validate Windows app
+
+on:
+  push:
+    branches:
+      - "windows-*"
+  pull_request:
+    paths:
+      - "lib/**"
+      - "windows/**"
+      - "third_party/flutter_onnxruntime/**"
+      - "pubspec.yaml"
+      - "pubspec.lock"
+      - ".github/workflows/windows_build.yml"
+      - ".github/workflows/release_app.yml"
+  workflow_dispatch:
+
+env:
+  FLUTTER_VERSION: "3.44.2"
+
+jobs:
+  build:
+    name: Build Windows x64
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+      - run: flutter pub get
+      - name: Analyze
+        run: flutter analyze
+      - name: Test
+        # Native asset hooks currently race when multiple Flutter test suites
+        # initialize them concurrently.
+        run: flutter test --concurrency=1
+      - name: Build Windows
+        shell: pwsh
+        run: flutter build windows --release
+      - name: Smoke-test Windows startup
+        shell: pwsh
+        run: |
+          $process = Start-Process `
+            -FilePath build/windows/x64/runner/Release/Demixr.exe `
+            -PassThru
+          Start-Sleep -Seconds 15
+          if ($process.HasExited) {
+            throw "Demixr exited during startup with code $($process.ExitCode)"
+          }
+          Stop-Process -Id $process.Id
+      - name: Package portable app
+        shell: pwsh
+        run: |
+          Compress-Archive `
+            -Path build/windows/x64/runner/Release/* `
+            -DestinationPath build/demixr-windows-x64.zip
+      - uses: actions/upload-artifact@v7
+        with:
+          name: demixr-windows-x64
+          path: build/demixr-windows-x64.zip
+          if-no-files-found: error

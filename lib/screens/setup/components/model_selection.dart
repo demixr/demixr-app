@@ -15,7 +15,7 @@ class ModelSelection extends StatelessWidget {
       children: [
         ModelGroup(
           title: 'Demucs',
-          models: Models.all,
+          models: Models.supported,
           imagePath: getAssetPath('demucs', AssetType.image),
           compact: compact,
         ),
