@@ -1,0 +1,60 @@
+name: Validate Linux app
+
+on:
+  push:
+    branches:
+      - "linux-*"
+  pull_request:
+    paths:
+      - "linux/**"
+      - "lib/**"
+      - "test/**"
+      - "third_party/flutter_onnxruntime/**"
+      - "pubspec.yaml"
+      - "pubspec.lock"
+      - ".github/workflows/linux_build.yml"
+
+env:
+  FLUTTER_VERSION: "3.44.2"
+
+jobs:
+  build:
+    name: Build Linux x64
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Install Linux desktop dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            clang cmake ninja-build pkg-config libgtk-3-dev \
+            liblzma-dev libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev \
+            xvfb
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+      - run: flutter pub get
+      - name: Analyze
+        run: flutter analyze
+      - name: Test
+        run: flutter test --concurrency=1
+      - name: Build Linux
+        run: flutter build linux --release
+      - name: Smoke-test Linux startup
+        run: |
+          set +e
+          timeout 15s xvfb-run -a build/linux/x64/release/bundle/Demixr
+          status=$?
+          set -e
+          if [ "$status" -ne 124 ]; then
+            echo "Demixr exited during startup with code $status"
+            exit "$status"
+          fi
+      - name: Package portable app
+        run: tar -C build/linux/x64/release/bundle -czf build/demixr-linux-x64.tar.gz .
+      - uses: actions/upload-artifact@v7
+        with:
+          name: demixr-linux-x64
+          path: build/demixr-linux-x64.tar.gz
