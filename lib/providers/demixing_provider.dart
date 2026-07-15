@@ -39,15 +39,23 @@ class DemixingProvider extends ChangeNotifier {
 
     _progressStream = _helper.progressStream;
 
-    separate(song)
-        ?.then((unmixed) => library.saveSong(unmixed))
-        .then((index) => library.setCurrentSongIndex(index))
-        .then(
-          (_) => Get.offAllNamed(
-            '/player',
-            predicate: (route) => route.settings.name == '/',
-          ),
-        );
+    final operation = separate(song);
+    if (operation == null) return;
+    try {
+      final unmixed = await operation.valueOrCancellation();
+      if (unmixed == null) return;
+      final index = await library.saveSong(unmixed);
+      library.setCurrentSongIndex(index);
+      Get.offAllNamed(
+        '/player',
+        predicate: (route) => route.settings.name == '/',
+      );
+    } on DemixingException catch (error) {
+      errorSnackbar('Demixing error', error.message, seconds: 5);
+      if (Get.currentRoute == '/demixing/processing') Get.back();
+    } finally {
+      _operation = null;
+    }
   }
 
   /// Creates a cancelable async operation for the separation of the [song].
@@ -58,13 +66,7 @@ class DemixingProvider extends ChangeNotifier {
     Get.toNamed('/demixing/processing', arguments: this);
 
     _operation = CancelableOperation<UnmixedSong>.fromFuture(
-      _helper
-          .separate(song, preferences.getModelPath(), preferences.modelName)
-          .onError((DemixingException error, _) {
-            errorSnackbar('Demixing error', error.message, seconds: 5);
-            cancelDemixing();
-            throw error;
-          }),
+      _helper.separate(song, preferences.getModelPath(), preferences.modelName),
     );
     return _operation;
   }

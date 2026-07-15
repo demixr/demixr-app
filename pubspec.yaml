@@ -70,6 +70,17 @@ dependency_overrides:
   flutter_onnxruntime:
     path: third_party/flutter_onnxruntime
 
+# Android needs the opt-in Vulkan runtime for the GPU-delegated HTDemucs
+# artifact. Unsupported backends are filtered per platform by the plugin:
+# Android gets XNNPACK + Vulkan, while Apple also gets Core ML.
+hooks:
+  user_defines:
+    executorch_flutter:
+      backends:
+        - xnnpack
+        - coreml
+        - vulkan
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
