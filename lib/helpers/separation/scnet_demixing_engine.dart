@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:math' as math;
 import 'dart:typed_data';
 
 import 'package:executorch_flutter/executorch_flutter.dart';
@@ -51,6 +52,7 @@ class ScnetDemixingEngine {
     if (channels[0].isEmpty) {
       throw DemixingException('Decoded audio is empty');
     }
+    final normalization = _normalizeTrack(channels);
 
     OrtSession? onnxSession;
     ExecuTorchModel? executorchModel;
@@ -82,6 +84,8 @@ class ScnetDemixingEngine {
         input: channels,
         outputDir: outputDir,
         sources: sources,
+        trackMean: normalization.mean,
+        trackStd: normalization.std,
         onProgress: onProgress,
         infer: (input) {
           if (onnxSession != null) return _inferOnnx(onnxSession, input);
@@ -157,6 +161,8 @@ class ScnetDemixingEngine {
     required List<Float32List> input,
     required String outputDir,
     required List<String> sources,
+    required double trackMean,
+    required double trackStd,
     required Future<Float32List> Function(ScnetSpectrum input) infer,
     void Function(double progress)? onProgress,
   }) async {
@@ -206,7 +212,8 @@ class ScnetDemixingEngine {
             final destination = accumulators[sources[source]]![channel];
             final sourceBase = (source * channels + channel) * segment;
             for (var i = 0; i < chunkLength; i++) {
-              destination[i] += stems[sourceBase + i] * window[i];
+              final restored = stems[sourceBase + i] * trackStd + trackMean;
+              destination[i] += restored * window[i];
             }
           }
         }
@@ -248,5 +255,30 @@ class ScnetDemixingEngine {
       }
     }
     return paths;
+  }
+
+  /// Mirrors SCNet's reference inference normalization: compute statistics
+  /// from the mono mixture, normalize the complete stereo track before
+  /// chunking, then restore every estimated source after inference.
+  ({double mean, double std}) _normalizeTrack(List<Float32List> channels) {
+    final frames = channels[0].length;
+    var sum = 0.0;
+    var sumSquares = 0.0;
+    for (var i = 0; i < frames; i++) {
+      final mono = (channels[0][i] + channels[1][i]) * 0.5;
+      sum += mono;
+      sumSquares += mono * mono;
+    }
+    final mean = sum / frames;
+    final variance = frames > 1
+        ? (sumSquares - frames * mean * mean) / (frames - 1)
+        : 0.0;
+    final std = variance > 0 ? math.sqrt(variance) : 1.0;
+    for (final channel in channels) {
+      for (var i = 0; i < channel.length; i++) {
+        channel[i] = (channel[i] - mean) / std;
+      }
+    }
+    return (mean: mean, std: std);
   }
 }

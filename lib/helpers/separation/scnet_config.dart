@@ -5,7 +5,8 @@ class ScnetConfig {
   static const channels = 2;
   static const sources = 4;
   static const segment = 343980;
-  static const stride = segment * 3 ~/ 4;
+  // Match the official SCNet inference path, which uses 50% overlap.
+  static const stride = segment ~/ 2;
   static const nFft = 4096;
   static const hop = 1024;
   static const padded = 345088;
