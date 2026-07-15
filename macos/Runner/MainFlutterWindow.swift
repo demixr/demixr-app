@@ -60,15 +60,41 @@ private final class ScnetCoreMlBridge {
     }
 
     private static func float32Data(_ array: MLMultiArray) -> Data {
-        if array.dataType == .float32 {
-            return Data(bytes: array.dataPointer, count: array.count * MemoryLayout<Float>.size)
-        }
+        let shape = array.shape.map { $0.intValue }
+        let strides = array.strides.map { $0.intValue }
+        let rowLength = shape.last ?? array.count
+        let rows = array.count / rowLength
+        let lastStride = strides.last ?? 1
         var values = [Float](repeating: 0, count: array.count)
-        if array.dataType == .float16 {
-            let source = array.dataPointer.assumingMemoryBound(to: UInt16.self)
-            for index in 0..<array.count { values[index] = Float(Float16(bitPattern: source[index])) }
-        } else {
-            for index in 0..<array.count { values[index] = array[index].floatValue }
+
+        for row in 0..<rows {
+            var remainder = row
+            var physicalOffset = 0
+            if shape.count > 1 {
+                for dimension in stride(from: shape.count - 2, through: 0, by: -1) {
+                    let coordinate = remainder % shape[dimension]
+                    remainder /= shape[dimension]
+                    physicalOffset += coordinate * strides[dimension]
+                }
+            }
+            let logicalOffset = row * rowLength
+            if array.dataType == .float16 {
+                let source = array.dataPointer.assumingMemoryBound(to: UInt16.self)
+                for column in 0..<rowLength {
+                    values[logicalOffset + column] = Float(
+                        Float16(bitPattern: source[physicalOffset + column * lastStride])
+                    )
+                }
+            } else if array.dataType == .float32 {
+                let source = array.dataPointer.assumingMemoryBound(to: Float.self)
+                for column in 0..<rowLength {
+                    values[logicalOffset + column] = source[physicalOffset + column * lastStride]
+                }
+            } else {
+                for column in 0..<rowLength {
+                    values[logicalOffset + column] = array[physicalOffset + column * lastStride].floatValue
+                }
+            }
         }
         return values.withUnsafeBytes { Data($0) }
     }
