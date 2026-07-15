@@ -78,7 +78,7 @@ class Models {
     name: 'scnet_coreml',
     displayName: 'SCNet',
     description:
-        'SCNet, GPU-accelerated (Core ML).\nExperimental Apple backend.\n(~35 MB)',
+        'SCNet, GPU-accelerated (Core ML).\nFastest on Apple devices.\n(~35 MB)',
     engine: DemixingEngine.coreml,
     architecture: SeparationArchitecture.scnet,
     macosUrl:
@@ -86,6 +86,7 @@ class Models {
     iosUrl:
         'https://github.com/demixr/scnet-executorch/releases/latest/download/scnet_coreml_ios.mlmodelc.zip',
     stems: ['drums', 'bass', 'other', 'vocals'],
+    isDefault: true,
   );
 
   static const scnetDirectMl = Model(
@@ -111,7 +112,6 @@ class Models {
     onnxUrl:
         'https://github.com/demixr/scnet-executorch/releases/latest/download/scnet_cpu.onnx',
     stems: ['drums', 'bass', 'other', 'vocals'],
-    isDefault: true,
   );
 
   /// htdemucs (Demucs v4), 4-stem, on the **GPU** via ExecuTorch — CoreML on
@@ -173,8 +173,8 @@ class Models {
   static List<Model> get supported =>
       all.where((model) => model.isSupportedOnCurrentPlatform).toList();
 
-  /// Prefer the fastest verified backend for this platform. SCNet's ONNX CPU
-  /// runtime currently outperforms its experimental Core ML bridge on Apple.
+  /// Prefer the fastest verified backend for this platform, otherwise use the
+  /// cross-platform ONNX model.
   static Model get recommended => supported.firstWhere(
     (model) => model.isDefault,
     orElse: () => activeSeparationArchitecture == SeparationArchitecture.scnet

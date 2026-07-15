@@ -64,11 +64,11 @@ void main() {
       }
     });
 
-    test('SCNet CPU is recommended on Apple while Core ML is experimental', () {
-      expect(Models.scnetOnnx.isDefault, isTrue);
-      expect(Models.scnetCoreMl.isDefault, isFalse);
+    test('SCNet Core ML is recommended on Apple', () {
+      expect(Models.scnetOnnx.isDefault, isFalse);
+      expect(Models.scnetCoreMl.isDefault, isTrue);
       if (Platform.isMacOS || Platform.isIOS) {
-        expect(Models.recommended, Models.scnetOnnx);
+        expect(Models.recommended, Models.scnetCoreMl);
       }
     });
   });

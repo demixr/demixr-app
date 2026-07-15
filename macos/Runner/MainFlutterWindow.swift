@@ -1,6 +1,7 @@
 import Cocoa
 import FlutterMacOS
 import CoreML
+import Accelerate
 
 class MainFlutterWindow: NSWindow {
     override func awakeFromNib() {
@@ -66,37 +67,75 @@ private final class ScnetCoreMlBridge {
         let rows = array.count / rowLength
         let lastStride = strides.last ?? 1
         var values = [Float](repeating: 0, count: array.count)
+        let physicalCount = zip(shape, strides).reduce(1) {
+            $0 + ($1.0 - 1) * $1.1
+        }
 
-        for row in 0..<rows {
-            var remainder = row
-            var physicalOffset = 0
-            if shape.count > 1 {
-                for dimension in stride(from: shape.count - 2, through: 0, by: -1) {
-                    let coordinate = remainder % shape[dimension]
-                    remainder /= shape[dimension]
-                    physicalOffset += coordinate * strides[dimension]
-                }
+        var floatSource: [Float]?
+        if array.dataType == .float16 {
+            var converted = [Float](repeating: 0, count: physicalCount)
+            converted.withUnsafeMutableBytes { destinationBytes in
+                var source = vImage_Buffer(
+                    data: array.dataPointer,
+                    height: 1,
+                    width: vImagePixelCount(physicalCount),
+                    rowBytes: physicalCount * MemoryLayout<UInt16>.size
+                )
+                var destination = vImage_Buffer(
+                    data: destinationBytes.baseAddress,
+                    height: 1,
+                    width: vImagePixelCount(physicalCount),
+                    rowBytes: physicalCount * MemoryLayout<Float>.size
+                )
+                vImageConvert_Planar16FtoPlanarF(&source, &destination, vImage_Flags(kvImageNoFlags))
             }
-            let logicalOffset = row * rowLength
-            if array.dataType == .float16 {
-                let source = array.dataPointer.assumingMemoryBound(to: UInt16.self)
-                for column in 0..<rowLength {
-                    values[logicalOffset + column] = Float(
-                        Float16(bitPattern: source[physicalOffset + column * lastStride])
+            floatSource = converted
+        }
+
+        values.withUnsafeMutableBufferPointer { destination in
+            floatSource?.withUnsafeBufferPointer { source in
+                for row in 0..<rows {
+                    let physicalOffset = rowOffset(row, shape: shape, strides: strides)
+                    memcpy(
+                        destination.baseAddress! + row * rowLength,
+                        source.baseAddress! + physicalOffset,
+                        rowLength * MemoryLayout<Float>.size
                     )
                 }
-            } else if array.dataType == .float32 {
+            }
+
+            if array.dataType == .float32 {
                 let source = array.dataPointer.assumingMemoryBound(to: Float.self)
-                for column in 0..<rowLength {
-                    values[logicalOffset + column] = source[physicalOffset + column * lastStride]
-                }
-            } else {
-                for column in 0..<rowLength {
-                    values[logicalOffset + column] = array[physicalOffset + column * lastStride].floatValue
+                for row in 0..<rows {
+                    let physicalOffset = rowOffset(row, shape: shape, strides: strides)
+                    if lastStride == 1 {
+                        memcpy(
+                            destination.baseAddress! + row * rowLength,
+                            source + physicalOffset,
+                            rowLength * MemoryLayout<Float>.size
+                        )
+                    } else {
+                        for column in 0..<rowLength {
+                            destination[row * rowLength + column] = source[physicalOffset + column * lastStride]
+                        }
+                    }
                 }
             }
         }
         return values.withUnsafeBytes { Data($0) }
+    }
+
+    private static func rowOffset(_ row: Int, shape: [Int], strides: [Int]) -> Int {
+        var remainder = row
+        var offset = 0
+        if shape.count > 1 {
+            for dimension in stride(from: shape.count - 2, through: 0, by: -1) {
+                let coordinate = remainder % shape[dimension]
+                remainder /= shape[dimension]
+                offset += coordinate * strides[dimension]
+            }
+        }
+        return offset
     }
 
     private static func float16Input(_ data: Data) throws -> MLMultiArray {
