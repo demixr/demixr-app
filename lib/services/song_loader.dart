@@ -16,11 +16,12 @@ class SongLoader {
   ];
 
   Future<Either<Failure, PlatformFile>> getFromDevice() async {
-    // Android providers can report M4A as audio/mp4 or audio/x-m4a.
-    final useAudioPicker = defaultTargetPlatform == TargetPlatform.android;
+    // Android providers can report Ogg as application/ogg and M4A under
+    // different audio MIME types. Validate the extension after selection.
+    final isAndroid = defaultTargetPlatform == TargetPlatform.android;
     final result = await FilePicker.pickFiles(
-      type: useAudioPicker ? FileType.audio : FileType.custom,
-      allowedExtensions: useAudioPicker ? null : _supportedExtensions,
+      type: isAndroid ? FileType.any : FileType.custom,
+      allowedExtensions: isAndroid ? null : _supportedExtensions,
     );
 
     if (result == null) return Left(NoSongSelected());

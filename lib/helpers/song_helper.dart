@@ -292,13 +292,11 @@ Future<String> convertToWav(String path) async {
   }
   if (format == 'wav') return path;
 
-  // Picked files can live in shared storage alongside a same-named WAV.
-  final outputDir = await Directory(
-    await getAppTemp(),
-  ).createTemp('demixr-audio-');
-  final outputPath = p.join(outputDir.path, 'input.wav');
-
+  Directory? outputDir;
   try {
+    // Picked files can live in shared storage alongside a same-named WAV.
+    outputDir = await Directory(await getAppTemp()).createTemp('demixr-audio-');
+    final outputPath = p.join(outputDir.path, 'input.wav');
     // Keep 16-bit PCM for demixing quality.
     final convertSession = await FFmpegKit.executeWithArguments([
       '-i',
@@ -314,8 +312,17 @@ Future<String> convertToWav(String path) async {
       );
     }
     return outputPath;
-  } catch (_) {
-    await outputDir.delete(recursive: true);
+  } catch (error) {
+    try {
+      await outputDir?.delete(recursive: true);
+    } on FileSystemException {
+      // Preserve the conversion error if the cache cannot be cleaned up.
+    }
+    if (error is FileSystemException) {
+      throw ConversionException(
+        'Failed to prepare the audio cache: ${error.message}',
+      );
+    }
     rethrow;
   }
 }

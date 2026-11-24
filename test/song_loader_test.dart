@@ -39,13 +39,13 @@ void main() {
   });
 
   for (final extension in extensions) {
-    test('accepts .$extension from the Android audio picker', () async {
+    test('accepts .$extension from the Android file picker', () async {
       debugDefaultTargetPlatformOverride = TargetPlatform.android;
       final name = 'song.${extension.toUpperCase()}';
       pick(
         name,
         verify: (call) {
-          expect(call.method, 'audio');
+          expect(call.method, 'any');
           expect(call.arguments['allowedExtensions'], isNull);
           expect(call.arguments['allowMultipleSelection'], isFalse);
         },
@@ -60,7 +60,7 @@ void main() {
     });
   }
 
-  test('rejects unsupported files from the Android audio picker', () async {
+  test('rejects unsupported files from the Android file picker', () async {
     debugDefaultTargetPlatformOverride = TargetPlatform.android;
     pick('song.mid');
 

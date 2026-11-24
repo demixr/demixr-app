@@ -76,7 +76,8 @@ void main() {
 
 Future<void> _expectWav(File file) async {
   final bytes = await file.readAsBytes();
-  expect(bytes.length, greaterThan(44));
+  // The shortest fixture has 160 samples at 16 bits each.
+  expect(bytes.length, greaterThanOrEqualTo(44 + 160 * 2));
   expect(ascii.decode(bytes.sublist(0, 4)), 'RIFF');
   expect(ascii.decode(bytes.sublist(8, 12)), 'WAVE');
 }
