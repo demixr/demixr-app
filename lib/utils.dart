@@ -65,13 +65,6 @@ String sanitizeFilename(String name) {
   return cleaned.isEmpty ? 'song' : cleaned;
 }
 
-extension RemoveExtension on String {
-  String removeExtension() {
-    replaceAll(RegExp('.wav|.mp3'), '');
-    return this;
-  }
-}
-
 extension Create on Directory {
   Future<Directory> createIfNotPresent() async {
     if (await exists()) {

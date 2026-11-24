@@ -44,7 +44,7 @@ class SongHelper {
       Tuple2<String, List<String>> songInfos = _getSongInfos(
         metadata?.title,
         metadata?.artist != null ? [metadata!.artist!] : null,
-        p.basename(path.path).removeExtension(),
+        p.basenameWithoutExtension(file.name),
       );
 
       String? coverPath = await _saveCover(path.path, songInfos.value1);
@@ -280,35 +280,42 @@ class SongHelper {
 ///
 /// Uses FFmpeg via [FFmpegKit] to retrieve the format of the current file and
 /// convert it if needed.
-/// Throws a [ConvertionException] if the format could not be found, or if the
-/// convertion failed.
+/// Throws a [ConversionException] if the format could not be found, or if the
+/// conversion failed.
 Future<String> convertToWav(String path) async {
   final session = await FFprobeKit.getMediaInformation(path);
   final information = session.getMediaInformation();
 
-  String? format = information?.getFormat();
-
+  final format = information?.getFormat();
   if (format == null) {
     throw ConversionException('SongLoader: Failed to get the file format');
-  } else if (format != 'wav') {
-    final outputPath = '${p.withoutExtension(path)}.wav';
-    File(outputPath).deleteIfExists();
+  }
+  if (format == 'wav') return path;
 
-    // 16-bit PCM, not 8-bit (pcm_u8): the demixing models read this file as
-    // their input, and 8-bit quantization audibly degrades the separation.
-    final convertSession = await FFmpegKit.execute(
-      '-i "$path" -acodec pcm_s16le "$outputPath"',
-    );
+  // Picked files can live in shared storage alongside a same-named WAV.
+  final outputDir = await Directory(
+    await getAppTemp(),
+  ).createTemp('demixr-audio-');
+  final outputPath = p.join(outputDir.path, 'input.wav');
+
+  try {
+    // Keep 16-bit PCM for demixing quality.
+    final convertSession = await FFmpegKit.executeWithArguments([
+      '-i',
+      path,
+      '-acodec',
+      'pcm_s16le',
+      outputPath,
+    ]);
     final convertRc = await convertSession.getReturnCode();
-
-    if (ReturnCode.isSuccess(convertRc)) {
-      path = outputPath;
-    } else {
+    if (!ReturnCode.isSuccess(convertRc)) {
       throw ConversionException(
         'SongLoader: Failed to convert audio file to wav',
       );
     }
+    return outputPath;
+  } catch (_) {
+    await outputDir.delete(recursive: true);
+    rethrow;
   }
-
-  return path;
 }
