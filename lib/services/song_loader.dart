@@ -7,7 +7,7 @@ class SongLoader {
   Future<Either<Failure, PlatformFile>> getFromDevice() async {
     final result = await FilePicker.pickFiles(
       type: FileType.custom,
-      allowedExtensions: const ['mp3', 'wav', 'flac'],
+      allowedExtensions: const ['mp3', 'wav', 'flac', 'm4a', 'ogg', 'opus'],
     );
 
     if (result == null) return Left(NoSongSelected());

@@ -10,7 +10,7 @@ void main() {
 
   tearDown(() => messenger.setMockMethodCallHandler(channel, null));
 
-  for (final extension in ['flac', 'mp3', 'wav']) {
+  for (final extension in ['mp3', 'wav', 'flac', 'm4a', 'ogg', 'opus']) {
     test('allows selecting a $extension file from the device', () async {
       final name = 'song.$extension';
       final path = '/cache/$name';
