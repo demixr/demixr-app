@@ -27,6 +27,8 @@ class LibraryProvider extends ChangeNotifier {
   /// List of the songs in the library.
   List<UnmixedSong> get songList => _songs;
 
+  Iterable<UnmixedSong> get newestFirst => _songs.reversed;
+
   /// The current selected song, from it's index.
   Either<Failure, UnmixedSong> get currentSong => _currentSongIndex.fold(
     (noSongSelected) => Left(noSongSelected),
@@ -75,7 +77,11 @@ class LibraryProvider extends ChangeNotifier {
   void removeSong(int index) {
     // if the song to remove is the selected song, unselect it
     _currentSongIndex.fold((noSongSelected) => null, (currIndex) {
-      if (index == currIndex) _currentSongIndex = Left(NoSongSelected());
+      if (index == currIndex) {
+        _currentSongIndex = Left(NoSongSelected());
+      } else if (index < currIndex) {
+        _currentSongIndex = Right(currIndex - 1);
+      }
     });
 
     _repository.removeSongFiles(getAt(index));

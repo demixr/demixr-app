@@ -43,7 +43,9 @@ class StemsPlayer {
   /// song actually has (4 or 6) without pre-allocating every possible player.
   AudioPlayer _player(Stem stem) => players.putIfAbsent(
     stem,
-    () => AudioPlayer()..setAudioContext(_audioContext),
+    () => AudioPlayer()
+      ..setAudioContext(_audioContext)
+      ..setReleaseMode(ReleaseMode.stop),
   );
 
   AudioPlayer get aPlayer => _player(Stem.vocals);
@@ -64,7 +66,7 @@ class StemsPlayer {
     return activeStems.every((stem) => getStemState(stem) == StemState.unmute);
   }
 
-  void setUrls(UnmixedSong song) {
+  Future<void> setUrls(UnmixedSong song) async {
     final previousStates = Map<Stem, StemState>.from(stemStates);
     activeStems = song.stems;
     stemStates = {
@@ -83,21 +85,21 @@ class StemsPlayer {
     }
     mixtureOn = stemVolumes.values.every((volume) => volume == 1);
 
-    _player(Stem.mixture).setSource(DeviceFileSource(song.mixture));
-    for (final stem in activeStems) {
-      final player = _player(stem)
-        ..setSource(DeviceFileSource(song.getStem(stem)));
-      player.setVolume(mixtureOn ? 0 : stemVolumes[stem]!);
-    }
-
-    _player(Stem.mixture).setVolume(mixtureOn ? 1 : 0);
+    final mixture = _player(Stem.mixture);
+    await Future.wait([
+      mixture.setSource(DeviceFileSource(song.mixture)),
+      for (final stem in activeStems)
+        _player(stem).setSource(DeviceFileSource(song.getStem(stem))),
+    ]);
+    await Future.wait([
+      mixture.setVolume(mixtureOn ? 1 : 0),
+      for (final stem in activeStems)
+        _player(stem).setVolume(mixtureOn ? 0 : stemVolumes[stem]!),
+    ]);
   }
 
-  void pause() {
-    for (final player in _activePlayers) {
-      player.pause();
-    }
-  }
+  Future<void> pause() =>
+      Future.wait(_activePlayers.map((player) => player.pause()));
 
   Future<bool> resume() async {
     final session = await system_audio.AudioSession.instance;
@@ -106,17 +108,11 @@ class StemsPlayer {
     return true;
   }
 
-  void stop() {
-    for (final player in _activePlayers) {
-      player.stop();
-    }
-  }
+  Future<void> unload() =>
+      Future.wait(players.values.map((player) => player.release()));
 
-  void seek(Duration position) {
-    for (final player in _activePlayers) {
-      player.seek(position);
-    }
-  }
+  Future<void> seek(Duration position) =>
+      Future.wait(_activePlayers.map((player) => player.seek(position)));
 
   void muteAll() {
     for (final stem in activeStems) {

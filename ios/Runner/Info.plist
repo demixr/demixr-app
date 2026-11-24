@@ -31,7 +31,7 @@
 		<key>UIApplicationSceneManifest</key>
 		<dict>
 			<key>UIApplicationSupportsMultipleScenes</key>
-			<false/>
+			<true/>
 			<key>UISceneConfigurations</key>
 			<dict>
 				<key>UIWindowSceneSessionRoleApplication</key>
@@ -40,19 +40,26 @@
 						<key>UISceneClassName</key>
 						<string>UIWindowScene</string>
 						<key>UISceneDelegateClassName</key>
-						<string>FlutterSceneDelegate</string>
+						<string>$(PRODUCT_MODULE_NAME).PhoneSceneDelegate</string>
 						<key>UISceneConfigurationName</key>
 						<string>flutter</string>
-						<key>UISceneStoryboardFile</key>
-						<string>Main</string>
+						</dict>
+				</array>
+				<key>CPTemplateApplicationSceneSessionRoleApplication</key>
+				<array>
+					<dict>
+						<key>UISceneClassName</key>
+						<string>CPTemplateApplicationScene</string>
+						<key>UISceneDelegateClassName</key>
+						<string>$(PRODUCT_MODULE_NAME).CarPlaySceneDelegate</string>
+						<key>UISceneConfigurationName</key>
+						<string>CarPlay</string>
 					</dict>
 				</array>
 			</dict>
 		</dict>
 		<key>UILaunchStoryboardName</key>
 		<string>LaunchScreen</string>
-		<key>UIMainStoryboardFile</key>
-		<string>Main</string>
 		<key>UISupportedInterfaceOrientations</key>
 		<array>
 			<string>UIInterfaceOrientationPortrait</string>
