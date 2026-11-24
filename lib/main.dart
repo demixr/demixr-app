@@ -28,9 +28,8 @@ import 'helpers/separation/executorch_demixing_engine.dart';
 import 'hive_registrar.g.dart';
 import 'models/model.dart';
 import 'repositories/preferences_repository.dart';
+import 'services/carplay_bridge.dart';
 import 'providers/preferences_provider.dart';
-
-late final SystemMediaHandler systemMediaHandler;
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -44,24 +43,26 @@ Future<void> main() async {
   await Hive.openBox<dynamic>(BoxesNames.preferences);
   await _openLibraryWithLegacyDurationMigration();
 
-  await AudioService.init(
-    builder: () {
-      systemMediaHandler = SystemMediaHandler();
-      return systemMediaHandler;
-    },
-    config: const AudioServiceConfig(
-      androidNotificationChannelId: 'com.demixr.demixrApp.playback',
-      androidNotificationChannelName: 'Music playback',
-      androidNotificationOngoing: true,
-    ),
-  );
-
-  // Advertise Demixr as a music player to iOS/Android. In particular, iOS
-  // uses this shared session to decide which app owns Now Playing controls.
+  // Configure the shared audio session before exposing remote commands.
   final audioSession = await AudioSession.instance;
   await audioSession.configure(const AudioSessionConfiguration.music());
 
-  runApp(const MyApp());
+  final library = LibraryProvider();
+  final mediaHandler = SystemMediaHandler();
+  final player = PlayerProvider(library, mediaHandler);
+  await AudioService.init(
+    builder: () => mediaHandler,
+    config: const AudioServiceConfig(
+      androidNotificationChannelId: 'com.demixr.demixrApp.playback',
+      androidNotificationChannelName: 'Music playback',
+      // Keep the media service in the foreground while paused so the car can
+      // resume it even when the phone UI is in the background.
+      androidStopForegroundOnPause: false,
+    ),
+  );
+  if (Platform.isIOS) CarPlayBridge(mediaHandler).start();
+
+  runApp(MyApp(library: library, player: player));
 
   // Warm up the GPU engine for an already-downloaded model so the first demix
   // of the session isn't stalled by the one-time CoreML compile. Background +
@@ -104,7 +105,10 @@ Future<void> _warmUpSelectedModel() async {
 }
 
 class MyApp extends StatefulWidget {
-  const MyApp({super.key});
+  const MyApp({super.key, required this.library, required this.player});
+
+  final LibraryProvider library;
+  final PlayerProvider player;
 
   @override
   State<MyApp> createState() => _MyAppState();
@@ -149,14 +153,8 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
           update: (context, preferences, modelProvider) =>
               (modelProvider ?? ModelProvider())..setPreferences(preferences),
         ),
-        ChangeNotifierProvider<LibraryProvider>(
-          create: (_) => LibraryProvider(),
-        ),
-        ChangeNotifierProxyProvider<LibraryProvider, PlayerProvider>(
-          create: (context) => PlayerProvider(systemMediaHandler),
-          update: (context, library, player) =>
-              (player ?? PlayerProvider(systemMediaHandler))..update(library),
-        ),
+        ChangeNotifierProvider.value(value: widget.library),
+        ChangeNotifierProvider.value(value: widget.player),
       ],
       child: GetMaterialApp(
         debugShowCheckedModeBanner: false,

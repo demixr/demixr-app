@@ -102,6 +102,26 @@ Apple Developer account ($99/yr). It's the same model and engine as the other
 platforms (GPU-accelerated via CoreML) — just not published. To run it today you
 need to build from source with your own Apple account (`flutter run`).
 
+### In-car playback
+
+Android Auto and Apple CarPlay let you browse saved songs and use the dashboard
+to play, pause, seek, and skip tracks. The dashboard plays the same stem mix as
+the phone.
+
+Android Auto uses the regular Android build. For CarPlay device builds, enable
+the CarPlay Audio capability for the app ID after Apple approves the entitlement
+and use the matching provisioning profile. Set the iOS Runner target's
+`CODE_SIGN_ENTITLEMENTS` build setting to `Runner/Runner-CarPlay.entitlements`
+for the build you intend to sign with that profile. The standard iOS build
+continues to use `Runner/Runner.entitlements`.
+
+For a head-unit smoke test, save at least two songs, close the phone UI, and open
+Demixr in the car. Select a song and verify Now Playing, pause/resume, seeking,
+next/previous, and that opening the phone app shows the same selection. Also
+check that an empty library displays correctly. See the
+[Android Auto Desktop Head Unit guide](https://developer.android.com/training/cars/testing/dhu)
+and [Apple's CarPlay Simulator guide](https://developer.apple.com/documentation/carplay/testing-your-app-in-carplay-simulator).
+
 ## Demo
 
 https://user-images.githubusercontent.com/34341442/151656743-57e4d414-d8a8-4495-962a-55b27e08ab4c.mp4

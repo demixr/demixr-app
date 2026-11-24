@@ -1,198 +1,230 @@
-import 'package:flutter/material.dart';
-import 'package:dartz/dartz.dart';
 import 'dart:async';
 
-import '../models/failure/failure.dart';
-import '../models/failure/no_song_selected.dart';
+import 'package:flutter/foundation.dart';
+
+import '../constants.dart';
 import '../models/unmixed_song.dart';
-import '../providers/library_provider.dart';
 import '../services/stems_player.dart';
 import '../services/system_media_handler.dart';
-import '../constants.dart';
+import 'library_provider.dart';
 
-/// The sate of the music player.
 enum PlayerState { play, pause, off }
 
-/// Provider handling the music player logic.
-///
-/// Uses the [StemsPlayer] to play the different stems of the [_song].
+/// Controls the same stem player for Flutter and the system media session.
 class PlayerProvider extends ChangeNotifier {
+  final LibraryProvider _library;
   final SystemMediaHandler _mediaHandler;
-  late LibraryProvider _library;
-  Either<Failure, UnmixedSong> _song = Left(NoSongSelected());
   final _player = StemsPlayer();
+  List<UnmixedSong> _catalog = const [];
+  UnmixedSong? _selectedSong;
+  UnmixedSong? _song;
+  Future<void> _pending = Future.value();
   PlayerState state = PlayerState.off;
   Duration position = Duration.zero;
-  StreamSubscription<Duration>? _positionSubscription;
+  late final StreamSubscription<Duration> _positionSubscription;
+  late final StreamSubscription<void> _completionSubscription;
 
-  PlayerProvider(this._mediaHandler) {
+  PlayerProvider(this._library, this._mediaHandler) {
     _mediaHandler.attach(
-      play: () async => play(),
-      pause: () async => pause(),
-      seek: (position) async => seek(position),
-      next: () async => next(),
-      previous: () async => previous(),
+      play: play,
+      pause: pause,
+      stop: stop,
+      seek: seek,
+      next: next,
+      previous: previous,
+      playSong: _playSong,
     );
     _positionSubscription = positionStream.listen((position) {
+      if (!isPlaying) return;
       this.position = position;
       _publishMediaState();
     });
+    _completionSubscription = _player.onPlayerCompletion.listen((_) {
+      final completedSong = _song;
+      unawaited(
+        _enqueue(() async {
+          if (_song == completedSong && isPlaying) {
+            await _toStart(setPause: true);
+          }
+        }),
+      );
+    });
+    _library.addListener(_updateLibrary);
+    _updateLibrary();
   }
 
   @override
   void dispose() {
-    _positionSubscription?.cancel();
+    _library.removeListener(_updateLibrary);
+    _positionSubscription.cancel();
+    _completionSubscription.cancel();
     super.dispose();
   }
 
-  /// The state of the player, playing or not.
   bool get isPlaying => state == PlayerState.play;
-
-  /// The stream of the position of the player.
   Stream<Duration> get positionStream => _player.onAudioPositionChanged;
-
-  /// The duration of the current [_song].
-  Duration get songDuration =>
-      _song.fold((failure) => Duration.zero, (song) => song.duration);
-
-  /// The stems of the current song (4 or 6 depending on the model used).
-  List<Stem> get stems =>
-      _song.fold((failure) => const [], (song) => song.stems);
-
-  UnmixedSong? get currentSong => _song.fold((failure) => null, (song) => song);
+  Duration get songDuration => _song?.duration ?? Duration.zero;
+  List<Stem> get stems => _song?.stems ?? const [];
+  UnmixedSong? get currentSong => _song;
 
   Map<Stem, double> get stemVolumes => {
     for (final stem in stems) stem: _player.getStemVolume(stem),
   };
 
-  /// Checks if a [stem] is muted or not.
   bool isStemMute(Stem stem) => _player.getStemState(stem) == StemState.mute;
 
   double stemVolume(Stem stem) => _player.getStemVolume(stem);
 
-  /// Handles the updates of the [library].
-  ///
-  /// Start playing a new song if another song was selected from the library.
-  void update(LibraryProvider library) {
-    _library = library;
-
-    final selectedSong = library.currentSong;
-
-    // when a new song is selected
-    if (_song != selectedSong) {
-      // stop current song
-      bool wasPlaying = isPlaying;
-      stop();
-
-      _song = _library.currentSong;
-
-      // prepare the player
-      _song.fold((failure) => null, (song) {
-        _player.setUrls(song);
-        _player.seek(position);
-        _mediaHandler.publishSong(song);
-
-        state = PlayerState.pause;
-        _publishMediaState();
-
-        _player.onPlayerCompletion.listen((event) {
-          toStart(setPause: true);
-        });
-      });
-
-      if (wasPlaying) unawaited(playpause());
+  void _updateLibrary() {
+    final songs = _library.newestFirst.toList();
+    if (!listEquals(_catalog, songs)) {
+      _catalog = songs;
+      _mediaHandler.publishLibrary(songs);
     }
+
+    final selected = _library.currentSong.fold((_) => null, (song) => song);
+    if (_selectedSong == selected) return;
+    _selectedSong = selected;
+    unawaited(_enqueue(() => _loadSong(selected)));
   }
 
-  /// Resets the [position] of the player.
-  void resetPosition() {
+  // Source changes and transport commands must reach all stems in order,
+  // including a dashboard Play command while a song is still loading.
+  Future<void> _enqueue(Future<void> Function() operation) {
+    final result = _pending.then((_) => operation());
+    _pending = result.catchError((Object error, StackTrace stack) {
+      FlutterError.reportError(
+        FlutterErrorDetails(
+          exception: error,
+          stack: stack,
+          library: 'Demixr playback',
+        ),
+      );
+    });
+    return result;
+  }
+
+  Future<void> _loadSong(UnmixedSong? song) async {
+    final wasPlaying = isPlaying;
+    // Ignore position events from the previous song during the switch.
+    state = PlayerState.off;
+    _song = null;
     position = Duration.zero;
-  }
-
-  /// Toggle the [state] of the player and plays or pauses accordingly.
-  Future<void> playpause() async {
-    switch (state) {
-      case PlayerState.play:
-        pause();
-        break;
-      case PlayerState.pause:
-        await resume();
-        break;
-      case PlayerState.off:
-        break;
+    try {
+      await _player.unload();
+      if (song != null) {
+        await _player.setUrls(song);
+        _song = song;
+        state = PlayerState.pause;
+      }
+    } finally {
+      _mediaHandler.publishSong(_song);
+      if (!wasPlaying || _song == null) {
+        _publishMediaState();
+        notifyListeners();
+      }
     }
-    notifyListeners();
+    if (wasPlaying && _song != null) await _resume();
   }
 
-  /// Goes to the start of the song.
-  void toStart({bool setPause = true}) {
-    if (setPause) pause();
-    resetPosition();
-    seek(position);
-    notifyListeners();
+  Future<bool> _playSong(String id) async {
+    final index = _library.songList.indexWhere((song) => song.mixture == id);
+    if (!_library.setCurrentSongIndex(index)) return false;
+    final requestedSong = _selectedSong;
+    await _enqueue(() async {
+      if (_song != null && _song == requestedSong) await _resume();
+    });
+    return _song == requestedSong && isPlaying;
   }
 
-  /// Resumes playing the current [_song].
-  Future<void> resume() async {
-    if (!await _player.resume()) return;
-    state = PlayerState.play;
-    _publishMediaState();
-    notifyListeners();
+  Future<void> playpause() => _enqueue(() async {
+    if (isPlaying) {
+      await _pause();
+    } else {
+      await _resume();
+    }
+  });
+
+  Future<void> _resume() async {
+    if (_song == null || isPlaying) return;
+    try {
+      await _mediaHandler.prepareToPlay(
+        position: position,
+        bufferedPosition: songDuration,
+      );
+      if (await _player.resume()) state = PlayerState.play;
+    } finally {
+      _publishMediaState();
+      notifyListeners();
+    }
   }
 
-  /// Pauses the current [_song].
-  void pause() {
-    _player.pause();
+  Future<void> _pause() async {
+    if (!isPlaying) return;
+    await _player.pause();
     state = PlayerState.pause;
     _publishMediaState();
     notifyListeners();
   }
 
-  /// Stops playing the current [_song], and unload it.
-  void stop() {
-    _player.stop();
-    resetPosition();
+  Future<void> play() => _enqueue(_resume);
+  Future<void> pause() => _enqueue(_pause);
+
+  Future<void> stop() => _enqueue(() async {
+    if (_song == null) return;
+    await _player.pause();
+    await _player.seek(Duration.zero);
     state = PlayerState.off;
-    notifyListeners();
-  }
-
-  /// Seek the player to the given [position].
-  void seek(Duration position) {
-    this.position = position;
-    _player.seek(position);
+    position = Duration.zero;
     _publishMediaState();
-  }
+    notifyListeners();
+  });
 
-  Future<void> play() async {
-    if (state != PlayerState.off) await resume();
+  Future<void> seek(Duration position) => _enqueue(() => _seek(position));
+
+  Future<void> _seek(Duration position) async {
+    if (_song == null) return;
+    final target = position < Duration.zero
+        ? Duration.zero
+        : position > songDuration
+        ? songDuration
+        : position;
+    await _player.seek(target);
+    this.position = target;
+    _publishMediaState();
   }
 
   void _publishMediaState() {
     _mediaHandler.publishState(
+      ready: state != PlayerState.off,
       playing: isPlaying,
       position: position,
       bufferedPosition: songDuration,
     );
   }
 
-  /// Play the next song in the [_library].
-  void next() {
-    final success = _library.nextSong();
-    if (!success) toStart();
+  Future<void> _toStart({required bool setPause}) async {
+    if (setPause) await _pause();
+    await _seek(Duration.zero);
+    notifyListeners();
   }
 
-  /// Play the previous song in the [_library].
-  void previous() {
-    if (position > const Duration(seconds: 3)) {
-      toStart(setPause: false);
-      return;
+  Future<void> next() async {
+    if (_library.nextSong()) {
+      await _pending;
+    } else {
+      await _enqueue(() => _toStart(setPause: true));
     }
-
-    final success = _library.previousSong();
-    if (!success) toStart(setPause: false);
   }
 
-  /// Toggle mute / unmute on the given [stem].
+  Future<void> previous() async {
+    if (position <= const Duration(seconds: 3) && _library.previousSong()) {
+      await _pending;
+    } else {
+      await _enqueue(() => _toStart(setPause: false));
+    }
+  }
+
   void toggleStem(Stem stem) {
     _player.toggleStem(stem);
     notifyListeners();
