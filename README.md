@@ -31,7 +31,7 @@ Music source separation is the task of decomposing music into its constitutive c
 ## Features
 
 * Load songs from the device
-  * Supported formats: `mp3` and `wav`
+  * Supported formats: `mp3`, `wav`, `flac`, `m4a` (AAC or ALAC), `ogg` (Vorbis or Opus), and `opus`
 * Download songs from YouTube
 * Source separation in 4 different stems: `Vocals`, `Bass`, `Drums` and `Other`
 * Local library of unmixed songs
