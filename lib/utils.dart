@@ -121,6 +121,7 @@ Future<String> getAppModelsStorage() async {
 
 Future<String> getAppTemp() async {
   final directory = await getTemporaryDirectory();
+  await directory.create(recursive: true);
   return directory.path;
 }
 
