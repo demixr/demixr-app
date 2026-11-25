@@ -38,7 +38,16 @@ class ExecuTorchDemixingEngine {
     await _model?.dispose();
     _model = null;
     _modelPath = null;
-    final m = await ExecuTorchModel.load(corePath);
+    late final ExecuTorchModel m;
+    try {
+      m = await ExecuTorchModel.load(corePath);
+    } on ExecuTorchException catch (error) {
+      debugPrint('ExecuTorch model load failed: $error');
+      throw DemixingException(
+        'GPU acceleration could not start on this device. '
+        'Please select the CPU model in settings.',
+      );
+    }
     _model = m;
     _modelPath = corePath;
     return m;
